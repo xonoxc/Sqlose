@@ -1,6 +1,6 @@
 # SQLose
 
-A desktop SQL client built with Electron, React, and TypeScript.
+**ephemeral SQL environments. spin up. query. throw away.**
 
 ## Structure
 
