@@ -67,6 +67,32 @@ export function SQLEditor({ onExecute, onSettingsOpen, isExecuting, executionTim
 
          monaco.editor.setTheme("sqlose-dark")
 
+         monaco.languages.registerCompletionItemProvider('sql', {
+            provideCompletionItems: (model, position) => {
+               const word = model.getWordUntilPosition(position)
+               const range = {
+                  startLineNumber: position.lineNumber,
+                  endLineNumber: position.lineNumber,
+                  startColumn: word.startColumn,
+                  endColumn: word.endColumn,
+               }
+               const suggestions = [
+                  { label: 'SELECT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'SELECT ', range },
+                  { label: 'FROM', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'FROM ', range },
+                  { label: 'WHERE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'WHERE ', range },
+                  { label: 'INSERT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'INSERT INTO ', range },
+                  { label: 'UPDATE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'UPDATE ', range },
+                  { label: 'DELETE', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'DELETE FROM ', range },
+                  { label: 'JOIN', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'JOIN ', range },
+                  { label: 'LEFT JOIN', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'LEFT JOIN ', range },
+                  { label: 'GROUP BY', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'GROUP BY ', range },
+                  { label: 'ORDER BY', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'ORDER BY ', range },
+                  { label: 'LIMIT', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'LIMIT ', range },
+               ]
+               return { suggestions }
+            }
+         })
+
          if (vimEnabled && vimStatusRef.current) {
             const { initVimMode } = await import("monaco-vim")
             vimModeRef.current = initVimMode(editor, vimStatusRef.current)
