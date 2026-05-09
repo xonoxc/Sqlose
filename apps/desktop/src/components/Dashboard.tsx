@@ -1,22 +1,14 @@
 import { useState } from "react"
 import { IconDatabase, IconPlus, IconTrash, IconServer } from "@tabler/icons-react"
 import { useEnvironmentStore } from "../stores/environmentStore"
+import { CreateDatabaseFlow } from "./CreateDatabaseFlow"
 
 export function Dashboard() {
    const environments = useEnvironmentStore((s) => s.environments)
    const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
-   const createEnvironment = useEnvironmentStore((s) => s.createEnvironment)
    const destroyEnvironment = useEnvironmentStore((s) => s.destroyEnvironment)
 
-   const [isCreating, setIsCreating] = useState(false)
-   const [newDbName, setNewDbName] = useState("")
-
-   const handleCreate = async () => {
-      // Create a default sqlite environment for demonstration
-      await createEnvironment("sqlite", newDbName || "New Database")
-      setIsCreating(false)
-      setNewDbName("")
-   }
+   const [showCreateFlow, setShowCreateFlow] = useState(false)
 
    return (
       <div className="flex h-full w-full flex-col bg-[#0c0c0c] text-text-primary overflow-hidden rounded-xl border border-white/10 shadow-2xl relative">
@@ -32,39 +24,15 @@ export function Dashboard() {
 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Create New Card */}
-                  {isCreating ? (
-                     <div className="flex flex-col bg-[#111] border border-accent/40 rounded-xl p-5 shadow-lg relative overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-accent/40"></div>
-                        <h3 className="text-sm font-medium text-text-primary mb-4">Create New Database</h3>
-                        <input 
-                           type="text"
-                           value={newDbName}
-                           onChange={(e) => setNewDbName(e.target.value)}
-                           onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-                           placeholder="Database Name"
-                           className="bg-[#1a1a1a] border border-[#333] text-sm text-text-primary px-3 py-2 rounded focus:outline-none focus:border-accent w-full mb-4"
-                           autoFocus
-                        />
-                        <div className="flex items-center gap-2 mt-auto">
-                           <button onClick={handleCreate} className="flex-1 bg-accent text-white hover:bg-accent-light text-xs font-medium py-2 rounded transition-colors">
-                              Create
-                           </button>
-                           <button onClick={() => setIsCreating(false)} className="px-3 bg-[#222] hover:bg-[#333] text-text-primary text-xs font-medium py-2 rounded transition-colors">
-                              Cancel
-                           </button>
-                        </div>
+                  <button
+                     onClick={() => setShowCreateFlow(true)}
+                     className="flex flex-col items-center justify-center bg-[#111] border border-dashed border-[#333] hover:border-accent hover:bg-[#161616] rounded-xl p-5 min-h-[160px] cursor-pointer transition-all duration-200 group gap-3"
+                  >
+                     <div className="h-10 w-10 rounded-full bg-[#1a1a1a] group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+                        <IconPlus className="h-5 w-5 text-text-muted group-hover:text-accent" />
                      </div>
-                  ) : (
-                     <button 
-                        onClick={() => setIsCreating(true)}
-                        className="flex flex-col items-center justify-center bg-[#111] border border-dashed border-[#333] hover:border-accent hover:bg-[#161616] rounded-xl p-5 min-h-[160px] cursor-pointer transition-all duration-200 group gap-3"
-                     >
-                        <div className="h-10 w-10 rounded-full bg-[#1a1a1a] group-hover:bg-accent/20 flex items-center justify-center transition-colors">
-                           <IconPlus className="h-5 w-5 text-text-muted group-hover:text-accent" />
-                        </div>
-                        <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">Create Database</span>
-                     </button>
-                  )}
+                     <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">Create Database</span>
+                  </button>
 
                   {/* Existing Environments */}
                   {environments.map((env) => (
@@ -97,8 +65,9 @@ export function Dashboard() {
                      </div>
                   ))}
                </div>
-            </div>
-         </div>
-      </div>
-   )
+             </div>
+          </div>
+          {showCreateFlow && <CreateDatabaseFlow onClose={() => setShowCreateFlow(false)} />}
+       </div>
+    )
 }

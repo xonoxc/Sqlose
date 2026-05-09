@@ -1,4 +1,6 @@
-import { ipcMain } from "electron"
+import { ipcMain, app } from "electron"
+import path from "path"
+import fs from "fs"
 import type { Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import type { IPCRequest } from "@sqlose/shared"
@@ -187,7 +189,13 @@ export function registerAllHandlers(): void {
          return serializeErr(dockerResult.error)
       }
 
-      const { port, containerId, connectionString } = dockerResult.value
+      let { port, containerId, connectionString } = dockerResult.value
+
+      if (typedPayload.dbType === "sqlite") {
+         const dbDir = path.join(app.getPath("userData"), "data")
+         fs.mkdirSync(dbDir, { recursive: true })
+         connectionString = path.join(dbDir, "sqlose.db")
+      }
 
       const healthResult = await dockerHealthCheck(containerId)
       const uptime = healthResult.isOk() ? healthResult.value.uptime : 0
