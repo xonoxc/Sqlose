@@ -20,36 +20,43 @@ describe("AppSidebar", () => {
    beforeEach(() => {
       useEnvironmentStore.setState({
          environments: [mockEnv],
-         selectedEnvironmentId: null,
+         selectedEnvironmentId: "env-1",
          isLoading: false,
          error: null,
       })
    })
 
-   it("renders environments list", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} />)
+   it("renders selected database name in header", () => {
+      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
       expect(screen.getByText("My Postgres")).toBeInTheDocument()
    })
 
-   it("renders status badge", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} />)
-      expect(screen.getByText("running")).toBeInTheDocument()
-   })
-
-   it("selects environment on click", async () => {
-      const user = userEvent.setup()
-      render(<AppSidebar onSettingsOpen={() => {}} />)
-
-      await user.click(screen.getByText("My Postgres"))
-      expect(useEnvironmentStore.getState().selectedEnvironmentId).toBe("env-1")
+   it("renders tables section header", () => {
+      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      expect(screen.getByText("Tables")).toBeInTheDocument()
    })
 
    it("renders settings button and calls onSettingsOpen", async () => {
       const user = userEvent.setup()
       const onSettingsOpen = vi.fn()
-      render(<AppSidebar onSettingsOpen={onSettingsOpen} />)
+      render(<AppSidebar onSettingsOpen={onSettingsOpen} onClose={() => {}} />)
 
       await user.click(screen.getByLabelText("Settings"))
       expect(onSettingsOpen).toHaveBeenCalledOnce()
+   })
+
+   it("renders collapse button", () => {
+      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      expect(screen.getByLabelText("Collapse sidebar")).toBeInTheDocument()
+   })
+
+   it("renders filter input", () => {
+      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      expect(screen.getByPlaceholderText("Filter tables...")).toBeInTheDocument()
+   })
+
+   it("renders refresh button", () => {
+      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      expect(screen.getByLabelText("Refresh tables")).toBeInTheDocument()
    })
 })

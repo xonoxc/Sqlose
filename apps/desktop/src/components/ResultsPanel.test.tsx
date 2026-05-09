@@ -10,13 +10,13 @@ describe("ResultsPanel", () => {
 
    it("shows error state", () => {
       render(<ResultsPanel result={null} error="Syntax error near SELECT" isExecuting={false} />)
-      expect(screen.getByText("Query Error")).toBeInTheDocument()
+      expect(screen.getByText("Query Execution Failed")).toBeInTheDocument()
       expect(screen.getByText("Syntax error near SELECT")).toBeInTheDocument()
    })
 
    it("shows empty state when no result or error", () => {
       render(<ResultsPanel result={null} error={null} isExecuting={false} />)
-      expect(screen.getByText("Run a query to see results")).toBeInTheDocument()
+      expect(screen.getByText("Ready to run query")).toBeInTheDocument()
    })
 
    it("shows result data", () => {

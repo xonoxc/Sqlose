@@ -196,7 +196,7 @@ describe("Workflow: Query Execution", () => {
             <ResultsPanel result={null} error={null} isExecuting={false} />
          </Wrapper>,
       )
-      expect(screen.getByText("Run a query to see results")).toBeInTheDocument()
+      expect(screen.getByText("Ready to run query")).toBeInTheDocument()
    })
 })
 
@@ -222,7 +222,7 @@ describe("Workflow: Error Propagation", () => {
             <ResultsPanel result={null} error={"syntax error at line 1"} isExecuting={false} />
          </Wrapper>,
       )
-      expect(screen.getByText("Query Error")).toBeInTheDocument()
+      expect(screen.getByText("Query Execution Failed")).toBeInTheDocument()
       expect(screen.getByText("syntax error at line 1")).toBeInTheDocument()
    })
 

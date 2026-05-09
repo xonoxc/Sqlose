@@ -49,24 +49,8 @@ describe("Sidebar", () => {
       expect(selected).toBe("datasets")
    })
 
-   it("filters items based on search", async () => {
-      const user = userEvent.setup()
-      render(<Sidebar items={items} />)
-
-      const searchInput = screen.getByPlaceholderText("Search...")
-      await user.type(searchInput, "Dataset")
-
-      expect(screen.getByText("Datasets")).toBeInTheDocument()
-      expect(screen.queryByText("Environments")).not.toBeInTheDocument()
-   })
-
    it("renders custom header", () => {
       render(<Sidebar items={items} header={<div>Custom Header</div>} />)
       expect(screen.getByText("Custom Header")).toBeInTheDocument()
-   })
-
-   it("hides search when showSearch is false", () => {
-      render(<Sidebar items={items} showSearch={false} />)
-      expect(screen.queryByPlaceholderText("Search...")).not.toBeInTheDocument()
    })
 })

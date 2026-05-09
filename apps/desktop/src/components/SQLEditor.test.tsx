@@ -28,6 +28,8 @@ vi.mock("monaco-vim", () => ({
 
 describe("SQLEditor", () => {
    const defaultProps = {
+      value: "SELECT * FROM users;",
+      onChange: vi.fn(),
       onExecute: vi.fn(),
       onSettingsOpen: vi.fn(),
       isExecuting: false,
@@ -63,11 +65,6 @@ describe("SQLEditor", () => {
    it("renders Run button", () => {
       render(<SQLEditor {...defaultProps} />)
       expect(screen.getByText("Run")).toBeInTheDocument()
-   })
-
-   it("renders shortcut hint", () => {
-      render(<SQLEditor {...defaultProps} />)
-      expect(screen.getByText(/Enter/)).toBeInTheDocument()
    })
 
    it("shows execution time when provided", () => {

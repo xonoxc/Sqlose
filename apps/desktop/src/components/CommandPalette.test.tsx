@@ -24,12 +24,12 @@ describe("CommandPalette", () => {
 
    it("does not render when closed", () => {
       renderWithQuery(<CommandPalette isOpen={false} onClose={() => {}} />)
-      expect(screen.queryByPlaceholderText("Search environments, datasets, actions...")).not.toBeInTheDocument()
+      expect(screen.queryByPlaceholderText("Search commands...")).not.toBeInTheDocument()
    })
 
    it("renders when open", () => {
       renderWithQuery(<CommandPalette isOpen={true} onClose={() => {}} />)
-      expect(screen.getByPlaceholderText("Search environments, datasets, actions...")).toBeInTheDocument()
+      expect(screen.getByPlaceholderText("Search commands...")).toBeInTheDocument()
    })
 
    it("shows New Query action", () => {
