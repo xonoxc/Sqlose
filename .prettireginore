@@ -1,0 +1,27 @@
+
+# --- Turborepo & Build Artifacts ---
+.turbo
+dist/
+out/
+build/
+.next
+.vercel
+node_modules/
+
+# --- Electron Specific ---
+# Ignore the packaged app and platform-specific builds
+release/
+*.asar
+*.exe
+*.dmg
+*.app
+*.zip
+
+# --- General ---
+coverage/
+*.log
+.DS_Store
+
+# --- Generated Code ---
+# If you use code generators or prisma
+# apps/electron-app/src/generated/

@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/geist";
+
+@theme {
+   /* Background colors (sophisticated charcoal/graphite) */
+   --color-bg-primary: #0e0e0e;
+   /* Editor/Main surface */
+   --color-bg-secondary: #141414;
+   /* Sidebar/Panels */
+   --color-bg-tertiary: #1c1c1c;
+   /* Elevated/Hover */
+   --color-bg-quaternary: #242424;
+   /* Active/Selected */
+
+   /* Accent: Muted emerald / desaturated teal */
+   --color-accent: #378b7b;
+   --color-accent-light: #479e8d;
+   --color-accent-lighter: #57b09f;
+
+   /* Functional colors */
+   --color-success: #378b7b;
+   --color-warning: #c28938;
+   --color-error: #bd4848;
+
+   /* Text hierarchy */
+   --color-text-primary: #eeeeee;
+   --color-text-secondary: #909090;
+   --color-text-muted: #656565;
+   --color-border: #232323;
+
+   /* Typography */
+   --font-sans: "Inter", "Geist", system-ui, -apple-system, sans-serif;
+   --font-mono: "JetBrains Mono", "Geist Mono", ui-monospace, monospace;
+
+   /* Spacing */
+   --spacing-sidebar: 260px;
+   --spacing-1: 0.25rem;
+   --spacing-2: 0.5rem;
+   --spacing-3: 0.75rem;
+   --spacing-4: 1rem;
+   --spacing-6: 1.5rem;
+   --spacing-8: 2rem;
+
+   /* Animation */
+   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@layer base {
+   body {
+      @apply bg-bg-primary text-text-primary font-sans antialiased selection:bg-accent/30;
+   }
+
+   /* Drag region for custom title bar */
+   .app-drag-region {
+      -webkit-app-region: drag;
+   }
+
+   .app-no-drag {
+      -webkit-app-region: no-drag;
+   }
+
+   /* Minimal custom scrollbar */
+   ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+   }
+
+   ::-webkit-scrollbar-track {
+      background: transparent;
+   }
+
+   ::-webkit-scrollbar-thumb {
+      background-color: var(--color-bg-tertiary);
+      border-radius: 4px;
+   }
+
+   ::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-bg-quaternary);
+   }
+
+   .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+   }
+
+   .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+   }
+
+   .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: var(--color-bg-tertiary);
+      border-radius: 4px;
+   }
+
+   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: var(--color-bg-quaternary);
+   }
+}

@@ -1,0 +1,39 @@
+{
+   "name": "desktop",
+   "private": true,
+   "version": "0.0.0",
+   "type": "module",
+   "scripts": {
+      "dev": "vite -- --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations",
+      "build": "tsc && vite build && electron-builder",
+      "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
+      "preview": "vite preview",
+      "test": "vitest run",
+      "test:watch": "vitest",
+      "clean": "rm -rf dist dist-electron .turbo node_modules",
+      "typecheck": "tsc --noEmit"
+   },
+   "dependencies": {
+      "@monaco-editor/react": "^4.7.0",
+      "@tabler/icons-react": "^3.31.0",
+      "electron-store": "^11.0.2",
+      "monaco-editor": "^0.55.1",
+      "monaco-vim": "^0.4.4",
+      "react": "^19",
+      "react-dom": "^19"
+   },
+   "devDependencies": {
+      "@types/react": "^19",
+      "@types/react-dom": "^19",
+      "@vitejs/plugin-react": "^4.2.1",
+      "eslint-plugin-react-hooks": "^7.1.1",
+      "eslint-plugin-react-refresh": "^0.4.5",
+      "typescript": "^5.2.2",
+      "vite": "^5.1.6",
+      "electron": "^30.0.1",
+      "electron-builder": "^24.13.3",
+      "vite-plugin-electron": "^0.28.6",
+      "vite-plugin-electron-renderer": "^0.14.5"
+   },
+   "main": "dist-electron/main.js"
+}
