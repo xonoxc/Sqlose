@@ -4,9 +4,11 @@ import { cn } from "@sqlose/ui"
 import {
    IconSearch, IconDatabase, IconFileCode, IconPlayerPlay, IconDeviceFloppy,
    IconTrash, IconTable, IconHistory, IconArrowLeftRight, IconEye,
+   IconToggleLeft, IconToggleRight,
 } from "@tabler/icons-react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useWorkspaceStore } from "../stores/workspaceStore"
+import { useSettingsStore } from "../stores/settingsStore"
 
 interface CommandPaletteProps {
    isOpen: boolean
@@ -37,6 +39,8 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
    const activeTabId = useWorkspaceStore((s) => s.activeTabId)
    const activeTab = tabs.find(t => t.id === activeTabId)
    const setActiveTab = useWorkspaceStore((s) => s.setActiveTab)
+   const vimModeEnabled = useSettingsStore((s) => s.vimModeEnabled)
+   const setVimModeEnabled = useSettingsStore((s) => s.setVimModeEnabled)
 
    const handleSelectEnvironment = useCallback(
       (envId: string) => {
@@ -98,22 +102,30 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          category: "action",
          onSelect: () => { /* open history panel */ },
       },
-      {
-         id: "switch-db",
-         label: "Switch Database",
-         description: "Change active database connection",
-         icon: <IconArrowLeftRight className="h-4 w-4" />,
-         category: "action",
-         onSelect: () => {
-            const envs = environments
-            if (envs.length > 0) {
-               const currentIdx = envs.findIndex(e => e.id === activeTab?.environmentId)
-               const nextIdx = (currentIdx + 1) % envs.length
-               handleSelectEnvironment(envs[nextIdx].id)
-            }
-         },
-      },
-      ...environments.map((env) => ({
+       {
+          id: "switch-db",
+          label: "Switch Database",
+          description: "Change active database connection",
+          icon: <IconArrowLeftRight className="h-4 w-4" />,
+          category: "action",
+          onSelect: () => {
+             const envs = environments
+             if (envs.length > 0) {
+                const currentIdx = envs.findIndex(e => e.id === activeTab?.environmentId)
+                const nextIdx = (currentIdx + 1) % envs.length
+                handleSelectEnvironment(envs[nextIdx].id)
+             }
+          },
+       },
+       {
+          id: "toggle-vim",
+          label: vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode",
+          description: vimModeEnabled ? "Turn off Vim keybindings in the editor" : "Turn on Vim keybindings in the editor",
+          icon: vimModeEnabled ? <IconToggleRight className="h-4 w-4" /> : <IconToggleLeft className="h-4 w-4" />,
+          category: "action",
+          onSelect: () => setVimModeEnabled(!vimModeEnabled),
+       },
+       ...environments.map((env) => ({
          id: `env-${env.id}`,
          label: env.name || `${env.dbType} environment`,
          description: `${env.dbType} · ${env.status}`,
@@ -131,7 +143,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          category: "tab" as const,
          onSelect: () => setActiveTab(tab.id),
       })),
-   ], [environments, tabs, activeTabId, openTab, onExecuteQuery, onClearResults, handleSelectEnvironment, setActiveTab])
+    ], [environments, tabs, activeTabId, openTab, onExecuteQuery, onClearResults, handleSelectEnvironment, setActiveTab, vimModeEnabled, setVimModeEnabled])
 
    const groupedItems = useMemo(() => {
       if (!query) {

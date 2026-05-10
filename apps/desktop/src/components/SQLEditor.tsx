@@ -205,7 +205,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                   onMount={handleEditorMount}
                   options={{
                      minimap: { enabled: false },
-                     fontSize: 13,
+                     fontSize: 14,
                      fontFamily: "'Geist Mono', ui-monospace, monospace",
                      lineHeight: 20,
                      lineNumbersMinChars: 2,
