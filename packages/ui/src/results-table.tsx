@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { cn } from "./cn"
-import { IconArrowUp, IconArrowDown, IconArrowsSort, IconCopy } from "@tabler/icons-react"
+import { IconArrowUp, IconArrowDown, IconCopy, IconHash, IconTypography, IconBinary, IconChevronDown } from "@tabler/icons-react"
 
 interface ResultsTableProps<T extends Record<string, unknown>> {
    data: T[]
@@ -68,18 +68,37 @@ export function ResultsTable<T extends Record<string, unknown>>({
 
    const columns: ColumnDef<T>[] = useMemo(() => {
       if (data.length === 0) return []
-      return Object.keys(data[0]).map((key) => ({
-         id: key,
-         accessorKey: key,
-         header: key,
-         cell: (info) => {
-            const value = info.getValue()
-            if (value === null) return <span className="text-text-muted italic">NULL</span>
-            if (typeof value === "object") return JSON.stringify(value)
-            return String(value)
-         },
-         enableSorting: true,
-      }))
+      return Object.keys(data[0]).map((key) => {
+         const firstVal = data[0][key];
+         let colType = "text";
+         if (typeof firstVal === "number") {
+            colType = Number.isInteger(firstVal) ? "int" : "float";
+         } else if (typeof firstVal === "boolean") {
+            colType = "bool";
+         }
+         
+         return {
+            id: key,
+            accessorKey: key,
+            header: () => (
+               <div className="flex items-center gap-2 w-full justify-between">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                     <span className="truncate">{key}</span>
+                     {colType === "int" && <IconHash className="h-3 w-3 text-text-muted/70 shrink-0" />}
+                     {colType === "float" && <IconBinary className="h-3 w-3 text-text-muted/70 shrink-0" />}
+                     {colType === "text" && <IconTypography className="h-3.5 w-3.5 text-text-muted/70 shrink-0" />}
+                  </div>
+               </div>
+            ),
+            cell: (info) => {
+               const value = info.getValue()
+               if (value === null) return <span className="text-text-muted italic">NULL</span>
+               if (typeof value === "object") return JSON.stringify(value)
+               return String(value)
+            },
+            enableSorting: true,
+         }
+      })
    }, [data])
 
    const table = useReactTable({
@@ -141,34 +160,36 @@ export function ResultsTable<T extends Record<string, unknown>>({
    }
 
    return (
-      <div className={cn("overflow-hidden w-full h-full relative", className)} onClick={closeCtxMenu}>
-         <div ref={parentRef} className="h-full overflow-auto custom-scrollbar relative bg-[#0c0c0c]">
-            <table className="w-full text-left border-collapse border-spacing-0">
-               <thead className="sticky top-0 z-10">
+      <div className={cn("overflow-hidden w-full h-full relative border-t border-[#1e1e1e]", className)} onClick={closeCtxMenu}>
+         <div ref={parentRef} className="h-full overflow-auto custom-scrollbar relative bg-bg-primary">
+            <table className="text-left border-collapse border-spacing-0 w-max min-w-full">
+               <thead className="sticky top-0 z-10 bg-bg-primary">
                   {table.getHeaderGroups().map((headerGroup) => (
                      <tr key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
-                           <th
-                              key={header.id}
-                              className={cn(
-                                 "h-8 px-3 text-[11px] font-mono text-text-muted whitespace-nowrap bg-[#0c0c0c]",
-                                 "border-r border-b border-[#1e1e1e] last:border-r-0",
-                                 "hover:text-text-primary transition-colors",
-                                 header.column.getCanSort() && "cursor-pointer select-none"
-                              )}
-                              onClick={header.column.getToggleSortingHandler()}
-                              onContextMenu={handleHeaderContextMenu}
-                           >
-                              <div className="flex items-center gap-2">
-                                 <span className="truncate">{flexRender(header.column.columnDef.header, header.getContext())}</span>
-                                 <div className="flex items-center gap-1 text-text-muted/50">
-                                    {{
-                                       asc: <IconArrowUp className="h-3 w-3" />,
-                                       desc: <IconArrowDown className="h-3 w-3" />,
-                                    }[header.column.getIsSorted() as string] ?? <IconArrowsSort className="h-3 w-3 opacity-30" />}
+                              <th
+                                 key={header.id}
+                                 className={cn(
+                                    "h-8 px-3 text-[11px] font-sans font-medium text-text-secondary whitespace-nowrap bg-bg-primary",
+                                    "border-r border-b border-[#1e1e1e] last:border-r-0",
+                                    "hover:text-text-primary transition-colors",
+                                    header.column.getCanSort() && "cursor-pointer select-none"
+                                 )}
+                                 onClick={header.column.getToggleSortingHandler()}
+                                 onContextMenu={handleHeaderContextMenu}
+                              >
+                                 <div className="flex items-center gap-2">
+                                    <div className="flex-1 min-w-0">
+                                       {flexRender(header.column.columnDef.header, header.getContext())}
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-50 shrink-0">
+                                       {{
+                                          asc: <IconArrowUp className="h-3 w-3" />,
+                                          desc: <IconArrowDown className="h-3 w-3" />,
+                                       }[header.column.getIsSorted() as string] ?? <IconChevronDown className="h-3 w-3" />}
+                                    </div>
                                  </div>
-                              </div>
-                           </th>
+                              </th>
                         ))}
                      </tr>
                   ))}
@@ -179,14 +200,14 @@ export function ResultsTable<T extends Record<string, unknown>>({
                      return (
                         <tr
                            key={row.id}
-                           className="group border-b border-[#1e1e1e]/30 hover:bg-[#111111]/60 transition-colors"
+                           className="group hover:bg-bg-quaternary/40 transition-colors"
                            style={{ height: virtualRow.size }}
                            onContextMenu={(e) => handleContextMenu(e, row)}
                         >
                            {row.getVisibleCells().map((cell) => (
                               <td
                                  key={cell.id}
-                                 className="px-3 py-1.5 text-[12px] text-text-primary font-mono whitespace-nowrap overflow-hidden text-ellipsis max-w-xs border-r border-[#1e1e1e]/30 last:border-r-0 cursor-pointer"
+                                 className="px-3 py-1.5 text-[12px] text-text-primary font-sans tabular-nums whitespace-nowrap overflow-hidden text-ellipsis max-w-xs border-r border-b border-[#1e1e1e]/50 last:border-r-0 cursor-pointer"
                                  onClick={() => {
                                     const val = cell.getValue()
                                     copyToClipboard(val === null ? "NULL" : String(val))

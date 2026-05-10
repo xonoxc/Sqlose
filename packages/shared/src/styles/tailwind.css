@@ -1,7 +1,25 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter/index.css";
-@import "@fontsource-variable/jetbrains-mono/index.css";
-@import "@fontsource-variable/geist/index.css";
+
+/* Local Geist fonts from public/fonts/ */
+@font-face {
+   font-family: "Geist";
+   src: url("/fonts/Geist[wght].ttf") format("truetype-variations");
+   font-weight: 100 900;
+   font-display: swap;
+}
+
+@font-face {
+   font-family: "Geist Mono";
+   src: url("/fonts/mono/GeistMono[wght].ttf") format("truetype-variations");
+   font-weight: 100 900;
+   font-display: swap;
+}
+
+/* Wayland-safe font rendering:
+   - Wayland only supports grayscale AA (no subpixel)
+   - Use antialiased on Wayland, subpixel-antialiased on X11/macOS
+   - Font weight 500 on Linux for better readability */
+@custom-media --wayland (-moz-platform: linux), (prefers-rendering: non-retina);
 
 @theme {
    /* Background colors (sophisticated charcoal/graphite) */
@@ -30,9 +48,9 @@
    --color-text-muted: #656565;
    --color-border: #232323;
 
-   /* Typography */
-   --font-sans: "Inter", "Geist", system-ui, -apple-system, sans-serif;
-   --font-mono: "JetBrains Mono", "Geist Mono", ui-monospace, monospace;
+   /* Typography - Geist primary (local), Geist Mono for code */
+   --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+   --font-mono: "Geist Mono", ui-monospace, monospace;
 
    /* Spacing */
    --spacing-sidebar: 260px;
@@ -50,6 +68,19 @@
 @layer base {
    body {
       @apply bg-bg-primary text-text-primary font-sans antialiased selection:bg-accent/30;
+      font-size: 14px;
+      font-weight: 480;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+   }
+
+   /* Wayland/Linux: subpixel AA not available, use slightly heavier weight */
+   @media (-moz-platform: linux), (prefers-rendering: non-retina) {
+      body {
+         -webkit-font-smoothing: subpixel-antialiased;
+         font-weight: 500;
+      }
    }
 
    /* Drag region for custom title bar */

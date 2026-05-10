@@ -10,6 +10,14 @@ import { registerAllHandlers } from "./ipc-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
 
+// Wayland support for Linux: enable Ozone platform and native decorations
+if (process.platform === "linux") {
+   app.commandLine.appendSwitch("ozone-platform-hint", "auto")
+   app.commandLine.appendSwitch("enable-features", "WaylandWindowDecorations")
+   // Enable per-monitor DPI scaling on Wayland
+   app.commandLine.appendSwitch("enable-wayland-ime")
+}
+
 export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"]
 export const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron")
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist")

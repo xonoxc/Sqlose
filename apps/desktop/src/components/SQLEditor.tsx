@@ -37,23 +37,23 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
             base: "vs-dark",
             inherit: true,
             rules: [
-               { token: "keyword", foreground: "479e8d", fontStyle: "bold" },
+               { token: "keyword", foreground: "569cd6", fontStyle: "bold" },
                { token: "identifier", foreground: "eeeeee" },
-               { token: "string", foreground: "c28938" },
-               { token: "number", foreground: "57b09f" },
+               { token: "string", foreground: "ce9178" },
+               { token: "number", foreground: "b5cea8" },
                { token: "comment", foreground: "656565", fontStyle: "italic" },
                { token: "operator", foreground: "909090" },
                { token: "delimiter", foreground: "909090" },
-               { token: "type", foreground: "378b7b" }
+               { token: "type", foreground: "4ec9b0" }
             ],
             colors: {
                "editor.background": "#0e0e0e",
                "editor.foreground": "#eeeeee",
                "editorLineNumber.foreground": "#444444",
                "editorLineNumber.activeForeground": "#909090",
-               "editor.selectionBackground": "#283b38",
-               "editor.inactiveSelectionBackground": "#1e2826",
-               "editorCursor.foreground": "#57b09f",
+               "editor.selectionBackground": "#264f78",
+               "editor.inactiveSelectionBackground": "#3a3d41",
+               "editorCursor.foreground": "#eeeeee",
                "editorIndentGuide.background": "#232323",
                "editorIndentGuide.activeBackground": "#444444",
                "editor.lineHighlightBackground": "#141414",
@@ -144,7 +144,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                   className={cn(
                      "flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-semibold transition-all outline-none",
                      (isExecuting || !selectedEnvironmentId || !value.trim())
-                        ? "bg-accent/20 text-text-muted cursor-not-allowed"
+                        ? "bg-accent/20 text-white/50 cursor-not-allowed"
                         : "bg-accent hover:bg-accent-light text-white shadow-sm"
                   )}
                >
@@ -156,7 +156,11 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                   ) : (
                      <>
                         <IconPlayerPlay className="h-3 w-3 fill-current" />
-                        Run
+                        Run Query
+                        <div className="flex items-center gap-0.5 ml-1 opacity-70 border-l border-white/20 pl-2">
+                           <span className="text-[9px] font-sans font-medium">⌘</span>
+                           <span className="text-[9px] font-sans font-medium">↵</span>
+                        </div>
                      </>
                   )}
                </button>
@@ -202,7 +206,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                   options={{
                      minimap: { enabled: false },
                      fontSize: 13,
-                     fontFamily: "'JetBrains Mono', 'Geist Mono', monospace",
+                     fontFamily: "'Geist Mono', ui-monospace, monospace",
                      lineHeight: 20,
                      lineNumbersMinChars: 2,
                      lineNumbers: "on",
