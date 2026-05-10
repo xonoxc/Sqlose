@@ -71,7 +71,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                { token: "identifier", foreground: "eeeeee" },
                { token: "string", foreground: "ce9178" },
                { token: "number", foreground: "b5cea8" },
-               { token: "comment", foreground: "656565", fontStyle: "italic" },
+               { token: "comment", foreground: "656565", fontStyle: "normal" },
                { token: "operator", foreground: "909090" },
                { token: "delimiter", foreground: "909090" },
                { token: "type", foreground: "4ec9b0" }

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from "react"
+import { useMemo, useState, useRef, useCallback, useEffect } from "react"
 import {
    useReactTable,
    getCoreRowModel,
@@ -10,11 +10,22 @@ import {
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { cn } from "./cn"
-import { IconArrowUp, IconArrowDown, IconCopy, IconHash, IconTypography, IconBinary, IconChevronDown } from "@tabler/icons-react"
+import {
+   IconArrowUp,
+   IconArrowDown,
+   IconCopy,
+   IconHash,
+   IconTypography,
+   IconBinary,
+   IconChevronDown,
+   IconCalendar,
+   IconClock,
+} from "@tabler/icons-react"
+
+type ColumnType = "int" | "float" | "bool" | "uuid" | "date" | "timestamp" | "text"
 
 interface ResultsTableProps<T extends Record<string, unknown>> {
    data: T[]
-   maxHeight?: number
    rowHeight?: number
    className?: string
    emptyMessage?: string
@@ -28,6 +39,45 @@ interface ContextMenuState {
    value?: string
    rowIndex?: number
    columnName?: string
+}
+
+function detectColumnType(values: unknown[]): ColumnType {
+   for (const v of values) {
+      if (v == null) continue
+      if (typeof v === "boolean") return "bool"
+      if (typeof v === "number") return Number.isInteger(v) ? "int" : "float"
+      if (typeof v === "string") {
+         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)) return "uuid"
+         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return "date"
+         if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v)) return "timestamp"
+      }
+   }
+   return "text"
+}
+
+function getColumnWeight(type: ColumnType): number {
+   switch (type) {
+      case "int": return 1
+      case "bool": return 1
+      case "float": return 1.5
+      case "date": return 2
+      case "timestamp": return 2.5
+      case "uuid": return 3
+      case "text": return 5
+   }
+}
+
+function ColumnTypeIcon({ type }: { type: ColumnType }) {
+   const cls = "h-3 w-3 text-text-muted/50 shrink-0"
+   switch (type) {
+      case "int": return <IconHash className={cls} />
+      case "float": return <IconBinary className={cls} />
+      case "bool": return <IconBinary className={cls} />
+      case "date": return <IconCalendar className={cls} />
+      case "timestamp": return <IconClock className={cls} />
+      case "uuid": return <IconTypography className={cls} />
+      case "text": return <IconTypography className={cls} />
+   }
 }
 
 async function copyToClipboard(text: string) {
@@ -58,7 +108,7 @@ function formatAllRows(rows: Record<string, unknown>[], columns: string[]): stri
 
 export function ResultsTable<T extends Record<string, unknown>>({
    data,
-   rowHeight = 28,
+   rowHeight = 26,
    className,
    emptyMessage = "No results",
 }: ResultsTableProps<T>) {
@@ -66,30 +116,46 @@ export function ResultsTable<T extends Record<string, unknown>>({
    const [ctxMenu, setCtxMenu] = useState<ContextMenuState>({ visible: false, x: 0, y: 0, type: "cell" })
    const [selectedCell, setSelectedCell] = useState<{ rowId: string, colId: string } | null>(null)
    const [selectedRow, setSelectedRow] = useState<string | null>(null)
+   const [resizeOverrides, setResizeOverrides] = useState<Record<string, string>>({})
    const parentRef = useRef<HTMLDivElement>(null)
+   const resizeRef = useRef<{ colId: string; startX: number; startPct: number } | null>(null)
+
+   const columnMeta = useMemo(() => {
+      if (data.length === 0) return { types: {} as Record<string, ColumnType>, widths: {} as Record<string, string> }
+      const keys = Object.keys(data[0])
+      const types: Record<string, ColumnType> = {}
+      let totalWeight = 0
+      const weights: Record<string, number> = {}
+
+      keys.forEach(key => {
+         const values = data.slice(0, 15).map(r => r[key])
+         const type = detectColumnType(values)
+         types[key] = type
+         const w = getColumnWeight(type)
+         weights[key] = w
+         totalWeight += w
+      })
+
+      const widths: Record<string, string> = {}
+      keys.forEach(key => {
+         const pct = Math.max((weights[key] / totalWeight) * 100, 4)
+         widths[key] = `${Math.round(pct * 10) / 10}%`
+      })
+
+      return { types, widths }
+   }, [data])
 
    const columns: ColumnDef<T>[] = useMemo(() => {
       if (data.length === 0) return []
       return Object.keys(data[0]).map((key) => {
-         const firstVal = data[0][key];
-         let colType = "text";
-         if (typeof firstVal === "number") {
-            colType = Number.isInteger(firstVal) ? "int" : "float";
-         } else if (typeof firstVal === "boolean") {
-            colType = "bool";
-         }
-         
+         const colType = columnMeta.types[key] ?? "text"
          return {
             id: key,
             accessorKey: key,
             header: () => (
-               <div className="flex items-center gap-2 w-full justify-between">
-                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                     <span className="truncate">{key}</span>
-                     {colType === "int" && <IconHash className="h-3 w-3 text-text-muted/70 shrink-0" />}
-                     {colType === "float" && <IconBinary className="h-3 w-3 text-text-muted/70 shrink-0" />}
-                     {colType === "text" && <IconTypography className="h-3.5 w-3.5 text-text-muted/70 shrink-0" />}
-                  </div>
+               <div className="flex items-center gap-1.5 w-full overflow-hidden">
+                  <span className="truncate text-[11px] font-medium leading-none">{key}</span>
+                  <ColumnTypeIcon type={colType} />
                </div>
             ),
             cell: (info) => {
@@ -101,7 +167,20 @@ export function ResultsTable<T extends Record<string, unknown>>({
             enableSorting: true,
          }
       })
+   }, [data, columnMeta.types])
+
+   const dataKey = useMemo(() => {
+      if (data.length === 0) return ""
+      return Object.keys(data[0]).join(",")
    }, [data])
+
+   useEffect(() => {
+      setResizeOverrides({})
+   }, [dataKey])
+
+   const getColumnWidth = useCallback((colId: string): string => {
+      return resizeOverrides[colId] ?? columnMeta.widths[colId] ?? "auto"
+   }, [resizeOverrides, columnMeta.widths])
 
    const table = useReactTable({
       data: data as T[],
@@ -153,50 +232,122 @@ export function ResultsTable<T extends Record<string, unknown>>({
       return Object.keys(data[0])
    }, [data])
 
+   const handleResizeStart = useCallback((e: React.MouseEvent, colId: string) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const startX = e.clientX
+      const currentPct = parseFloat(getColumnWidth(colId))
+      resizeRef.current = { colId, startX, startPct: currentPct }
+
+      const handleMouseMove = (moveE: MouseEvent) => {
+         if (!resizeRef.current) return
+         const container = parentRef.current
+         if (!container) return
+         const containerWidth = container.clientWidth
+         if (containerWidth <= 0) return
+
+         const { colId, startX, startPct } = resizeRef.current
+         const delta = moveE.clientX - startX
+         const deltaPct = (delta / containerWidth) * 100
+         const newPct = Math.max(5, Math.min(80, startPct + deltaPct))
+
+         const keys = Object.keys(columnMeta.widths)
+         const otherKeys = keys.filter(k => k !== colId)
+
+         let otherTotal = 0
+         const otherCurrent: Record<string, number> = {}
+         otherKeys.forEach(k => {
+            const pct = parseFloat(getColumnWidth(k))
+            otherCurrent[k] = pct
+            otherTotal += pct
+         })
+
+         if (otherTotal <= 0) return
+
+         const oldColPct = startPct
+         const deltaTotal = newPct - oldColPct
+
+         const newOverrides: Record<string, string> = { [colId]: `${Math.round(newPct * 10) / 10}%` }
+         otherKeys.forEach(k => {
+            const share = otherCurrent[k] / otherTotal
+            const adjusted = Math.max(otherCurrent[k] - deltaTotal * share, 2)
+            newOverrides[k] = `${Math.round(adjusted * 10) / 10}%`
+         })
+
+         setResizeOverrides(newOverrides)
+      }
+
+      const handleMouseUp = () => {
+         resizeRef.current = null
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
+
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+   }, [columnMeta.widths, getColumnWidth])
+
    if (data.length === 0) {
       return (
-         <div className={cn("flex items-center justify-center py-6 text-sm text-text-muted", className)}>
+         <div className={cn("flex items-center justify-center py-8 text-sm text-text-muted", className)}>
             {emptyMessage}
          </div>
       )
    }
 
    return (
-      <div className={cn("overflow-hidden w-full h-full relative border-t border-[#1e1e1e]", className)} onClick={closeCtxMenu}>
+      <div className={cn("overflow-hidden w-full h-full relative", className)} onClick={closeCtxMenu}>
          <div ref={parentRef} className="h-full overflow-auto custom-scrollbar relative bg-bg-primary">
-            <table className="text-left border-collapse border-spacing-0 w-max min-w-full">
-               <thead className="sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
+            <table className="w-full table-fixed text-left border-collapse border-spacing-0">
+               <thead className="sticky top-0 z-20">
                   {table.getHeaderGroups().map((headerGroup) => (
                      <tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
+                        {headerGroup.headers.map((header) => {
+                           const width = getColumnWidth(header.column.id)
+                           return (
                               <th
                                  key={header.id}
                                  className={cn(
-                                    "h-8 px-3 text-[11px] font-sans font-medium text-text-secondary whitespace-nowrap bg-bg-secondary select-none",
-                                    "border-r border-b border-border/80 last:border-r-0",
-                                    "hover:text-text-primary hover:bg-bg-tertiary transition-colors",
+                                    "group h-8 px-2.5 text-[11px] font-medium tracking-wide text-text-secondary whitespace-nowrap bg-bg-secondary select-none relative",
+                                    "border-b border-border/70",
+                                    "hover:bg-bg-tertiary transition-colors",
                                     header.column.getCanSort() && "cursor-pointer"
                                  )}
+                                 style={{ width }}
                                  onClick={header.column.getToggleSortingHandler()}
                                  onContextMenu={handleHeaderContextMenu}
                               >
-                                 <div className="flex items-center gap-2">
-                                    <div className="flex-1 min-w-0">
+                                 <div className="flex items-center gap-1.5 w-full h-full">
+                                    <div className="flex items-center gap-1.5 flex-1 min-w-0 leading-none">
                                        {flexRender(header.column.columnDef.header, header.getContext())}
                                     </div>
-                                    <div className="flex items-center gap-1 opacity-50 shrink-0">
+                                    <div className="flex items-center gap-0.5 shrink-0">
                                        {{
-                                          asc: <IconArrowUp className="h-3 w-3" />,
-                                          desc: <IconArrowDown className="h-3 w-3" />,
-                                       }[header.column.getIsSorted() as string] ?? <IconChevronDown className="h-3 w-3" />}
+                                          asc: <IconArrowUp className="h-2.5 w-2.5 text-accent" />,
+                                          desc: <IconArrowDown className="h-2.5 w-2.5 text-accent" />,
+                                       }[header.column.getIsSorted() as string] ?? (
+                                          <IconChevronDown className="h-2.5 w-2.5 text-text-muted/20" />
+                                       )}
                                     </div>
                                  </div>
+                                 <div
+                                    className="absolute right-0 top-1 bottom-1 w-1.5 cursor-col-resize opacity-0 group-hover:opacity-100 hover:opacity-100 hover:bg-accent/50 active:bg-accent/70 rounded-full transition-all z-10"
+                                    onMouseDown={(e) => handleResizeStart(e, header.column.id)}
+                                    onClick={(e) => e.stopPropagation()}
+                                 >
+                                    <div className="w-px h-full mx-auto bg-border/30" />
+                                 </div>
                               </th>
-                        ))}
+                           )
+                        })}
                      </tr>
                   ))}
                </thead>
-                <tbody>
+               <tbody>
                   {virtualizer.getVirtualItems().map((virtualRow) => {
                      const row = rows[virtualRow.index]
                      const isRowSelected = selectedRow === row.id
@@ -204,8 +355,11 @@ export function ResultsTable<T extends Record<string, unknown>>({
                         <tr
                            key={row.id}
                            className={cn(
-                              "group transition-colors",
-                              isRowSelected ? "bg-accent/10" : "hover:bg-bg-quaternary/40"
+                              "group transition-colors duration-100",
+                              "border-b border-border/5",
+                              isRowSelected
+                                 ? "bg-accent/[0.07]"
+                                 : "hover:bg-white/[0.015]"
                            )}
                            style={{ height: virtualRow.size }}
                            onContextMenu={(e) => handleContextMenu(e, row)}
@@ -213,13 +367,19 @@ export function ResultsTable<T extends Record<string, unknown>>({
                         >
                            {row.getVisibleCells().map((cell) => {
                               const isCellSelected = selectedCell?.rowId === row.id && selectedCell?.colId === cell.column.id
+                              const width = getColumnWidth(cell.column.id)
+                              const colType = columnMeta.types[cell.column.id] ?? "text"
+                              const isNumeric = colType === "int" || colType === "float"
                               return (
                                  <td
                                     key={cell.id}
                                     className={cn(
-                                       "px-3 py-1.5 text-[12px] text-text-primary font-sans tabular-nums whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px] border-r border-b border-border/30 last:border-r-0 cursor-default relative",
+                                       "px-2.5 py-0.5 text-[12px] text-text-primary font-sans whitespace-nowrap overflow-hidden text-ellipsis cursor-default relative",
+                                       "border-b border-border/5",
+                                       isNumeric && "text-right tabular-nums",
                                        isCellSelected && "after:absolute after:inset-0 after:border-[1.5px] after:border-accent after:ring-1 after:ring-accent/20 after:z-10 bg-accent/5",
                                     )}
+                                    style={{ width }}
                                     onClick={(e) => {
                                        e.stopPropagation()
                                        setSelectedCell({ rowId: row.id, colId: cell.column.id })
@@ -255,7 +415,6 @@ export function ResultsTable<T extends Record<string, unknown>>({
             </table>
          </div>
 
-         {/* Context Menu */}
          {ctxMenu.visible && (
             <div
                className="fixed z-50 min-w-[160px] bg-[#141414] border border-[#333] rounded-lg shadow-2xl py-1 overflow-hidden"
@@ -303,7 +462,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                      </button>
                   </>
                )}
-               <div className="border-t border-[#222] my-1" />
+               <div className="border-t border-border/80 my-1" />
                <button
                   className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                   onClick={() => { copyToClipboard(formatAllRows(data as Record<string, unknown>[], columnNames)); closeCtxMenu() }}

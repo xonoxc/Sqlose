@@ -316,23 +316,23 @@ function AppContent() {
 
                               {/* Boundary Resize Layer */}
                               <div
-                                 className="h-[4px] -mb-[4px] cursor-row-resize shrink-0 relative z-30 group transition-colors flex items-center justify-center select-none"
+                                 className="h-[3px] -mb-[3px] cursor-row-resize shrink-0 relative z-30 group transition-colors flex items-center justify-center select-none"
                                  onMouseDown={handleResultsDividerMouseDown}
                               >
                                  <div className={cn(
                                     "absolute inset-x-0 top-0 h-[1px] w-full transition-colors",
-                                    isExecuting ? "bg-accent/40" : "bg-transparent group-hover:bg-accent/30"
+                                    isExecuting ? "bg-accent/40" : "bg-transparent group-hover:bg-accent/25"
                                  )} />
                                  <div className={cn(
-                                    "h-[2px] w-12 rounded-full absolute transition-opacity opacity-0 group-hover:opacity-100",
-                                    isExecuting ? "bg-accent" : "bg-accent/60"
+                                    "h-[2px] w-10 rounded-full absolute transition-opacity opacity-0 group-hover:opacity-100",
+                                    isExecuting ? "bg-accent" : "bg-accent/50"
                                  )} />
                               </div>
 
                               {/* Results Panel */}
                               <div
                                  className={cn(
-                                    "flex flex-col shrink-0 bg-bg-primary shadow-[0_-8px_30px_rgba(0,0,0,0.5)] relative z-20 border-t border-border/80",
+                                    "flex flex-col shrink-0 bg-bg-primary shadow-[0_-4px_20px_rgba(0,0,0,0.35)] relative z-20 border-t border-border/60",
                                     resultsCollapsed && "overflow-hidden"
                                  )}
                                  style={{
@@ -341,7 +341,7 @@ function AppContent() {
                                  }}
                               >
                                  {/* Dedicated Results Header */}
-                                 <div className="flex items-center justify-between px-3 py-1.5 bg-bg-tertiary shrink-0 border-b border-border/60">
+                                 <div className="flex items-center justify-between px-3 py-1 bg-bg-tertiary shrink-0 border-b border-border/50">
                                     <div className="flex items-center gap-3">
                                        <button
                                           onClick={() => setResultsCollapsed(!resultsCollapsed)}

@@ -53,14 +53,13 @@ export function ResultsPanel({ result, error, isExecuting }: ResultsPanelProps) 
 
    return (
       <motion.div
-         initial={{ opacity: 0, y: 10 }}
+         initial={{ opacity: 0, y: 8 }}
          animate={{ opacity: 1, y: 0 }}
-         className="h-full bg-bg-primary overflow-auto flex flex-col"
+         className="h-full bg-bg-primary overflow-hidden flex flex-col"
       >
-         <div className="flex-1 min-h-0 border-t border-border/50">
+         <div className="flex-1 min-h-0">
             <ResultsTable
                data={result.rows as Record<string, unknown>[]}
-               className="border-t-0"
             />
          </div>
       </motion.div>
