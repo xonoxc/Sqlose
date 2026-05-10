@@ -4,6 +4,8 @@ import { cn } from "@sqlose/ui"
 import { IconPlayerPlay, IconSettings } from "@tabler/icons-react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
+import { useEditorStore } from "../stores/editorStore"
+import type { VimMode } from "../lib/types"
 
 const Editor = lazy(() => import("@monaco-editor/react"))
 
@@ -16,9 +18,20 @@ interface SQLEditorProps {
    executionTimeMs: number | null
 }
 
+function parseVimMode(text: string): VimMode | null {
+   const upper = text.toUpperCase().trim()
+   if (upper.includes("INSERT")) return "insert"
+   if (upper.includes("VISUAL BLOCK")) return "visual-block"
+   if (upper.includes("VISUAL LINE")) return "visual-line"
+   if (upper.includes("VISUAL")) return "visual"
+   if (upper.includes("NORMAL")) return "normal"
+   return null
+}
+
 export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecuting, executionTimeMs }: SQLEditorProps) {
    const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
    const vimModeRef = useRef<{ dispose: () => void } | null>(null)
+   const vimObserverRef = useRef<MutationObserver | null>(null)
    const vimStatusRef = useRef<HTMLDivElement>(null)
 
    const vimEnabled = useSettingsStore((s) => s.vimModeEnabled)
@@ -26,6 +39,25 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
    const getEnvironment = useEnvironmentStore((s) => s.getEnvironment)
 
    const selectedEnv = selectedEnvironmentId ? getEnvironment(selectedEnvironmentId) : null
+
+   function setupVimObserver() {
+      if (!vimStatusRef.current) return
+      vimObserverRef.current?.disconnect()
+      const observer = new MutationObserver(() => {
+         const text = vimStatusRef.current?.textContent?.trim() ?? ""
+         const mode = parseVimMode(text)
+         if (mode) {
+            useEditorStore.getState().setVimMode(mode)
+         }
+      })
+      observer.observe(vimStatusRef.current, { characterData: true, childList: true, subtree: true })
+      vimObserverRef.current = observer
+      const initialText = vimStatusRef.current.textContent?.trim() ?? ""
+      const initialMode = parseVimMode(initialText)
+      if (initialMode) {
+         useEditorStore.getState().setVimMode(initialMode)
+      }
+   }
 
    const handleEditorMount = useCallback(
       async (monacoEditor: editor.IStandaloneCodeEditor, monaco: typeof import("monaco-editor")) => {
@@ -91,6 +123,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
          if (vimEnabled && vimStatusRef.current) {
             const { initVimMode } = await import("monaco-vim")
             vimModeRef.current = initVimMode(monacoEditor, vimStatusRef.current)
+            setupVimObserver()
             monacoEditor.onDidChangeModelContent(() => {
                onChange(monacoEditor.getValue())
             })
@@ -110,14 +143,15 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
 
    useEffect(() => {
       if (editorRef.current) {
-         if (vimModeRef.current) {
-            vimModeRef.current.dispose()
-            vimModeRef.current = null
-         }
+         vimObserverRef.current?.disconnect()
+         vimObserverRef.current = null
+         vimModeRef.current?.dispose()
+         vimModeRef.current = null
 
          if (vimEnabled && vimStatusRef.current) {
             import("monaco-vim").then(({ initVimMode }) => {
                vimModeRef.current = initVimMode(editorRef.current!, vimStatusRef.current!)
+               setupVimObserver()
                editorRef.current!.onDidChangeModelContent(() => {
                   onChange(editorRef.current!.getValue())
                })
@@ -128,6 +162,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
 
    useEffect(() => {
       return () => {
+         vimObserverRef.current?.disconnect()
          vimModeRef.current?.dispose()
       }
    }, [])

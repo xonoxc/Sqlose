@@ -45,8 +45,8 @@ export function StatusBar({
          </div>
          <div className="flex items-center h-full">
             {vimMode && (
-               <div className="flex items-center h-full border-l border-border/50 px-3 font-mono text-[10px] tracking-wide uppercase text-text-secondary">
-                  {vimMode}
+               <div className="flex items-center h-full border-l border-border/50 px-3">
+                  <VimIndicator mode={vimMode} />
                </div>
             )}
             <div className="flex items-center h-full border-l border-border/50 px-3 tracking-wide">
