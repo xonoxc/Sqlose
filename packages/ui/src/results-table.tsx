@@ -64,6 +64,8 @@ export function ResultsTable<T extends Record<string, unknown>>({
 }: ResultsTableProps<T>) {
    const [sorting, setSorting] = useState<SortingState>([])
    const [ctxMenu, setCtxMenu] = useState<ContextMenuState>({ visible: false, x: 0, y: 0, type: "cell" })
+   const [selectedCell, setSelectedCell] = useState<{ rowId: string, colId: string } | null>(null)
+   const [selectedRow, setSelectedRow] = useState<string | null>(null)
    const parentRef = useRef<HTMLDivElement>(null)
 
    const columns: ColumnDef<T>[] = useMemo(() => {
@@ -163,17 +165,17 @@ export function ResultsTable<T extends Record<string, unknown>>({
       <div className={cn("overflow-hidden w-full h-full relative border-t border-[#1e1e1e]", className)} onClick={closeCtxMenu}>
          <div ref={parentRef} className="h-full overflow-auto custom-scrollbar relative bg-bg-primary">
             <table className="text-left border-collapse border-spacing-0 w-max min-w-full">
-               <thead className="sticky top-0 z-10 bg-bg-primary">
+               <thead className="sticky top-0 z-20 shadow-[0_1px_3px_rgba(0,0,0,0.12)]">
                   {table.getHeaderGroups().map((headerGroup) => (
                      <tr key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
                               <th
                                  key={header.id}
                                  className={cn(
-                                    "h-8 px-3 text-[11px] font-sans font-medium text-text-secondary whitespace-nowrap bg-bg-primary",
-                                    "border-r border-b border-[#1e1e1e] last:border-r-0",
-                                    "hover:text-text-primary transition-colors",
-                                    header.column.getCanSort() && "cursor-pointer select-none"
+                                    "h-8 px-3 text-[11px] font-sans font-medium text-text-secondary whitespace-nowrap bg-bg-secondary select-none",
+                                    "border-r border-b border-border/80 last:border-r-0",
+                                    "hover:text-text-primary hover:bg-bg-tertiary transition-colors",
+                                    header.column.getCanSort() && "cursor-pointer"
                                  )}
                                  onClick={header.column.getToggleSortingHandler()}
                                  onContextMenu={handleHeaderContextMenu}
@@ -194,40 +196,58 @@ export function ResultsTable<T extends Record<string, unknown>>({
                      </tr>
                   ))}
                </thead>
-               <tbody>
+                <tbody>
                   {virtualizer.getVirtualItems().map((virtualRow) => {
                      const row = rows[virtualRow.index]
+                     const isRowSelected = selectedRow === row.id
                      return (
                         <tr
                            key={row.id}
-                           className="group hover:bg-bg-quaternary/40 transition-colors"
+                           className={cn(
+                              "group transition-colors",
+                              isRowSelected ? "bg-accent/10" : "hover:bg-bg-quaternary/40"
+                           )}
                            style={{ height: virtualRow.size }}
                            onContextMenu={(e) => handleContextMenu(e, row)}
+                           onClick={() => setSelectedRow(row.id)}
                         >
-                           {row.getVisibleCells().map((cell) => (
-                              <td
-                                 key={cell.id}
-                                 className="px-3 py-1.5 text-[12px] text-text-primary font-sans tabular-nums whitespace-nowrap overflow-hidden text-ellipsis max-w-xs border-r border-b border-[#1e1e1e]/50 last:border-r-0 cursor-pointer"
-                                 onClick={() => {
-                                    const val = cell.getValue()
-                                    copyToClipboard(val === null ? "NULL" : String(val))
-                                 }}
-                                 onContextMenu={(e) => {
-                                    e.stopPropagation()
-                                    const val = cell.getValue()
-                                    setCtxMenu({
-                                       visible: true, x: e.clientX, y: e.clientY, type: "cell",
-                                       value: val === null ? "NULL" : String(val),
-                                       rowIndex: row.index,
-                                       columnName: cell.column.id,
-                                    })
-                                    e.preventDefault()
-                                 }}
-                                 title="Click to copy"
-                              >
-                                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </td>
-                           ))}
+                           {row.getVisibleCells().map((cell) => {
+                              const isCellSelected = selectedCell?.rowId === row.id && selectedCell?.colId === cell.column.id
+                              return (
+                                 <td
+                                    key={cell.id}
+                                    className={cn(
+                                       "px-3 py-1.5 text-[12px] text-text-primary font-sans tabular-nums whitespace-nowrap overflow-hidden text-ellipsis max-w-[400px] border-r border-b border-border/30 last:border-r-0 cursor-default relative",
+                                       isCellSelected && "after:absolute after:inset-0 after:border-[1.5px] after:border-accent after:ring-1 after:ring-accent/20 after:z-10 bg-accent/5",
+                                    )}
+                                    onClick={(e) => {
+                                       e.stopPropagation()
+                                       setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                       setSelectedRow(row.id)
+                                    }}
+                                    onDoubleClick={() => {
+                                       const val = cell.getValue()
+                                       copyToClipboard(val === null ? "NULL" : String(val))
+                                    }}
+                                    onContextMenu={(e) => {
+                                       e.stopPropagation()
+                                       const val = cell.getValue()
+                                       setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                       setSelectedRow(row.id)
+                                       setCtxMenu({
+                                          visible: true, x: e.clientX, y: e.clientY, type: "cell",
+                                          value: val === null ? "NULL" : String(val),
+                                          rowIndex: row.index,
+                                          columnName: cell.column.id,
+                                       })
+                                       e.preventDefault()
+                                    }}
+                                    title="Double click to copy"
+                                 >
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                 </td>
+                              )
+                           })}
                         </tr>
                      )
                   })}

@@ -1,6 +1,6 @@
 import { motion } from "motion/react"
 import { ResultsTable } from "@sqlose/ui"
-import { IconAlertCircle, IconLoader2, IconDatabaseOff, IconCopy, IconDownload, IconChevronDown } from "@tabler/icons-react"
+import { IconAlertCircle, IconLoader2, IconDatabaseOff } from "@tabler/icons-react"
 import type { QueryResult } from "@sqlose/shared"
 
 interface ResultsPanelProps {
@@ -57,22 +57,7 @@ export function ResultsPanel({ result, error, isExecuting }: ResultsPanelProps) 
          animate={{ opacity: 1, y: 0 }}
          className="h-full bg-bg-primary overflow-auto flex flex-col"
       >
-         <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e1e1e] shrink-0 bg-bg-primary">
-            <div className="flex items-center gap-3">
-               <button className="flex items-center gap-1 text-text-muted hover:text-text-primary transition-colors">
-                  <IconCopy className="h-4 w-4" />
-                  <IconChevronDown className="h-3 w-3 opacity-50" />
-               </button>
-               <button className="flex items-center gap-1 text-text-muted hover:text-text-primary transition-colors">
-                  <IconDownload className="h-4 w-4" />
-                  <IconChevronDown className="h-3 w-3 opacity-50" />
-               </button>
-            </div>
-            <div className="text-[11px] font-sans text-text-secondary">
-               {result.rowCount} rows
-            </div>
-         </div>
-         <div className="flex-1 min-h-0">
+         <div className="flex-1 min-h-0 border-t border-border/50">
             <ResultsTable
                data={result.rows as Record<string, unknown>[]}
                className="border-t-0"

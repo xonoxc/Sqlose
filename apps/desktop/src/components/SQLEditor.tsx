@@ -2,7 +2,6 @@ import { useRef, useCallback, useEffect, lazy, Suspense } from "react"
 import type { editor } from "monaco-editor"
 import { cn } from "@sqlose/ui"
 import { IconPlayerPlay, IconSettings } from "@tabler/icons-react"
-import { useEditorStore } from "../stores/editorStore"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
 
@@ -22,7 +21,6 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
    const vimModeRef = useRef<{ dispose: () => void } | null>(null)
    const vimStatusRef = useRef<HTMLDivElement>(null)
 
-   const vimMode = useEditorStore((s) => s.vimMode)
    const vimEnabled = useSettingsStore((s) => s.vimModeEnabled)
    const selectedEnvironmentId = useEnvironmentStore((s) => s.selectedEnvironmentId)
    const getEnvironment = useEnvironmentStore((s) => s.getEnvironment)
@@ -135,8 +133,8 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
    }, [])
 
    return (
-      <div className="flex flex-col h-full bg-[#111111] w-full">
-         <div className="flex items-center justify-between h-10 px-4 border-b border-[#1e1e1e] bg-[#111111] shrink-0">
+      <div className="flex flex-col h-full bg-bg-primary w-full">
+         <div className="flex items-center justify-between h-10 px-4 border-b border-border/80 bg-bg-secondary shrink-0 select-none">
             <div className="flex items-center gap-3">
                <button
                   onClick={onExecute}
@@ -181,12 +179,12 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
             <div className="flex items-center gap-2">
                <button
                   onClick={onSettingsOpen}
-                  className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-[#222] transition-colors"
+                  className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                   aria-label="Settings"
                >
                   <IconSettings className="h-3.5 w-3.5" />
                </button>
-               <span className="text-[11px] font-semibold text-text-muted bg-[#161616] border border-[#222] px-2 py-0.5 rounded uppercase min-w-14 text-center">
+               <span className="text-[11px] font-bold tracking-wide text-text-muted bg-bg-tertiary border border-border/60 px-2 py-0.5 rounded shadow-sm min-w-14 text-center mt-px uppercase">
                   {selectedEnv?.dbType ?? "SQL"}
                </span>
             </div>
@@ -225,20 +223,7 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                   }}
                />
             </Suspense>
-            <div
-               ref={vimStatusRef}
-               className={cn(
-                  "absolute bottom-0 left-0 z-10 text-[10px] font-mono px-2 py-0.5 rounded-tr pointer-events-none select-none",
-                  vimEnabled ? "block" : "hidden",
-                  (vimMode === "insert" || vimMode === "visual" || vimMode === "visual-line" || vimMode === "visual-block")
-                     ? "bg-green-700/50 text-green-300"
-                     : vimMode === "normal"
-                       ? "bg-bg-quaternary text-text-muted"
-                       : "bg-yellow-700/50 text-yellow-300",
-               )}
-            >
-               {vimMode.toUpperCase().replace("-", " ")}
-            </div>
+            <div ref={vimStatusRef} className="hidden" />
          </div>
       </div>
    )

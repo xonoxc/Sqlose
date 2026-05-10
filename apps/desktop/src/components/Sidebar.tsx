@@ -136,9 +136,9 @@ export function AppSidebar({ onSettingsOpen, onClose }: AppSidebarProps) {
    }, [selectedEnvironmentId, selectedEnv])
 
    return (
-      <div className="flex h-full flex-col bg-[#111111] text-text-secondary w-full">
+      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/50">
          {/* Header: DB Selector + Settings */}
-         <div className="flex items-center justify-between w-full app-no-drag gap-1 px-2 pt-2 pb-1 shrink-0 app-drag-region">
+         <div className="flex items-center justify-between w-full app-no-drag gap-1 px-3 pt-3 pb-2 shrink-0 app-drag-region">
             <Select
                value={selectedEnvironmentId ?? ""}
                onValueChange={handleSelect}
@@ -151,58 +151,72 @@ export function AppSidebar({ onSettingsOpen, onClose }: AppSidebarProps) {
                      <SelectValue placeholder="Select Database" />
                   </div>
                </SelectTrigger>
-               <SelectContent className="border-[#333] min-w-[200px]">
+               <SelectContent className="border-border/80 bg-bg-tertiary min-w-[200px] shadow-2xl">
                   {environments.map((env: Environment) => (
-                     <SelectItem key={env.id} value={env.id}>
+                     <SelectItem key={env.id} value={env.id} className="text-[12px] hover:bg-bg-quaternary">
                         {env.name || `${env.dbType} ${env.port}`}
                      </SelectItem>
                   ))}
                </SelectContent>
             </Select>
             <div className="flex items-center shrink-0">
-               <button onClick={onSettingsOpen} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-[#161616] transition-colors" aria-label="Settings">
+               <button onClick={onSettingsOpen} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Settings">
                   <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"><circle cx="12" cy="12" r="10"/><path d="m11.5 15.5 3-3-3-3"/><path d="M7.5 15.5 11 12l-3.5-3.5"/></svg>
                </button>
-               <button onClick={onClose} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-[#161616] transition-colors" aria-label="Collapse sidebar">
+               <button onClick={onClose} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Collapse sidebar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                </button>
             </div>
          </div>
 
+         <div className="flex-1 flex flex-col min-h-0 custom-scrollbar overflow-y-auto">
+            {/* Workspace Section */}
+            <div className="px-3 py-2">
+               <div className="flex items-center gap-1.5 px-2 py-1.5 mb-1 opacity-70">
+                  <IconChevronRight className="h-3.5 w-3.5 rotate-90" />
+                  <span className="text-[11px] font-semibold tracking-wide uppercase">Workspace</span>
+               </div>
+               <div className="flex flex-col gap-0.5 pl-3 border-l border-border/40 ml-4">
+                  <div className="flex items-center gap-2 px-2 py-1 rounded hover:bg-bg-quaternary/40 text-[12px] cursor-pointer"><span className="w-2 h-2 rounded-full border border-accent"></span> Active Queries</div>
+                  <div className="flex items-center gap-2 px-2 py-1 rounded hover:bg-bg-quaternary/40 text-[12px] cursor-pointer"><span className="w-2 h-2 rounded-full border border-warning"></span> Open Tables</div>
+               </div>
+            </div>
+
          {/* Schema Section */}
-         <div className="flex-1 flex flex-col min-h-0 mt-1">
+         <div className="flex-1 flex flex-col min-h-0">
             {/* Schema Header */}
-            <div className="flex items-center justify-between px-4 py-1.5">
-               <div className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="9" y2="21"/><line x1="15" x2="15" y1="9" y2="21"/></svg>
-                  <span className="text-[11px] font-semibold tracking-wide text-text-muted uppercase">Tables</span>
+            <div className="flex items-center justify-between px-5 py-2 group cursor-pointer hover:bg-bg-quaternary/20 rounded mx-1">
+               <div className="flex items-center gap-1.5 opacity-70">
+                  <IconChevronRight className="h-3.5 w-3.5 rotate-90" />
+                  <span className="text-[11px] font-semibold tracking-wide uppercase">Database Explorer</span>
                </div>
                <button
                   onClick={handleRefresh}
                   disabled={schemaLoading}
-                  className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-[#1a1a1a] transition-colors disabled:opacity-40"
+                  className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
                   aria-label="Refresh tables"
                >
                   <IconRefresh className={cn("h-3.5 w-3.5", schemaLoading && "animate-spin")} />
                </button>
             </div>
 
-            {/* Search */}
-            <div className="px-3 pb-1.5">
-               <div className="flex items-center gap-2 bg-[#161616] rounded border border-[#1e1e1e] px-2.5 py-1.5">
-                  <IconSearch className="h-3.5 w-3.5 text-text-muted shrink-0" />
-                  <input
-                     type="text"
-                     value={search}
-                     onChange={e => setSearch(e.target.value)}
-                     placeholder="Filter tables..."
-                     className="flex-1 bg-transparent text-[12px] text-text-primary outline-none placeholder:text-text-muted/50"
-                  />
+            <div className="pl-6 pr-3 border-l border-border/40 ml-7 flex flex-col min-h-0 flex-1">
+               {/* Search */}
+               <div className="pb-2">
+                  <div className="flex items-center gap-2 bg-bg-tertiary rounded border border-border px-2.5 py-1.5">
+                     <IconSearch className="h-3.5 w-3.5 text-text-muted shrink-0" />
+                     <input
+                        type="text"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search explorer..."
+                        className="flex-1 bg-transparent text-[11px] text-text-primary outline-none placeholder:text-text-muted/60"
+                     />
+                  </div>
                </div>
-            </div>
 
-            {/* Table List */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-1.5 pb-2">
+               {/* Table List */}
+               <div className="flex-1 overflow-y-auto custom-scrollbar pb-2">
                {/* Loading State */}
                {schemaLoading && tables.length === 0 && (
                   <div className="flex items-center justify-center py-8">
@@ -267,7 +281,7 @@ export function AppSidebar({ onSettingsOpen, onClose }: AppSidebarProps) {
 
                      {/* Expanded Columns */}
                      {expandedTables.has(tableName) && tableColumns[tableName] && (
-                        <div className="ml-4 border-l border-[#1e1e1e] ml-5">
+                        <div className="ml-4 border-l border-border/60 ml-5">
                            {tableColumns[tableName].length === 0 && !loadingColumns.has(tableName) && (
                               <div className="py-2 px-4 text-[10px] text-text-muted italic">No columns</div>
                            )}
@@ -303,7 +317,9 @@ export function AppSidebar({ onSettingsOpen, onClose }: AppSidebarProps) {
                      )}
                   </div>
                ))}
+               </div>
             </div>
+         </div>
          </div>
       </div>
    )
