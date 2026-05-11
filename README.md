@@ -2,6 +2,8 @@
 
 **ephemeral SQL environments. spin up. query. throw away.**
 
+![Screenshot](apps/desktop/public/ss.png)
+
 ## Structure
 
 ```

@@ -356,7 +356,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
             className="h-full overflow-auto custom-scrollbar relative bg-bg-primary"
          >
             <Table className="text-left border-collapse border-spacing-0">
-               <TableHeader>
+               <TableHeader className="text-xl">
                   {table.getHeaderGroups().map(headerGroup => (
                      <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map(header => {
@@ -365,7 +365,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                               <TableHead
                                  key={header.id}
                                  className={cn(
-                                    "group relative",
+                                    "group relative text-lg",
                                     "hover:bg-bg-tertiary transition-colors",
                                     header.column.getCanSort() && "cursor-pointer"
                                  )}
