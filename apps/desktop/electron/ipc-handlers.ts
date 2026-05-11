@@ -30,6 +30,12 @@ import { executeQuery } from "@sqlose/core"
 import { importCSV, previewCSV, parseSQLDump, extractTableNames } from "@sqlose/core"
 import { listDatasets, getDatasetSQL } from "@sqlose/core"
 
+function getSqliteDbPath(envId: string): string {
+   const dbDir = path.join(app.getPath("userData"), "data")
+   fs.mkdirSync(dbDir, { recursive: true })
+   return path.join(dbDir, `${envId}.db`)
+}
+
 export type IPCSerializedResult<T> =
    | { success: true; data: T }
    | { success: false; error: { code: string; message: string } }
@@ -195,9 +201,7 @@ export function registerAllHandlers(): void {
       const env = envResult.value
 
       if (typedPayload.dbType === "sqlite") {
-         const dbDir = path.join(app.getPath("userData"), "data")
-         fs.mkdirSync(dbDir, { recursive: true })
-         const connectionString = path.join(dbDir, "sqlose.db")
+         const connectionString = getSqliteDbPath(env.id)
          const updated = await updateEnvironment(env.id, { connectionString, status: "running" })
          if (updated.isErr()) return serializeErr(updated.error)
          return serializeOk(updated.value)
@@ -250,6 +254,14 @@ export function registerAllHandlers(): void {
 
       if (env.port > 0) releasePort(env.port)
 
+      if (env.dbType === "sqlite") {
+         try {
+            fs.unlinkSync(getSqliteDbPath(environmentId))
+         } catch {
+            // file may not exist if no queries were ever run
+         }
+      }
+
       await destroyEnvironmentRecord(environmentId)
       return serializeOk({ environmentId })
    })
@@ -273,8 +285,27 @@ export function registerAllHandlers(): void {
       if (validationError) return validationError
 
       const { environmentId } = payload as IPCRequest<"env:duplicate">
+      const env = loadEnvironment(environmentId)
+      if (!env) return serializeErr(new AppError("env:not_found", `Environment ${environmentId} not found`))
+
       const result = await duplicateEnvironmentRecord(environmentId)
-      return serializeResult(result)
+      if (result.isErr()) return serializeErr(result.error)
+
+      if (env.dbType === "sqlite") {
+         const dup = result.value
+         const srcPath = getSqliteDbPath(environmentId)
+         const dstPath = getSqliteDbPath(dup.id)
+         try {
+            fs.copyFileSync(srcPath, dstPath)
+         } catch {
+            // source file may not exist
+         }
+         const updated = await updateEnvironment(dup.id, { connectionString: dstPath, status: "running" })
+         if (updated.isErr()) return serializeErr(updated.error)
+         return serializeOk(updated.value)
+      }
+
+      return serializeOk(result.value)
    })
 
    ipcMain.handle("env:reset", async (_event, payload: unknown) => {
@@ -282,6 +313,21 @@ export function registerAllHandlers(): void {
       if (validationError) return validationError
 
       const { environmentId } = payload as IPCRequest<"env:reset">
+      const env = loadEnvironment(environmentId)
+      if (!env) return serializeErr(new AppError("env:not_found", `Environment ${environmentId} not found`))
+
+      if (env.dbType === "sqlite") {
+         const dbPath = getSqliteDbPath(environmentId)
+         try {
+            fs.unlinkSync(dbPath)
+         } catch {
+            // file may not exist
+         }
+         const updated = await updateEnvironment(environmentId, { connectionString: dbPath, status: "running" })
+         if (updated.isErr()) return serializeErr(updated.error)
+         return serializeOk(updated.value)
+      }
+
       const result = await resetEnvironmentRecord(environmentId)
       return serializeResult(result)
    })

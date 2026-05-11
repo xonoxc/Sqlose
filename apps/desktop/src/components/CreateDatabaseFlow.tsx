@@ -12,6 +12,7 @@ import {
 import { Button, Input, Badge } from "@sqlose/ui"
 import { api } from "../lib/api"
 import { useEnvironmentStore } from "../stores/environmentStore"
+import { useWorkspaceStore } from "../stores/workspaceStore"
 import type { DBType, Dataset } from "@sqlose/shared"
 
 type FlowStep = "select-type" | "configure" | "provisioning"
@@ -68,6 +69,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
    const createEnvironment = useEnvironmentStore((s) => s.createEnvironment)
    const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
+   const resetWorkspace = useWorkspaceStore((s) => s.resetWorkspace)
 
    useEffect(() => {
       if (step === "configure") {
@@ -150,6 +152,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
       updateStepStatus("connect", "in-progress")
       await new Promise((r) => setTimeout(r, 300))
+      resetWorkspace()
       selectEnvironment(env.id)
       updateStepStatus("connect", "done")
    }

@@ -17,6 +17,7 @@ interface WorkspaceStore {
    moveTab: (fromIndex: number, toIndex: number) => Result<void, AppError>
    updatePaneSizes: (updates: Partial<PaneSizes>) => Result<PaneSizes, AppError>
    getActiveTab: () => Tab | undefined
+   resetWorkspace: () => void
 }
 
 const initialTab = createTab()
@@ -27,6 +28,14 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
          tabs: [initialTab],
          activeTabId: initialTab.id,
          paneSizes: createDefaultPaneSizes(),
+
+         resetWorkspace: () => {
+            const newTab = createTab()
+            set({
+               tabs: [newTab],
+               activeTabId: newTab.id,
+            })
+         },
 
          openTab: (environmentId?: string) => {
             const newTab = createTab(environmentId ?? null)
