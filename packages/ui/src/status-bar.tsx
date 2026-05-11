@@ -1,23 +1,13 @@
 import { type ReactNode } from "react"
 import { cn } from "./cn"
 import { VimIndicator, type VimMode } from "./vim-indicator"
-import { Badge } from "./badge"
-import type { DBType, EnvironmentStatus } from "@sqlose/shared"
+import type { DBType } from "@sqlose/shared"
 
 interface StatusBarProps {
    vimMode?: VimMode
-   connectionStatus?: EnvironmentStatus
    dbType?: DBType
    leftItems?: ReactNode
    className?: string
-}
-
-const connectionLabels: Record<EnvironmentStatus, { label: string; variant: "success" | "warning" | "destructive" | "secondary" }> = {
-   creating: { label: "Creating...", variant: "warning" },
-   running: { label: "Connected", variant: "success" },
-   stopped: { label: "Disconnected", variant: "secondary" },
-   error: { label: "Error", variant: "destructive" },
-   destroyed: { label: "Destroyed", variant: "destructive" },
 }
 
 const dbTypeLabels: Record<DBType, string> = {
@@ -28,7 +18,6 @@ const dbTypeLabels: Record<DBType, string> = {
 
 export function StatusBar({
    vimMode,
-   connectionStatus,
    dbType,
    leftItems,
    className,

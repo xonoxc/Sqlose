@@ -59,6 +59,18 @@ export const api = {
          const result = await api.docker.cleanup({})
          return deserializeResult(result)
       },
+
+      async pullImage(dbType: DBType) {
+         const api = getSqloseAPI()
+         const result = await api.docker.pullImage({ dbType })
+         return deserializeResult(result)
+      },
+
+      async createContainer(environmentId: string) {
+         const api = getSqloseAPI()
+         const result = await api.docker.createContainer({ environmentId })
+         return deserializeResult(result)
+      },
    },
 
    env: {

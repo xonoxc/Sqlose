@@ -67,7 +67,6 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
    const provisionStarted = useRef(false)
 
    const createEnvironment = useEnvironmentStore((s) => s.createEnvironment)
-   const startEnvironment = useEnvironmentStore((s) => s.startEnvironment)
    const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
 
    useEffect(() => {
@@ -117,25 +116,24 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       updateStepStatus("create", "done")
 
       if (selectedDbType === "sqlite") {
-         updateStepStatus("init", "in-progress")
-      } else {
-         updateStepStatus("pull", "in-progress")
-      }
-
-      const startResult = await startEnvironment(env.id)
-      if (startResult.isErr()) {
-         const stepId = selectedDbType === "sqlite" ? "init" : "pull"
-         updateStepStatus(stepId, "error", startResult.error.message)
-         setProvisioningError(startResult.error.message)
-         return
-      }
-
-      if (selectedDbType === "sqlite") {
          updateStepStatus("init", "done")
       } else {
+         updateStepStatus("pull", "in-progress")
+          const pullResult = await api.docker.pullImage(selectedDbType!)
+         if (pullResult.isErr()) {
+            updateStepStatus("pull", "error", pullResult.error.message)
+            setProvisioningError(pullResult.error.message)
+            return
+         }
          updateStepStatus("pull", "done")
+
          updateStepStatus("start", "in-progress")
-         await new Promise((r) => setTimeout(r, 1500))
+         const containerResult = await api.docker.createContainer(env.id)
+         if (containerResult.isErr()) {
+            updateStepStatus("start", "error", containerResult.error.message)
+            setProvisioningError(containerResult.error.message)
+            return
+         }
          updateStepStatus("start", "done")
       }
 

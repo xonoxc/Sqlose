@@ -15,6 +15,8 @@ export const IPC_CHANNELS = [
    "docker:restart-env",
    "docker:health",
    "docker:cleanup",
+   "docker:pull-image",
+   "docker:create-container",
    "env:create",
    "env:destroy",
    "env:list",
@@ -37,6 +39,8 @@ export interface IPCRequestMap {
    "docker:restart-env": { environmentId: string }
    "docker:health": { environmentId: string }
    "docker:cleanup": Record<string, never>
+   "docker:pull-image": { dbType: DBType }
+   "docker:create-container": { environmentId: string }
    "env:create": { dbType: DBType; name?: string }
    "env:destroy": { environmentId: string }
    "env:list": Record<string, never>
@@ -57,6 +61,8 @@ export interface IPCResponseMap {
    "docker:restart-env": { environmentId: string }
    "docker:health": { healthy: boolean; uptime: number }
    "docker:cleanup": { cleaned: number }
+   "docker:pull-image": { image: string }
+   "docker:create-container": Environment
    "env:create": Environment
    "env:destroy": { environmentId: string }
    "env:list": Environment[]
@@ -91,6 +97,8 @@ export const IPC_CHANNEL_GROUPS: Record<IPCChannel, IPCChannelGroup> = {
    "docker:restart-env": "docker",
    "docker:health": "docker",
    "docker:cleanup": "docker",
+   "docker:pull-image": "docker",
+   "docker:create-container": "docker",
    "env:create": "env",
    "env:destroy": "env",
    "env:list": "env",

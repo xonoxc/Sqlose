@@ -14,6 +14,8 @@ const api = {
       restartEnv: createInvoke("docker:restart-env"),
       health: createInvoke("docker:health"),
       cleanup: createInvoke("docker:cleanup"),
+      pullImage: createInvoke("docker:pull-image"),
+      createContainer: createInvoke("docker:create-container"),
    },
    env: {
       create: createInvoke("env:create"),

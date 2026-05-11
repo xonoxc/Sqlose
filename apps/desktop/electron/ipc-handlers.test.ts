@@ -264,31 +264,44 @@ describe("docker:cleanup", () => {
 })
 
 describe("env:create", () => {
-   it("should create environment and Docker container", async () => {
+   it("should create environment record (postgres — no container yet)", async () => {
       const env = makeEnv({ status: "creating", port: 0, containerId: null, connectionString: "" })
-      const dockerResult = { port: 5432, containerId: "container-1", connectionString: "postgresql://localhost:5432/sqlose" }
-      const updatedEnv = makeEnv()
-
       mockCore.createEnvironmentRecord.mockReturnValue(mockOk(env))
-      mockCore.createEnvironment.mockReturnValue(mockOk(dockerResult))
-      mockCore.healthCheck.mockReturnValue(mockOk({ healthy: true, uptime: 0 }))
-      mockCore.updateEnvironment.mockReturnValue(mockOk(updatedEnv))
 
       const result = await handlers["env:create"](null, { dbType: "postgres" as DBType }) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
       if (result.success) {
-         expect(result.data.status).toBe("running")
+         expect(result.data.status).toBe("creating")
       }
       expect(mockCore.createEnvironmentRecord).toHaveBeenCalledWith("postgres", undefined)
+   })
+})
+
+describe("docker:create-container", () => {
+   it("should create Docker container and update environment", async () => {
+      const env = makeEnv({ status: "creating", port: 0, containerId: null, connectionString: "" })
+      const dockerResult = { port: 5432, containerId: "container-1", connectionString: "postgresql://localhost:5432/sqlose" }
+      const updatedEnv = makeEnv()
+
+      mockCore.loadEnvironment.mockReturnValue(env)
+      mockCore.createEnvironment.mockReturnValue(mockOk(dockerResult))
+      mockCore.healthCheck.mockReturnValue(mockOk({ healthy: true, uptime: 0 }))
+      mockCore.updateEnvironment.mockReturnValue(mockOk(updatedEnv))
+
+      const result = await handlers["docker:create-container"](null, { environmentId: "env-1" }) as IPCSerializedResult<Environment>
+      expect(result.success).toBe(true)
+      if (result.success) {
+         expect(result.data.status).toBe("running")
+      }
       expect(mockCore.createEnvironment).toHaveBeenCalledWith("postgres")
    })
 
    it("should destroy record if Docker creation fails", async () => {
       const env = makeEnv({ id: "env-1", status: "creating" })
-      mockCore.createEnvironmentRecord.mockReturnValue(mockOk(env))
+      mockCore.loadEnvironment.mockReturnValue(env)
       mockCore.createEnvironment.mockReturnValue(mockErr("docker:container_failed", "port conflict"))
 
-      await handlers["env:create"](null, { dbType: "postgres" as DBType })
+      await handlers["docker:create-container"](null, { environmentId: "env-1" })
       expect(mockCore.destroyEnvironmentRecord).toHaveBeenCalledWith("env-1")
    })
 })

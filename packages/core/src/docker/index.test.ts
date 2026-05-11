@@ -9,10 +9,19 @@ vi.mock("./port", () => ({
    releasePort: vi.fn(),
 }))
 
+vi.mock("../drivers/postgres", () => ({
+   testPostgresConnection: vi.fn(),
+}))
+
+vi.mock("../drivers/mysql", () => ({
+   testMySQLConnection: vi.fn(),
+}))
+
 function makeMockDocker(overrides: Partial<{
    createContainer: ReturnType<typeof vi.fn>
    getContainer: ReturnType<typeof vi.fn>
    listContainers: ReturnType<typeof vi.fn>
+   pull: ReturnType<typeof vi.fn>
 }> = {}) {
    const mockContainer = {
       id: "mock-container-id",
@@ -25,17 +34,45 @@ function makeMockDocker(overrides: Partial<{
       }),
    }
 
+   const followProgress = vi.fn().mockImplementation((_stream, onFinished: (err: Error | null) => void) => {
+      onFinished(null)
+   })
+
    return {
       createContainer: overrides.createContainer ?? vi.fn().mockResolvedValue(mockContainer),
       getContainer: overrides.getContainer ?? vi.fn().mockReturnValue(mockContainer),
       listContainers: overrides.listContainers ?? vi.fn().mockResolvedValue([]),
+      pull: overrides.pull ?? vi.fn().mockImplementation((_image: string, _opts: unknown, callback: (err: Error | null, stream: unknown) => void) => {
+         callback(null, "mock-stream")
+      }),
+      modem: { followProgress },
    }
 }
 
+const mockOkBool = (value: boolean) => Promise.resolve({
+   isOk: () => true,
+   isErr: () => false,
+   value,
+   error: undefined,
+   _unsafeUnwrap: () => value,
+})
+
+const mockErrBool = (code: string) => Promise.resolve({
+   isOk: () => false,
+   isErr: () => true,
+   error: { code, message: code },
+   value: undefined,
+   _unsafeUnwrapErr: () => ({ code, message: code }),
+})
+
 describe("Docker Orchestration", () => {
-   beforeEach(() => {
+   beforeEach(async () => {
       vi.clearAllMocks()
       __setDocker(makeMockDocker() as never)
+      const { testPostgresConnection } = await import("../drivers/postgres")
+      const { testMySQLConnection } = await import("../drivers/mysql")
+      ;(testPostgresConnection as Mock).mockReturnValue(mockOkBool(true))
+      ;(testMySQLConnection as Mock).mockReturnValue(mockOkBool(true))
    })
 
    describe("createEnvironment", () => {
@@ -330,7 +367,7 @@ describe("Docker Orchestration", () => {
 
          expect(result.isOk()).toBe(true)
          if (result.isOk()) {
-            expect(result.value).toBe(1)
+            expect(result.value).toBe(2)
          }
       })
 

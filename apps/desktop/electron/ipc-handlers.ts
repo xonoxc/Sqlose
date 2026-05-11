@@ -3,7 +3,7 @@ import path from "path"
 import fs from "fs"
 import type { Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import type { IPCRequest } from "@sqlose/shared"
+import type { DBType, IPCRequest } from "@sqlose/shared"
 
 import {
    createEnvironment as dockerCreateEnvironment,
@@ -13,6 +13,7 @@ import {
    healthCheck as dockerHealthCheck,
    destroyContainer as dockerDestroyContainer,
    cleanupOrphans as dockerCleanupOrphans,
+   pullImage as dockerPullImage,
 } from "@sqlose/core"
 import {
    createEnvironmentRecord,
@@ -166,6 +167,17 @@ export function registerAllHandlers(): void {
       return serializeOk({ cleaned: result.value })
    })
 
+   ipcMain.handle("docker:pull-image", async (_event, payload: unknown) => {
+      if (typeof payload !== "object" || payload === null) return invalidPayload("expected an object")
+      const { dbType } = payload as Record<string, unknown>
+      if (typeof dbType !== "string" || !["postgres", "mysql", "sqlite"].includes(dbType)) {
+         return invalidPayload("dbType must be postgres, mysql, or sqlite")
+      }
+      const result = await dockerPullImage(dbType as DBType)
+      if (result.isErr()) return serializeErr(result.error)
+      return serializeOk({ image: dbType })
+   })
+
    ipcMain.handle("env:create", async (_event, payload: unknown) => {
       if (typeof payload !== "object" || payload === null) return invalidPayload("expected an object")
       const { dbType, name } = payload as Record<string, unknown>
@@ -177,30 +189,44 @@ export function registerAllHandlers(): void {
       }
 
       const typedPayload = payload as IPCRequest<"env:create">
-
       const envResult = await createEnvironmentRecord(typedPayload.dbType, typedPayload.name)
       if (envResult.isErr()) return serializeErr(envResult.error)
 
       const env = envResult.value
 
-      const dockerResult = await dockerCreateEnvironment(env.dbType)
-      if (dockerResult.isErr()) {
-         await destroyEnvironmentRecord(env.id)
-         return serializeErr(dockerResult.error)
-      }
-
-      let { port, containerId, connectionString } = dockerResult.value
-
       if (typedPayload.dbType === "sqlite") {
          const dbDir = path.join(app.getPath("userData"), "data")
          fs.mkdirSync(dbDir, { recursive: true })
-         connectionString = path.join(dbDir, "sqlose.db")
+         const connectionString = path.join(dbDir, "sqlose.db")
+         const updated = await updateEnvironment(env.id, { connectionString, status: "running" })
+         if (updated.isErr()) return serializeErr(updated.error)
+         return serializeOk(updated.value)
       }
 
+      return serializeOk(env)
+   })
+
+   ipcMain.handle("docker:create-container", async (_event, payload: unknown) => {
+      if (typeof payload !== "object" || payload === null) return invalidPayload("expected an object")
+      const { environmentId } = payload as Record<string, unknown>
+      if (typeof environmentId !== "string" || environmentId.length === 0) {
+         return invalidPayload("environmentId must be a non-empty string")
+      }
+
+      const env = loadEnvironment(environmentId)
+      if (!env) return serializeErr(new AppError("env:not_found", `Environment ${environmentId} not found`))
+
+      const dockerResult = await dockerCreateEnvironment(env.dbType)
+      if (dockerResult.isErr()) {
+         await destroyEnvironmentRecord(environmentId)
+         return serializeErr(dockerResult.error)
+      }
+
+      const { port, containerId, connectionString } = dockerResult.value
       const healthResult = await dockerHealthCheck(containerId)
       const uptime = healthResult.isOk() ? healthResult.value.uptime : 0
 
-      const updated = await updateEnvironment(env.id, {
+      const updated = await updateEnvironment(environmentId, {
          port,
          containerId,
          connectionString,
@@ -220,8 +246,7 @@ export function registerAllHandlers(): void {
       const env = loadEnvironment(environmentId)
       if (!env) return serializeErr(new AppError("env:not_found", `Environment ${environmentId} not found`))
 
-      const destroyResult = await dockerDestroyContainer(env.containerId ?? "")
-      if (destroyResult.isErr()) return serializeErr(destroyResult.error)
+      await dockerDestroyContainer(env.containerId ?? "")
 
       if (env.port > 0) releasePort(env.port)
 

@@ -6,7 +6,10 @@ export {
    healthCheck,
    destroyContainer,
    cleanupOrphans,
+   cleanupStaleEnvironments,
    initDocker,
+   pullImage,
+   waitForDatabaseReady,
    __setDocker,
 } from "./docker"
 export { findAvailablePort, reservePort, releasePort } from "./docker/port"

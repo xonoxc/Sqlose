@@ -8,21 +8,6 @@ describe("StatusBar", () => {
       expect(screen.getByText("-- NORMAL --")).toBeInTheDocument()
    })
 
-   it("renders connection status when provided", () => {
-      render(<StatusBar connectionStatus="running" />)
-      expect(screen.getByText("Connected")).toBeInTheDocument()
-   })
-
-   it("renders loading status when creating", () => {
-      render(<StatusBar connectionStatus="creating" />)
-      expect(screen.getByText("Creating...")).toBeInTheDocument()
-   })
-
-   it("renders error status", () => {
-      render(<StatusBar connectionStatus="error" />)
-      expect(screen.getByText("Error")).toBeInTheDocument()
-   })
-
    it("renders db type label when provided", () => {
       render(<StatusBar dbType="postgres" />)
       expect(screen.getByText("PG")).toBeInTheDocument()

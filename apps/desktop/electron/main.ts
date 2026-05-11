@@ -5,7 +5,7 @@ import { app, BrowserWindow } from "electron"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-import { initDocker, cleanupOrphans } from "@sqlose/core"
+import { initDocker, cleanupOrphans, cleanupStaleEnvironments } from "@sqlose/core"
 import { registerAllHandlers } from "./ipc-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
@@ -72,6 +72,7 @@ app.on("will-quit", async () => {
 app.whenReady().then(async () => {
    await initDocker()
    await cleanupOrphans()
+   await cleanupStaleEnvironments()
    registerAllHandlers()
    createWindow()
 })
