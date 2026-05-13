@@ -32,6 +32,66 @@ export interface Keybinding {
    meta: boolean
 }
 
+export interface SavedQuery {
+   id: string
+   name: string
+   sql: string
+   tags: string[]
+   environmentId: string | null
+   createdAt: string
+   updatedAt: string
+}
+
+export interface HistoryEntry {
+   id: string
+   sql: string
+   environmentId: string | null
+   dbType: string
+   duration: number
+   rowCount: number
+   status: "success" | "error"
+   error: string | null
+   executedAt: string
+}
+
+function extractTableName(sql: string): string {
+   const cleaned = sql.trim().replace(/\s+/g, " ")
+   const upper = cleaned.toUpperCase()
+
+   if (upper.startsWith("SELECT")) {
+      const fromMatch = cleaned.match(/\bFROM\s+[`"']?(\w+)[`"']?/i)
+      if (fromMatch) return `SELECT * FROM ${fromMatch[1]}`
+      const selectMatch = cleaned.match(/SELECT\s+(.*?)\s+FROM/i)
+      if (selectMatch) {
+         const cols = selectMatch[1].length > 20 ? selectMatch[1].slice(0, 20) + "..." : selectMatch[1]
+         return `SELECT ${cols}...`
+      }
+      return "SELECT..."
+   }
+   if (upper.startsWith("INSERT")) return "INSERT"
+   if (upper.startsWith("UPDATE")) {
+      const tableMatch = cleaned.match(/UPDATE\s+[`"']?(\w+)[`"']?/i)
+      return tableMatch ? `UPDATE ${tableMatch[1]}` : "UPDATE"
+   }
+   if (upper.startsWith("DELETE")) {
+      const tableMatch = cleaned.match(/DELETE\s+FROM\s+[`"']?(\w+)[`"']?/i)
+      return tableMatch ? `DELETE FROM ${tableMatch[1]}` : "DELETE"
+   }
+   if (upper.startsWith("CREATE")) return "CREATE"
+   if (upper.startsWith("ALTER")) return "ALTER"
+   if (upper.startsWith("DROP")) return "DROP"
+   if (upper.startsWith("WITH")) return "CTE Query"
+   if (upper.startsWith("EXPLAIN")) return "EXPLAIN"
+   if (upper.startsWith("--") || upper.startsWith("/*")) return "Comment"
+
+   return cleaned.length > 32 ? cleaned.slice(0, 32) + "..." : cleaned
+}
+
+export function generateTabTitle(query: string): string {
+   if (!query || !query.trim()) return "New Query"
+   return extractTableName(query)
+}
+
 export function createTab(environmentId: string | null = null): Tab {
    const id = `tab-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
    return {
@@ -45,6 +105,34 @@ export function createTab(environmentId: string | null = null): Tab {
       result: null,
       error: null,
       createdAt: new Date().toISOString(),
+   }
+}
+
+export function createSavedQuery(name: string, sql: string, tags: string[] = [], environmentId: string | null = null): SavedQuery {
+   const id = `sq-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+   const now = new Date().toISOString()
+   return { id, name, sql, tags, environmentId, createdAt: now, updatedAt: now }
+}
+
+export function createHistoryEntry(
+   sql: string,
+   environmentId: string | null,
+   dbType: string,
+   duration: number,
+   rowCount: number,
+   status: "success" | "error",
+   error: string | null,
+): HistoryEntry {
+   return {
+      id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      sql,
+      environmentId,
+      dbType,
+      duration,
+      rowCount,
+      status,
+      error,
+      executedAt: new Date().toISOString(),
    }
 }
 

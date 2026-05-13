@@ -64,7 +64,7 @@ describe("SQLEditor", () => {
 
    it("renders Run button", () => {
       render(<SQLEditor {...defaultProps} />)
-      expect(screen.getByText("Run")).toBeInTheDocument()
+      expect(screen.getByText("Run Query")).toBeInTheDocument()
    })
 
    it("shows execution time when provided", () => {
@@ -95,7 +95,7 @@ describe("SQLEditor", () => {
       })
 
       render(<SQLEditor {...defaultProps} onExecute={onExecute} />)
-      await user.click(screen.getByText("Run"))
+      await user.click(screen.getByText("Run Query"))
       expect(onExecute).toHaveBeenCalledOnce()
    })
 
@@ -108,25 +108,14 @@ describe("SQLEditor", () => {
       expect(onSettingsOpen).toHaveBeenCalledOnce()
    })
 
-   it("shows DB badge when environment selected", () => {
-      useEditorStore.setState({ selectedEnvironmentId: "env-1" })
-      useEnvironmentStore.setState({
-         environments: [
-            {
-               id: "env-1",
-               name: "Test",
-               dbType: "postgres",
-               status: "running",
-               port: 5432,
-               uptime: null,
-               connectionString: "",
-               containerId: "c1",
-               createdAt: "2024-01-01T00:00:00Z",
-            },
-         ],
-      })
+   it("calls onChange when editor text changes", async () => {
+      const user = userEvent.setup()
+      const onChange = vi.fn()
 
-      render(<SQLEditor {...defaultProps} />)
-      expect(screen.getByText("postgres")).toBeInTheDocument()
+      render(<SQLEditor {...defaultProps} onChange={onChange} />)
+      const textarea = screen.getByTestId("editor-textarea")
+      await user.clear(textarea)
+      await user.type(textarea, "SELECT 1")
+      expect(onChange).toHaveBeenCalled()
    })
 })

@@ -22,31 +22,39 @@
 @custom-media --wayland (-moz-platform: linux), (prefers-rendering: non-retina);
 
 @theme {
-   /* Background colors (sophisticated charcoal/graphite) */
-   --color-bg-primary: #0e0e0e;
-   /* Editor/Main surface */
-   --color-bg-secondary: #141414;
-   /* Sidebar/Panels */
-   --color-bg-tertiary: #1c1c1c;
-   /* Elevated/Hover */
+   /* Background colors — layered surface system */
+   --color-bg-primary: #0a0a0a;
+   /* Editor/deepest surface */
+   --color-bg-secondary: #121212;
+   /* Sidebar/panel surface */
+   --color-bg-tertiary: #1a1a1a;
+   /* Elevated/hover surface */
    --color-bg-quaternary: #242424;
-   /* Active/Selected */
+   /* Active/selected surface */
 
-   /* Accent: Muted emerald / desaturated teal */
-   --color-accent: #378b7b;
-   --color-accent-light: #479e8d;
-   --color-accent-lighter: #57b09f;
+   /* Surface-specific tints for depth */
+   --color-bg-editor: #0a0a0a;
+   --color-bg-sidebar: #101010;
+   --color-bg-topbar: #141414;
+   --color-bg-results: #0d0d0d;
+   --color-bg-tab: #0e0e0e;
+
+   /* Accent: Muted teal — refined, less saturated */
+   --color-accent: #2d7d6f;
+   --color-accent-light: #3a9484;
+   --color-accent-lighter: #4aaa99;
 
    /* Functional colors */
-   --color-success: #378b7b;
+   --color-success: #2d7d6f;
    --color-warning: #c28938;
-   --color-error: #bd4848;
+   --color-error: #c94a4a;
 
    /* Text hierarchy */
-   --color-text-primary: #eeeeee;
-   --color-text-secondary: #909090;
-   --color-text-muted: #656565;
-   --color-border: #232323;
+   --color-text-primary: #e8e8e8;
+   --color-text-secondary: #888888;
+   --color-text-muted: #5a5a5a;
+   --color-border: #1e1e1e;
+   --color-border-light: #2a2a2a;
 
    /* Typography - Geist primary (local), Geist Mono for code */
    --font-sans: "Geist", system-ui, -apple-system, sans-serif;

@@ -17,6 +17,7 @@ import { useEnvironmentStore } from "./stores/environmentStore"
 import { useEditorStore } from "./stores/editorStore"
 import { useWorkspaceStore } from "./stores/workspaceStore"
 import { useSettingsStore } from "./stores/settingsStore"
+import { useHistoryStore } from "./stores/historyStore"
 import {
    IconX, IconChevronRight, IconChevronDown,
    IconCopy, IconDownload, IconTrash,
@@ -45,6 +46,7 @@ async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean)
 
 function AppContent() {
    const [sidebarOpen, setSidebarOpen] = useState(true)
+   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
    const [paletteOpen, setPaletteOpen] = useState(false)
    const [settingsOpen, setSettingsOpen] = useState(false)
    const [executingTabId, setExecutingTabId] = useState<string | null>(null)
@@ -71,6 +73,8 @@ function AppContent() {
    const setActiveTab = useWorkspaceStore(s => s.setActiveTab)
    const paneSizes = useWorkspaceStore(s => s.paneSizes)
    const updatePaneSizes = useWorkspaceStore(s => s.updatePaneSizes)
+
+   const addHistoryEntry = useHistoryStore(s => s.addEntry)
 
    const RESULTS_MIN_HEIGHT = 80
    const RESULTS_MAX_HEIGHT = 800
@@ -127,6 +131,8 @@ function AppContent() {
       setExecutionTimeMs(elapsed)
       setExecutingTabId(null)
 
+      const selectedEnv = environments.find(e => e.id === selectedEnvironmentId)
+
       if (result.isOk()) {
          const qr = result.value
          updateTab(activeTabId, {
@@ -135,14 +141,16 @@ function AppContent() {
             error: null,
             isDirty: false,
          })
+         addHistoryEntry(queryDraft, selectedEnvironmentId, selectedEnv?.dbType ?? "sql", elapsed, qr.rowCount, "success", null)
       } else {
          updateTab(activeTabId, {
             isExecuting: false,
             result: null,
             error: result.error.message,
          })
+         addHistoryEntry(queryDraft, selectedEnvironmentId, selectedEnv?.dbType ?? "sql", elapsed, 0, "error", result.error.message)
       }
-   }, [selectedEnvironmentId, queryDraft, activeTabId, updateTab])
+   }, [selectedEnvironmentId, queryDraft, activeTabId, updateTab, addHistoryEntry, environments])
 
    const isExecuting = executingTabId === activeTabId
 
@@ -165,6 +173,27 @@ function AppContent() {
          copyResultsToClipboard(activeTab.result, withHeaders)
       }
    }, [activeTab])
+
+   const handleOpenTable = useCallback((tableName: string) => {
+      const sql = `SELECT * FROM ${tableName} LIMIT 100`
+      const result = openTab()
+      if (result.isOk()) {
+         const tab = result.value
+         updateTab(tab.id, { query: sql, title: tableName })
+         setQueryDraft(sql)
+         setActiveTab(tab.id)
+      }
+   }, [openTab, updateTab, setQueryDraft, setActiveTab])
+
+   const handleOpenQuery = useCallback((sql: string) => {
+      const result = openTab()
+      if (result.isOk()) {
+         const tab = result.value
+         updateTab(tab.id, { query: sql })
+         setQueryDraft(sql)
+         setActiveTab(tab.id)
+      }
+   }, [openTab, updateTab, setQueryDraft, setActiveTab])
 
    const handleResultsDividerMouseDown = useCallback((e: React.MouseEvent) => {
       e.preventDefault()
@@ -241,10 +270,17 @@ function AppContent() {
                   className="flex-1 min-w-0"
                   left={
                      sidebarOpen ? (
-                        <div className="flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30">
+                        <div className={cn(
+                           "flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30 transition-all duration-150",
+                           sidebarCollapsed && "w-14"
+                        )}>
                            <AppSidebar
                               onSettingsOpen={() => setSettingsOpen(true)}
                               onClose={() => setSidebarOpen(false)}
+                              onOpenTable={handleOpenTable}
+                              onOpenQuery={handleOpenQuery}
+                              collapsed={sidebarCollapsed}
+                              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
                            />
                         </div>
                      ) : undefined
@@ -252,30 +288,36 @@ function AppContent() {
                   right={
                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary shrink-0 app-drag-region shadow-[0_1px_12px_rgba(0,0,0,0.2)] z-20 relative">
+                        <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative">
                            <div className="flex items-center gap-2 app-no-drag">
                               {!sidebarOpen && (
                                  <button
                                     onClick={() => setSidebarOpen(true)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                                     aria-label="Open sidebar"
                                  >
                                     <ChevronRightIcon className="h-3.5 w-3.5" />
                                  </button>
                               )}
-                              <span className="text-[10px] font-semibold tracking-wider text-text-muted uppercase border border-border bg-bg-tertiary px-2 py-0.5 rounded shadow-sm">
-                                 {selectedEnv?.dbType ?? "SQL"}
-                              </span>
+                              {sidebarOpen && sidebarCollapsed && (
+                                 <button
+                                    onClick={() => setSidebarCollapsed(false)}
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    aria-label="Expand sidebar"
+                                 >
+                                    <ChevronRightIcon className="h-3.5 w-3.5" />
+                                 </button>
+                              )}
                            </div>
 
                            {/* Command palette trigger */}
                            <div className="flex-1 max-w-md mx-4 app-no-drag">
                               <button
                                  onClick={() => setPaletteOpen(true)}
-                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-1.5 text-[12px] text-text-muted transition-all"
+                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-1.5 text-[12px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                               >
                                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-60"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                                 <span className="opacity-80 font-medium">Search commands...</span>
+                                 <span className="opacity-80 font-medium">Search tables, queries, commands...</span>
                                  <div className="ml-auto flex items-center gap-1 opacity-50">
                                     <kbd className="bg-bg-primary text-[10px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">⌘</kbd>
                                     <kbd className="bg-bg-primary text-[10px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">K</kbd>
@@ -295,7 +337,7 @@ function AppContent() {
                         </div>
 
                         {/* Tab bar */}
-                        <div className="flex items-end h-9 border-b border-border bg-bg-secondary px-1 shrink-0 w-full z-10 relative shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+                        <div className="flex items-end h-9 border-b border-border/70 bg-bg-secondary/70 px-1 shrink-0 w-full z-10 relative">
                            <TabBar />
                         </div>
 
@@ -340,8 +382,8 @@ function AppContent() {
                                     minHeight: resultsCollapsed ? "34px" : `${RESULTS_MIN_HEIGHT}px`,
                                  }}
                               >
-                                 {/* Dedicated Results Header */}
-                                 <div className="flex items-center justify-between px-3 py-1 bg-bg-tertiary shrink-0 border-b border-border/50">
+                                 {/* Results Header */}
+                                 <div className="flex items-center justify-between px-3 py-1 bg-bg-tertiary/80 shrink-0 border-b border-border/30">
                                     <div className="flex items-center gap-3">
                                        <button
                                           onClick={() => setResultsCollapsed(!resultsCollapsed)}
@@ -407,6 +449,8 @@ function AppContent() {
                                           result={activeTab?.result ?? null}
                                           error={activeTab?.error ?? null}
                                           isExecuting={isExecuting}
+                                          executionTimeMs={executionTimeMs}
+                                          rowCount={activeTab?.result?.rowCount ?? null}
                                        />
                                     </div>
                                  )}
@@ -424,7 +468,7 @@ function AppContent() {
                                  <div className="flex flex-col gap-2 w-full max-w-[280px]">
                                     <button 
                                        onClick={handleNewQuery}
-                                       className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group"
+                                       className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                                     >
                                        <span className="text-[12px] font-medium text-text-secondary group-hover:text-text-primary">New Query Workspace</span>
                                        <div className="flex items-center gap-1 opacity-60">
@@ -434,7 +478,7 @@ function AppContent() {
                                     </button>
                                     <button 
                                        onClick={() => setPaletteOpen(true)}
-                                       className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group"
+                                       className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                                     >
                                        <span className="text-[12px] font-medium text-text-secondary group-hover:text-text-primary">Global Search</span>
                                        <div className="flex items-center gap-1 opacity-60">
@@ -452,10 +496,10 @@ function AppContent() {
                         />
                      </div>
                   }
-                  defaultLeftWidth={paneSizes.sidebarWidth}
-                  minLeftWidth={200}
-                  maxLeftWidth={400}
-                  onResize={w => updatePaneSizes({ sidebarWidth: w })}
+                  defaultLeftWidth={sidebarCollapsed ? 56 : paneSizes.sidebarWidth}
+                  minLeftWidth={sidebarCollapsed ? 56 : 200}
+                  maxLeftWidth={sidebarCollapsed ? 56 : 400}
+                  onResize={w => !sidebarCollapsed && updatePaneSizes({ sidebarWidth: w })}
                />
             </div>
          ) : (
@@ -466,6 +510,8 @@ function AppContent() {
             onClose={() => setPaletteOpen(false)}
             onExecuteQuery={handleExecuteQuery}
             onClearResults={handleClearResults}
+            onOpenTable={handleOpenTable}
+            onOpenQuery={handleOpenQuery}
          />
          <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </div>

@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import type { Tab, PaneSizes } from "../lib/types"
-import { createTab, createDefaultPaneSizes } from "../lib/types"
+import { createTab, createDefaultPaneSizes, generateTabTitle } from "../lib/types"
 
 interface WorkspaceStore {
    tabs: Tab[]
@@ -99,8 +99,19 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                return err(new AppError("env:not_found", `Tab ${tabId} not found`))
             }
 
+            const current = state.tabs[tabIndex]
+            const merged = { ...current, ...updates }
+
+            // Auto-rename tab based on SQL content when query changes and tab has default title or is dirty
+            if (updates.query !== undefined && updates.query !== current.query) {
+               const newTitle = generateTabTitle(updates.query)
+               if (newTitle !== current.title) {
+                  merged.title = newTitle
+               }
+            }
+
             const newTabs = [...state.tabs]
-            newTabs[tabIndex] = { ...newTabs[tabIndex], ...updates }
+            newTabs[tabIndex] = merged
 
             set({ tabs: newTabs })
             return ok(newTabs[tabIndex])

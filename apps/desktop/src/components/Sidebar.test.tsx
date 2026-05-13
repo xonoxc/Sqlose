@@ -17,6 +17,15 @@ describe("AppSidebar", () => {
       createdAt: "2024-01-01T00:00:00Z",
    }
 
+   const defaultProps = {
+      onSettingsOpen: () => {},
+      onClose: () => {},
+      onOpenTable: () => {},
+      onOpenQuery: () => {},
+      collapsed: false,
+      onToggleCollapse: () => {},
+   }
+
    beforeEach(() => {
       useEnvironmentStore.setState({
          environments: [mockEnv],
@@ -27,36 +36,26 @@ describe("AppSidebar", () => {
    })
 
    it("renders selected database name in header", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      render(<AppSidebar {...defaultProps} />)
       expect(screen.getByText("My Postgres")).toBeInTheDocument()
-   })
-
-   it("renders tables section header", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
-      expect(screen.getByText("Tables")).toBeInTheDocument()
    })
 
    it("renders settings button and calls onSettingsOpen", async () => {
       const user = userEvent.setup()
       const onSettingsOpen = vi.fn()
-      render(<AppSidebar onSettingsOpen={onSettingsOpen} onClose={() => {}} />)
+      render(<AppSidebar {...defaultProps} onSettingsOpen={onSettingsOpen} />)
 
       await user.click(screen.getByLabelText("Settings"))
       expect(onSettingsOpen).toHaveBeenCalledOnce()
    })
 
    it("renders collapse button", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      render(<AppSidebar {...defaultProps} />)
       expect(screen.getByLabelText("Collapse sidebar")).toBeInTheDocument()
    })
 
-   it("renders filter input", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
-      expect(screen.getByPlaceholderText("Filter tables...")).toBeInTheDocument()
-   })
-
    it("renders refresh button", () => {
-      render(<AppSidebar onSettingsOpen={() => {}} onClose={() => {}} />)
+      render(<AppSidebar {...defaultProps} />)
       expect(screen.getByLabelText("Refresh tables")).toBeInTheDocument()
    })
 })

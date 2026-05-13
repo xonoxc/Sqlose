@@ -3,18 +3,22 @@ import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@sqlose/ui"
 import {
    IconSearch, IconDatabase, IconFileCode, IconPlayerPlay, IconDeviceFloppy,
-   IconTrash, IconTable, IconHistory, IconArrowLeftRight, IconEye,
-   IconToggleLeft, IconToggleRight,
+   IconTrash, IconHistory, IconArrowLeftRight, IconEye,
+   IconToggleLeft, IconToggleRight, IconBookmark, IconStar,
 } from "@tabler/icons-react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useWorkspaceStore } from "../stores/workspaceStore"
 import { useSettingsStore } from "../stores/settingsStore"
+import { useSavedQueriesStore } from "../stores/savedQueriesStore"
+import { useHistoryStore } from "../stores/historyStore"
 
 interface CommandPaletteProps {
    isOpen: boolean
    onClose: () => void
    onExecuteQuery?: () => void
    onClearResults?: () => void
+   onOpenTable?: (tableName: string) => void
+   onOpenQuery?: (sql: string) => void
 }
 
 interface PaletteAction {
@@ -23,11 +27,11 @@ interface PaletteAction {
    description: string
    icon: React.ReactNode
    shortcut?: string
-   category: "action" | "database" | "tab"
+   category: "action" | "database" | "tab" | "saved" | "history"
    onSelect: () => void
 }
 
-export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery }: CommandPaletteProps) {
    const [query, setQuery] = useState("")
    const [selectedIndex, setSelectedIndex] = useState(0)
    const inputRef = useRef<HTMLInputElement>(null)
@@ -41,6 +45,8 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
    const setActiveTab = useWorkspaceStore((s) => s.setActiveTab)
    const vimModeEnabled = useSettingsStore((s) => s.vimModeEnabled)
    const setVimModeEnabled = useSettingsStore((s) => s.setVimModeEnabled)
+   const savedQueries = useSavedQueriesStore((s) => s.queries)
+   const historyEntries = useHistoryStore((s) => s.entries)
 
    const handleSelectEnvironment = useCallback(
       (envId: string) => {
@@ -76,7 +82,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          icon: <IconDeviceFloppy className="h-4 w-4" />,
          shortcut: "⌘S",
          category: "action",
-         onSelect: () => { /* save implementation */ },
+         onSelect: () => { /* save handled in editor */ },
       },
       {
          id: "clear-results",
@@ -87,12 +93,12 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          onSelect: () => onClearResults?.(),
       },
       {
-         id: "open-schema",
-         label: "Open Schema Browser",
-         description: "Show database schema in sidebar",
-         icon: <IconTable className="h-4 w-4" />,
+         id: "open-saved",
+         label: "Saved Queries",
+         description: "Browse saved queries",
+         icon: <IconBookmark className="h-4 w-4" />,
          category: "action",
-         onSelect: () => { /* toggle sidebar focus to tables */ },
+         onSelect: () => { /* opens in sidebar */ },
       },
       {
          id: "open-history",
@@ -100,7 +106,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          description: "Browse past query executions",
          icon: <IconHistory className="h-4 w-4" />,
          category: "action",
-         onSelect: () => { /* open history panel */ },
+         onSelect: () => { /* opens in sidebar */ },
       },
        {
           id: "switch-db",
@@ -143,7 +149,25 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          category: "tab" as const,
          onSelect: () => setActiveTab(tab.id),
       })),
-    ], [environments, tabs, activeTabId, openTab, onExecuteQuery, onClearResults, handleSelectEnvironment, setActiveTab, vimModeEnabled, setVimModeEnabled])
+      ...savedQueries.map((q) => ({
+         id: `sq-${q.id}`,
+         label: q.name,
+         description: q.sql.slice(0, 60),
+         icon: <IconStar className="h-4 w-4 text-warning" />,
+         shortcut: undefined as string | undefined,
+         category: "saved" as const,
+         onSelect: () => onOpenQuery?.(q.sql),
+      })),
+      ...historyEntries.slice(0, 10).map((entry) => ({
+         id: `hist-${entry.id}`,
+         label: entry.sql.slice(0, 40) + (entry.sql.length > 40 ? "..." : ""),
+         description: `${entry.dbType} · ${entry.duration}ms · ${entry.status}`,
+         icon: <IconHistory className="h-4 w-4" />,
+         shortcut: undefined as string | undefined,
+         category: "history" as const,
+         onSelect: () => onOpenQuery?.(entry.sql),
+      })),
+    ], [environments, tabs, activeTabId, openTab, onExecuteQuery, onClearResults, handleSelectEnvironment, setActiveTab, vimModeEnabled, setVimModeEnabled, savedQueries, historyEntries, onOpenQuery])
 
    const groupedItems = useMemo(() => {
       if (!query) {
@@ -151,6 +175,8 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
             actions: actions.filter(a => a.category === "action"),
             databases: actions.filter(a => a.category === "database"),
             tabs: actions.filter(a => a.category === "tab"),
+            saved: actions.filter(a => a.category === "saved"),
+            history: actions.filter(a => a.category === "history"),
          }
       }
       const q = query.toLowerCase()
@@ -178,11 +204,13 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
          actions: scored.filter(a => a.category === "action"),
          databases: scored.filter(a => a.category === "database"),
          tabs: scored.filter(a => a.category === "tab"),
+         saved: scored.filter(a => a.category === "saved"),
+         history: scored.filter(a => a.category === "history"),
       }
    }, [actions, query])
 
    const flatFiltered = useMemo(() => {
-      return [...groupedItems.actions, ...groupedItems.databases, ...groupedItems.tabs]
+      return [...groupedItems.actions, ...groupedItems.databases, ...groupedItems.tabs, ...groupedItems.saved, ...groupedItems.history]
    }, [groupedItems])
 
    useEffect(() => {
@@ -216,7 +244,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
-               transition={{ duration: 0.12 }}
+               transition={{ duration: 0.1 }}
                className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-[2px]"
                onClick={onClose}
             >
@@ -224,7 +252,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
                   initial={{ opacity: 0, scale: 0.97, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97, y: -10 }}
-                  transition={{ duration: 0.12 }}
+                  transition={{ duration: 0.1 }}
                   className="w-full max-w-xl bg-bg-primary/95 backdrop-blur-xl rounded-lg border border-border shadow-2xl overflow-hidden"
                   onClick={(e) => e.stopPropagation()}
                >
@@ -235,7 +263,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
                         type="text"
                         value={query}
                         onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0) }}
-                        placeholder="Search commands..."
+                        placeholder="Search tables, queries, commands..."
                         className="flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-muted/60"
                      />
                      <kbd className="text-[10px] text-text-muted font-mono border border-border/50 bg-bg-secondary rounded px-1.5 py-0.5">ESC</kbd>
@@ -286,6 +314,68 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
                         </>
                      )}
 
+                     {groupedItems.saved.length > 0 && (
+                        <>
+                           <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">Saved Queries</div>
+                           {groupedItems.saved.map((item) => {
+                              const globalIndex = flatFiltered.indexOf(item)
+                              return (
+                                 <button
+                                    key={item.id}
+                                    onClick={() => { item.onSelect(); onClose() }}
+                                    onMouseEnter={() => setSelectedIndex(globalIndex)}
+                                    className={cn(
+                                       "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
+                                       globalIndex === selectedIndex ? "bg-bg-quaternary/60 text-text-primary" : "text-text-secondary",
+                                    )}
+                                 >
+                                    <div className={cn(
+                                       "flex items-center justify-center h-7 w-7 rounded shrink-0",
+                                       globalIndex === selectedIndex ? "bg-bg-primary text-accent" : "bg-bg-quaternary text-text-muted",
+                                    )}>
+                                       {item.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                       <span className={cn("text-[13px] font-medium truncate block", globalIndex === selectedIndex && "text-text-primary")}>{item.label}</span>
+                                       <span className="text-[11px] text-text-muted truncate block">{item.description}</span>
+                                    </div>
+                                 </button>
+                              )
+                           })}
+                        </>
+                     )}
+
+                     {groupedItems.history.length > 0 && (
+                        <>
+                           <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">History</div>
+                           {groupedItems.history.map((item) => {
+                              const globalIndex = flatFiltered.indexOf(item)
+                              return (
+                                 <button
+                                    key={item.id}
+                                    onClick={() => { item.onSelect(); onClose() }}
+                                    onMouseEnter={() => setSelectedIndex(globalIndex)}
+                                    className={cn(
+                                       "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
+                                       globalIndex === selectedIndex ? "bg-bg-quaternary/60 text-text-primary" : "text-text-secondary",
+                                    )}
+                                 >
+                                    <div className={cn(
+                                       "flex items-center justify-center h-7 w-7 rounded shrink-0",
+                                       globalIndex === selectedIndex ? "bg-bg-primary text-accent" : "bg-bg-quaternary text-text-muted",
+                                    )}>
+                                       {item.icon}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                       <span className={cn("text-[13px] font-medium truncate block font-mono text-[12px]", globalIndex === selectedIndex && "text-text-primary")}>{item.label}</span>
+                                       <span className="text-[11px] text-text-muted truncate block">{item.description}</span>
+                                    </div>
+                                 </button>
+                              )
+                           })}
+                        </>
+                     )}
+
                      {groupedItems.databases.length > 0 && (
                         <>
                            <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">Databases</div>
@@ -319,7 +409,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
 
                      {groupedItems.tabs.length > 0 && (
                         <>
-                           <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">Tabs</div>
+                           <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">Open Tabs</div>
                            {groupedItems.tabs.map((item) => {
                               const globalIndex = flatFiltered.indexOf(item)
                               return (

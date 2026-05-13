@@ -1,10 +1,11 @@
-import { useRef, useCallback, useEffect, lazy, Suspense } from "react"
+import { useRef, useCallback, useEffect, lazy, Suspense, useState } from "react"
 import type { editor } from "monaco-editor"
 import { cn } from "@sqlose/ui"
-import { IconPlayerPlay, IconSettings } from "@tabler/icons-react"
+import { IconPlayerPlay, IconSettings, IconDeviceFloppy } from "@tabler/icons-react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useEditorStore } from "../stores/editorStore"
+import { useSavedQueriesStore } from "../stores/savedQueriesStore"
 import type { VimMode } from "../lib/types"
 
 const Editor = lazy(() => import("@monaco-editor/react"))
@@ -33,12 +34,12 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
    const vimModeRef = useRef<{ dispose: () => void } | null>(null)
    const vimObserverRef = useRef<MutationObserver | null>(null)
    const vimStatusRef = useRef<HTMLDivElement>(null)
+   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+   const [saveName, setSaveName] = useState("")
 
    const vimEnabled = useSettingsStore((s) => s.vimModeEnabled)
    const selectedEnvironmentId = useEnvironmentStore((s) => s.selectedEnvironmentId)
-   const getEnvironment = useEnvironmentStore((s) => s.getEnvironment)
-
-   const selectedEnv = selectedEnvironmentId ? getEnvironment(selectedEnvironmentId) : null
+   const saveQuery = useSavedQueriesStore((s) => s.saveQuery)
 
    function setupVimObserver() {
       if (!vimStatusRef.current) return
@@ -63,34 +64,36 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
       async (monacoEditor: editor.IStandaloneCodeEditor, monaco: typeof import("monaco-editor")) => {
          editorRef.current = monacoEditor
 
-         monaco.editor.defineTheme("sqlose-dark", {
-            base: "vs-dark",
-            inherit: true,
-            rules: [
-               { token: "keyword", foreground: "569cd6", fontStyle: "bold" },
-               { token: "identifier", foreground: "eeeeee" },
-               { token: "string", foreground: "ce9178" },
-               { token: "number", foreground: "b5cea8" },
-               { token: "comment", foreground: "656565", fontStyle: "normal" },
-               { token: "operator", foreground: "909090" },
-               { token: "delimiter", foreground: "909090" },
-               { token: "type", foreground: "4ec9b0" }
-            ],
-            colors: {
-               "editor.background": "#0e0e0e",
-               "editor.foreground": "#eeeeee",
-               "editorLineNumber.foreground": "#444444",
-               "editorLineNumber.activeForeground": "#909090",
-               "editor.selectionBackground": "#264f78",
-               "editor.inactiveSelectionBackground": "#3a3d41",
-               "editorCursor.foreground": "#eeeeee",
-               "editorIndentGuide.background": "#232323",
-               "editorIndentGuide.activeBackground": "#444444",
-               "editor.lineHighlightBackground": "#141414",
-               "editorWidget.background": "#141414",
-               "editorWidget.border": "#232323"
-            }
-         })
+          monaco.editor.defineTheme("sqlose-dark", {
+             base: "vs-dark",
+             inherit: true,
+             rules: [
+                { token: "keyword", foreground: "7ec8e3", fontStyle: "bold" },
+                { token: "identifier", foreground: "f0f0f0" },
+                { token: "string", foreground: "d4a87c" },
+                { token: "number", foreground: "b5cea8" },
+                { token: "comment", foreground: "6a6a6a", fontStyle: "italic" },
+                { token: "operator", foreground: "a0a0a0" },
+                { token: "delimiter", foreground: "a0a0a0" },
+                { token: "type", foreground: "4ec9b0" }
+             ],
+             colors: {
+                "editor.background": "#0a0a0a",
+                "editor.foreground": "#f0f0f0",
+                "editorLineNumber.foreground": "#3a3a3a",
+                "editorLineNumber.activeForeground": "#8a8a8a",
+                "editor.selectionBackground": "#2a5f7a",
+                "editor.inactiveSelectionBackground": "#3a3d41",
+                "editorCursor.foreground": "#f0f0f0",
+                "editorIndentGuide.background": "#1a1a1a",
+                "editorIndentGuide.activeBackground": "#3a3a3a",
+                "editor.lineHighlightBackground": "#111111",
+                "editorWidget.background": "#141414",
+                "editorWidget.border": "#232323",
+                "editorBracketMatch.background": "#2a5f7a40",
+                "editorBracketMatch.border": "#2a5f7a"
+             }
+          })
 
          monaco.editor.setTheme("sqlose-dark")
 
@@ -205,24 +208,62 @@ export function SQLEditor({ value, onChange, onExecute, onSettingsOpen, isExecut
                )}
 
                <div className="flex items-center gap-1 ml-2 border-l border-[#222] pl-3">
-                  <button className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-[#222] transition-colors" aria-label="Save query">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                  </button>
+                <div className="relative">
+                     <button
+                        onClick={() => { setSaveName(""); setSaveDialogOpen(!saveDialogOpen) }}
+                        className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-[#222] transition-colors"
+                        aria-label="Save query"
+                     >
+                        <IconDeviceFloppy className="h-3.5 w-3.5" />
+                      </button>
+                     {saveDialogOpen && (
+                        <div className="absolute top-full left-0 mt-1 z-50 flex items-center gap-1 bg-bg-secondary border border-border rounded-md p-1.5 shadow-xl">
+                           <input
+                              autoFocus
+                              type="text"
+                              value={saveName}
+                              onChange={(e) => setSaveName(e.target.value)}
+                              onKeyDown={(e) => {
+                                 if (e.key === "Enter" && saveName.trim()) {
+                                    saveQuery(saveName.trim(), value, [], selectedEnvironmentId)
+                                    setSaveDialogOpen(false)
+                                    setSaveName("")
+                                 }
+                                 if (e.key === "Escape") {
+                                    setSaveDialogOpen(false)
+                                    setSaveName("")
+                                 }
+                              }}
+                              placeholder="Query name..."
+                              className="bg-bg-tertiary text-[11px] text-text-primary px-2 py-1 rounded border border-border outline-none w-36"
+                           />
+                           <button
+                              onClick={() => {
+                                 if (saveName.trim()) {
+                                    saveQuery(saveName.trim(), value, [], selectedEnvironmentId)
+                                    setSaveDialogOpen(false)
+                                    setSaveName("")
+                                 }
+                              }}
+                              className="text-[10px] font-medium text-accent hover:text-accent-light px-1.5 py-1"
+                           >
+                              Save
+                           </button>
+                        </div>
+                     )}
+                  </div>
                </div>
             </div>
 
-            <div className="flex items-center gap-2">
-               <button
-                  onClick={onSettingsOpen}
-                  className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                  aria-label="Settings"
-               >
-                  <IconSettings className="h-3.5 w-3.5" />
-               </button>
-               <span className="text-[11px] font-bold tracking-wide text-text-muted bg-bg-tertiary border border-border/60 px-2 py-0.5 rounded shadow-sm min-w-14 text-center mt-px uppercase">
-                  {selectedEnv?.dbType ?? "SQL"}
-               </span>
-            </div>
+             <div className="flex items-center gap-2">
+                <button
+                   onClick={onSettingsOpen}
+                   className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                   aria-label="Settings"
+                >
+                   <IconSettings className="h-3.5 w-3.5" />
+                </button>
+             </div>
          </div>
          <div className="flex-1 relative">
             <Suspense fallback={

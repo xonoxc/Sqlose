@@ -164,10 +164,10 @@ describe("Workflow: Query Execution", () => {
       }
    })
 
-   it("2b. renders executing state in ResultsPanel", () => {
+    it("2b. renders executing state in ResultsPanel", () => {
       render(
          <Wrapper>
-            <ResultsPanel result={null} error={null} isExecuting={true} />
+            <ResultsPanel result={null} error={null} isExecuting={true} executionTimeMs={null} rowCount={null} />
          </Wrapper>,
       )
       expect(screen.getByText("Executing query...")).toBeInTheDocument()
@@ -183,17 +183,18 @@ describe("Workflow: Query Execution", () => {
 
       render(
          <Wrapper>
-            <ResultsPanel result={result} error={null} isExecuting={false} />
+            <ResultsPanel result={result} error={null} isExecuting={false} executionTimeMs={10} rowCount={1} />
          </Wrapper>,
       )
-      expect(screen.getByText(/1 row returned/)).toBeInTheDocument()
-      expect(screen.getByText(/10ms/)).toBeInTheDocument()
+      expect(screen.getByText("Results")).toBeInTheDocument()
+      expect(screen.getByText("Messages")).toBeInTheDocument()
+      expect(screen.getByText("Stats")).toBeInTheDocument()
    })
 
    it("2d. shows empty state when no result", () => {
       render(
          <Wrapper>
-            <ResultsPanel result={null} error={null} isExecuting={false} />
+            <ResultsPanel result={null} error={null} isExecuting={false} executionTimeMs={null} rowCount={null} />
          </Wrapper>,
       )
       expect(screen.getByText("Ready to run query")).toBeInTheDocument()
@@ -216,10 +217,10 @@ describe("Workflow: Error Propagation", () => {
       }
    })
 
-   it("3b. renders error state in ResultsPanel", () => {
+    it("3b. renders error state in ResultsPanel", () => {
       render(
          <Wrapper>
-            <ResultsPanel result={null} error={"syntax error at line 1"} isExecuting={false} />
+            <ResultsPanel result={null} error={"syntax error at line 1"} isExecuting={false} executionTimeMs={null} rowCount={null} />
          </Wrapper>,
       )
       expect(screen.getByText("Query Execution Failed")).toBeInTheDocument()

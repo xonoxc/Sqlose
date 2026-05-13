@@ -51,7 +51,7 @@ export function TabBar() {
          </div>
          <button
             onClick={() => openTab()}
-            className="flex items-center justify-center h-7 w-7 mx-1 mb-[3px] rounded hover:bg-bg-quaternary/80 text-text-muted hover:text-text-primary transition-colors shrink-0"
+            className="flex items-center justify-center h-6 w-6 mx-1 mb-[3px] rounded hover:bg-bg-quaternary/80 text-text-muted hover:text-text-primary transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
             aria-label="New tab"
          >
             <IconPlus className="h-3.5 w-3.5" />
@@ -73,31 +73,32 @@ function TabItem({
 }) {
    return (
       <motion.div
-         initial={{ opacity: 0, x: -8 }}
+         layout
+         initial={{ opacity: 0, x: -6 }}
          animate={{ opacity: 1, x: 0 }}
-         exit={{ opacity: 0, x: 8 }}
-         transition={{ duration: 0.12 }}
+         exit={{ opacity: 0, x: 6 }}
+         transition={{ duration: 0.1 }}
          draggable
          onDragStart={onDragStart}
          onDragOver={onDragOver}
          onDragEnd={onDragEnd}
          onClick={onSelect}
          className={cn(
-            "group relative flex items-center gap-2 h-7 px-3 py-0 text-[12px] font-medium cursor-pointer select-none shrink-0 rounded-t-sm mx-[1px] transition-colors",
+            "group relative flex items-center gap-2 h-7 px-3 py-0 text-[12px] font-medium cursor-pointer select-none shrink-0 rounded-t-sm mx-[1px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
             isActive
-               ? "bg-[#0c0c0c] text-text-primary border-t border-x border-[#1e1e1e]"
-               : "text-text-muted hover:text-text-secondary hover:bg-[#111111]/60",
+               ? "bg-bg-primary text-text-primary border-t border-x border-border/70"
+               : "text-text-muted hover:text-text-secondary hover:bg-bg-primary/40",
          )}
       >
          {tab.isExecuting && <IconLoader2 className="h-3 w-3 animate-spin text-accent shrink-0" />}
          {!tab.isExecuting && tab.isDirty && <span className="h-1.5 w-1.5 rounded-full bg-accent/70 shrink-0" />}
-         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-50 shrink-0"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-         <span className="truncate max-w-32">{tab.title}</span>
+         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 shrink-0"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+         <span className="truncate max-w-36 text-[11px]">{tab.title}</span>
          <button
             onClick={onClose}
             className={cn(
-               "flex items-center justify-center p-[2px] rounded opacity-0 group-hover:opacity-100 transition-opacity",
-               "text-text-muted hover:text-text-primary hover:bg-[#222]"
+               "flex items-center justify-center p-[2px] rounded opacity-0 group-hover:opacity-100 transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+               "text-text-muted hover:text-text-primary hover:bg-bg-quaternary"
             )}
             aria-label="Close tab"
          >
