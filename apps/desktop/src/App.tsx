@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
-import { ResizablePane, StatusBar, cn } from "@sqlose/ui"
+import { StatusBar, cn } from "@sqlose/ui"
 import { queryClient } from "./lib/query/queryClient"
 import { api } from "./lib/api"
 import type { QueryResult } from "@sqlose/shared"
@@ -78,6 +78,8 @@ function AppContent() {
 
    const RESULTS_MIN_HEIGHT = 80
    const RESULTS_MAX_HEIGHT = 800
+   const SIDEBAR_MIN_WIDTH = 200
+   const SIDEBAR_MAX_WIDTH = 400
 
    useEffect(() => {
       fetchEnvironments()
@@ -219,6 +221,30 @@ function AppContent() {
       document.body.style.userSelect = "none"
    }, [paneSizes.resultsHeight, updatePaneSizes])
 
+   const handleSidebarResizeStart = useCallback((e: React.MouseEvent) => {
+      e.preventDefault()
+      const startX = e.clientX
+      const startWidth = paneSizes.sidebarWidth
+
+      const handleMouseMove = (moveE: MouseEvent) => {
+         const delta = moveE.clientX - startX
+         const newWidth = Math.max(SIDEBAR_MIN_WIDTH, Math.min(SIDEBAR_MAX_WIDTH, startWidth + delta))
+         updatePaneSizes({ sidebarWidth: Math.round(newWidth) })
+      }
+
+      const handleMouseUp = () => {
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
+
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+   }, [paneSizes.sidebarWidth, updatePaneSizes])
+
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
          const meta = e.metaKey || e.ctrlKey
@@ -266,27 +292,32 @@ function AppContent() {
       <div className="h-screen w-screen overflow-hidden bg-transparent p-2">
          {selectedEnvironmentId ? (
             <div className="flex h-full w-full bg-bg-primary text-text-primary overflow-hidden rounded-xl selection:bg-accent/30 font-sans border border-white/[0.07] shadow-2xl relative">
-               <ResizablePane
-                  className="flex-1 min-w-0"
-                  left={
-                     sidebarOpen ? (
-                        <div className={cn(
-                           "flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30 transition-all duration-150",
-                           sidebarCollapsed && "w-14"
-                        )}>
-                           <AppSidebar
-                              onSettingsOpen={() => setSettingsOpen(true)}
-                              onClose={() => setSidebarOpen(false)}
-                              onOpenTable={handleOpenTable}
-                              onOpenQuery={handleOpenQuery}
-                              collapsed={sidebarCollapsed}
-                              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-                           />
-                        </div>
-                     ) : undefined
-                  }
-                  right={
-                     <div className="flex flex-col h-full bg-bg-primary w-full relative">
+                <div className="flex-1 min-w-0 flex">
+                   {sidebarOpen && (
+                      <div
+                         style={{ width: sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
+                         className="flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30 overflow-hidden shrink-0 transition-all duration-150"
+                      >
+                         <AppSidebar
+                            onSettingsOpen={() => setSettingsOpen(true)}
+                            onClose={() => setSidebarOpen(false)}
+                            onOpenTable={handleOpenTable}
+                            onOpenQuery={handleOpenQuery}
+                            collapsed={sidebarCollapsed}
+                            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                         />
+                      </div>
+                   )}
+                   {sidebarOpen && !sidebarCollapsed && (
+                      <div
+                         className="relative w-1.5 cursor-col-resize bg-transparent hover:bg-accent/30 transition-colors shrink-0"
+                         onMouseDown={handleSidebarResizeStart}
+                      >
+                         <div className="absolute inset-y-0 -left-1 -right-1" />
+                      </div>
+                   )}
+                   <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
                         <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative">
                            <div className="flex items-center gap-2 app-no-drag">
@@ -495,13 +526,9 @@ function AppContent() {
                            dbType={selectedEnv?.dbType}
                         />
                      </div>
-                  }
-                  defaultLeftWidth={sidebarCollapsed ? 56 : paneSizes.sidebarWidth}
-                  minLeftWidth={sidebarCollapsed ? 56 : 200}
-                  maxLeftWidth={sidebarCollapsed ? 56 : 400}
-                  onResize={w => !sidebarCollapsed && updatePaneSizes({ sidebarWidth: w })}
-               />
-            </div>
+                    </div>
+                 </div>
+              </div>
          ) : (
             <Dashboard />
          )}
