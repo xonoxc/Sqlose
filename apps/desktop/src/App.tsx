@@ -298,14 +298,13 @@ function AppContent() {
                          style={{ width: sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
                          className="flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30 overflow-hidden shrink-0 transition-all duration-150"
                       >
-                         <AppSidebar
-                            onSettingsOpen={() => setSettingsOpen(true)}
-                            onClose={() => setSidebarOpen(false)}
-                            onOpenTable={handleOpenTable}
-                            onOpenQuery={handleOpenQuery}
-                            collapsed={sidebarCollapsed}
-                            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-                         />
+                          <AppSidebar
+                             onSettingsOpen={() => setSettingsOpen(true)}
+                             onOpenTable={handleOpenTable}
+                             onOpenQuery={handleOpenQuery}
+                             collapsed={sidebarCollapsed}
+                             onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+                          />
                       </div>
                    )}
                    {sidebarOpen && !sidebarCollapsed && (

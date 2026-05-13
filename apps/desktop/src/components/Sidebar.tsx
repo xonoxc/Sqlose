@@ -15,7 +15,6 @@ import { listTables, getTableColumns, type ColumnInfo } from "../lib/schema"
 
 interface AppSidebarProps {
    onSettingsOpen: () => void
-   onClose: () => void
    onOpenTable: (tableName: string) => void
    onOpenQuery: (sql: string) => void
    collapsed: boolean
@@ -28,7 +27,7 @@ interface TableCache {
 
 type NavTab = "playground" | "saved" | "history" | null
 
-export function AppSidebar({ onSettingsOpen, onClose, onOpenTable, onOpenQuery, collapsed, onToggleCollapse }: AppSidebarProps) {
+export function AppSidebar({ onSettingsOpen, onOpenTable, onOpenQuery, collapsed, onToggleCollapse }: AppSidebarProps) {
    const environments = useEnvironmentStore((s) => s.environments)
    const selectedEnvironmentId = useEnvironmentStore((s) => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
@@ -36,6 +35,14 @@ export function AppSidebar({ onSettingsOpen, onClose, onOpenTable, onOpenQuery, 
    const openTab = useWorkspaceStore((s) => s.openTab)
    const historyEntries = useHistoryStore((s) => s.entries)
    const savedQueries = useSavedQueriesStore((s) => s.queries)
+   const savedQueryNamesBySql = useMemo(() => {
+      const map = new Map<string, string>()
+      for (const q of savedQueries) {
+         const key = q.sql.trim()
+         if (!map.has(key)) map.set(key, q.name)
+      }
+      return map
+   }, [savedQueries])
 
    const [search, setSearch] = useState("")
    const [expandedTables, setExpandedTables] = useState<Set<string>>(new Set())
@@ -236,17 +243,14 @@ export function AppSidebar({ onSettingsOpen, onClose, onOpenTable, onOpenQuery, 
                   ))}
                </SelectContent>
             </Select>
-            <div className="flex items-center shrink-0">
-               <button onClick={onSettingsOpen} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Settings">
-                  <IconSettings className="h-3.5 w-3.5" />
-               </button>
-               <button onClick={onToggleCollapse} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Collapse sidebar">
-                  <IconLayoutSidebarLeftCollapse className="h-3.5 w-3.5" />
-               </button>
-               <button onClick={onClose} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Close sidebar">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-               </button>
-            </div>
+             <div className="flex items-center shrink-0">
+                <button onClick={onSettingsOpen} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Settings">
+                   <IconSettings className="h-3.5 w-3.5" />
+                </button>
+                <button onClick={onToggleCollapse} className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors" aria-label="Collapse sidebar">
+                   <IconLayoutSidebarLeftCollapse className="h-3.5 w-3.5" />
+                </button>
+             </div>
          </div>
 
          <div className="flex-1 flex flex-col min-h-0 custom-scrollbar overflow-y-auto">
@@ -331,8 +335,8 @@ export function AppSidebar({ onSettingsOpen, onClose, onOpenTable, onOpenQuery, 
                            onClick={() => { onOpenQuery(entry.sql); setActiveNav(null) }}
                            className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[11px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
                         >
-                           <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", entry.status === "success" ? "bg-success" : "bg-error")} />
-                           <span className="truncate flex-1 font-mono text-[10px]">{entry.sql.slice(0, 40)}{entry.sql.length > 40 ? "..." : ""}</span>
+                            <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", entry.status === "success" ? "bg-success" : "bg-error")} />
+                           <span className="truncate flex-1" >{savedQueryNamesBySql.get(entry.sql.trim()) ?? <span className="font-mono text-[10px]">{entry.sql.slice(0, 40)}{entry.sql.length > 40 ? "..." : ""}</span>}</span>
                            <span className="text-[9px] text-text-muted/60 font-mono shrink-0">{entry.duration}ms</span>
                         </button>
                      ))
