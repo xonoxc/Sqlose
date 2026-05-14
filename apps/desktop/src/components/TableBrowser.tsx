@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { ResultsTable, cn } from "@sqlose/ui"
 import {
    IconRefresh, IconPlus, IconFilter, IconDownload,
@@ -16,6 +16,8 @@ export function TableBrowser() {
       return tab ?? null
    })
    const tableName = activeTab?.tableName ?? null
+   const tableNameRef = useRef(tableName)
+   if (tableName) tableNameRef.current = tableName
 
    const tableData = useDatabaseStore((s) => s.tableData)
    const tableDataLoading = useDatabaseStore((s) => s.tableDataLoading)
@@ -60,21 +62,18 @@ export function TableBrowser() {
       }
    }, [tableName, selectedEnvironmentId, fetchTableData, tableData, totalPages])
 
-   if (!tableName) return null
+   const displayName = tableName ?? tableNameRef.current
+   if (!displayName) return null
 
    return (
-      <motion.div
-         initial={{ opacity: 0 }}
-         animate={{ opacity: 1 }}
-         transition={{ duration: 0.15 }}
-         className="flex flex-col h-full bg-bg-primary overflow-hidden"
+      <div className="flex flex-col h-full bg-bg-primary overflow-hidden"
       >
          {/* Toolbar */}
          <div className="flex items-center justify-between px-4 py-2 border-b border-border/50 bg-bg-secondary/50 shrink-0">
             <div className="flex items-center gap-2">
                <div className="flex items-center gap-2 text-text-primary">
                   <IconTable className="h-4 w-4 text-accent" />
-                  <span className="text-[13px] font-semibold">{tableName}</span>
+                  <span className="text-[13px] font-semibold">{displayName}</span>
                </div>
                {schemaColumns && (
                   <span className="text-[10px] text-text-muted/60 font-mono bg-bg-tertiary px-1.5 py-0.5 rounded">
@@ -124,7 +123,7 @@ export function TableBrowser() {
             ) : tableData && tableData.rows.length > 0 ? (
                <AnimatePresence mode="wait">
                   <motion.div
-                     key={`${tableName}-${tableData.page}`}
+                      key={`${displayName}-${tableData.page}`}
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      transition={{ duration: 0.12 }}
@@ -184,7 +183,7 @@ export function TableBrowser() {
                </div>
             </div>
          )}
-      </motion.div>
+      </div>
    )
 }
 
