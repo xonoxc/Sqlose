@@ -19,8 +19,9 @@ interface EnvironmentStore {
    stopEnvironment: (environmentId: string) => Promise<Result<string, AppError>>
    restartEnvironment: (environmentId: string) => Promise<Result<string, AppError>>
    duplicateEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
-   resetEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
-   selectEnvironment: (environmentId: string | null) => Result<string | null, AppError>
+    resetEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
+    nukeEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
+    selectEnvironment: (environmentId: string | null) => Result<string | null, AppError>
    getEnvironment: (environmentId: string) => Environment | undefined
 }
 
@@ -185,6 +186,22 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
          resetEnvironment: async (environmentId: string) => {
             set({ isLoading: true, error: null })
             const result = await api.env.reset(environmentId)
+
+            if (result.isOk()) {
+               const environments = get().environments.map((e) =>
+                  e.id === environmentId ? result.value : e,
+               )
+               set({ environments, isLoading: false })
+            } else {
+               set({ error: result.error.message, isLoading: false })
+            }
+
+            return result
+         },
+
+         nukeEnvironment: async (environmentId: string) => {
+            set({ isLoading: true, error: null })
+            const result = await api.env.nuke(environmentId)
 
             if (result.isOk()) {
                const environments = get().environments.map((e) =>

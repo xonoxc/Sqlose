@@ -109,6 +109,12 @@ export const api = {
          const result = await api.env.reset({ environmentId })
          return deserializeResult(result)
       },
+
+      async nuke(environmentId: string) {
+         const api = getSqloseAPI()
+         const result = await api.env.nuke({ environmentId })
+         return deserializeResult(result)
+      },
    },
 
    query: {

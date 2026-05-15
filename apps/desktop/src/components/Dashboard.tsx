@@ -4,9 +4,9 @@ import { useEnvironmentStore } from "../stores/environmentStore"
 import { CreateDatabaseFlow } from "./CreateDatabaseFlow"
 
 export function Dashboard() {
-   const environments = useEnvironmentStore((s) => s.environments)
-   const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
-   const destroyEnvironment = useEnvironmentStore((s) => s.destroyEnvironment)
+   const environments = useEnvironmentStore(s => s.environments)
+   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
+   const destroyEnvironment = useEnvironmentStore(s => s.destroyEnvironment)
 
    const [showCreateFlow, setShowCreateFlow] = useState(false)
 
@@ -19,7 +19,9 @@ export function Dashboard() {
                      <IconDatabase className="h-8 w-8 text-accent" />
                      Welcome to SQLLab
                   </h1>
-                  <p className="text-text-muted text-base">Select an existing database to start querying, or create a new one.</p>
+                  <p className="text-text-muted text-base">
+                     Select an existing database to start querying, or create a new one.
+                  </p>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -31,24 +33,41 @@ export function Dashboard() {
                      <div className="h-10 w-10 rounded-full bg-[#1a1a1a] group-hover:bg-accent/20 flex items-center justify-center transition-colors">
                         <IconPlus className="h-5 w-5 text-text-muted group-hover:text-accent" />
                      </div>
-                     <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">Create Database</span>
+                     <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">
+                        Create Database
+                     </span>
                   </button>
 
                   {/* Existing Environments */}
-                  {environments.map((env) => (
-                     <div key={env.id} className="flex flex-col bg-[#111] border border-[#222] hover:border-[#444] rounded-xl p-5 shadow-sm transition-all duration-200 cursor-pointer group" onClick={() => selectEnvironment(env.id)}>
+                  {environments.map(env => (
+                     <div
+                        key={env.id}
+                        className="flex flex-col bg-[#111] border border-[#222] hover:border-[#444] rounded-xl p-5 shadow-sm transition-all duration-200 cursor-pointer group"
+                        onClick={() => selectEnvironment(env.id)}
+                     >
                         <div className="flex items-start justify-between mb-4">
                            <div className="flex items-center gap-3">
                               <div className="h-10 w-10 rounded-lg bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-text-primary">
-                                 {env.dbType === 'sqlite' ? <IconDatabase className="h-5 w-5 text-accent" /> : <IconServer className="h-5 w-5 text-blue-400" />}
+                                 {env.dbType === "sqlite" ? (
+                                    <IconDatabase className="h-5 w-5 text-accent" />
+                                 ) : (
+                                    <IconServer className="h-5 w-5 text-blue-400" />
+                                 )}
                               </div>
                               <div className="flex flex-col">
-                                 <span className="text-sm font-semibold text-text-primary">{env.name || `${env.dbType} Sandbox`}</span>
-                                 <span className="text-xs text-text-muted uppercase tracking-wider font-mono">{env.dbType}</span>
+                                 <span className="text-sm font-semibold text-text-primary">
+                                    {env.name || `${env.dbType} Sandbox`}
+                                 </span>
+                                 <span className="text-xs text-text-muted uppercase tracking-wider font-mono">
+                                    {env.dbType}
+                                 </span>
                               </div>
                            </div>
-                           <button 
-                              onClick={(e) => { e.stopPropagation(); destroyEnvironment(env.id); }}
+                           <button
+                              onClick={e => {
+                                 e.stopPropagation()
+                                 destroyEnvironment(env.id)
+                              }}
                               className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
                               title="Nuke Database"
                            >
@@ -57,17 +76,21 @@ export function Dashboard() {
                         </div>
                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#222]">
                            <div className="flex items-center gap-1.5">
-                              <div className={`h-2 w-2 rounded-full ${env.status === 'running' ? 'bg-accent' : 'bg-[#555]'}`}></div>
+                              <div
+                                 className={`h-2 w-2 rounded-full ${env.status === "running" ? "bg-accent" : "bg-[#555]"}`}
+                              ></div>
                               <span className="text-xs text-text-muted">{env.status}</span>
                            </div>
-                           <div className="text-[10px] text-text-muted font-mono">{new Date(env.createdAt).toLocaleDateString()}</div>
+                           <div className="text-[10px] text-text-muted font-mono">
+                              {new Date(env.createdAt).toLocaleDateString()}
+                           </div>
                         </div>
                      </div>
                   ))}
                </div>
-             </div>
-          </div>
-          {showCreateFlow && <CreateDatabaseFlow onClose={() => setShowCreateFlow(false)} />}
-       </div>
-    )
+            </div>
+         </div>
+         {showCreateFlow && <CreateDatabaseFlow onClose={() => setShowCreateFlow(false)} />}
+      </div>
+   )
 }

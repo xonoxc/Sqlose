@@ -24,6 +24,7 @@ const api = {
       get: createInvoke("env:get"),
       duplicate: createInvoke("env:duplicate"),
       reset: createInvoke("env:reset"),
+      nuke: createInvoke("env:nuke"),
    },
    query: {
       execute: createInvoke("query:execute"),

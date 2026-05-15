@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react"
 import { Button, Modal, ModalPortal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalTitle, ModalDescription, Badge } from "@sqlose/ui"
-import { IconPlayerPlay, IconPlayerStopFilled, IconRotate, IconTrash, IconLoader2 } from "@tabler/icons-react"
+import { IconPlayerPlay, IconPlayerStopFilled, IconRotate, IconTrash, IconBomb, IconLoader2 } from "@tabler/icons-react"
 import type { Environment } from "@sqlose/shared"
 import { useEnvironmentStore } from "../stores/environmentStore"
 
@@ -10,10 +10,12 @@ interface EnvironmentActionsProps {
 
 export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
    const [showDestroyConfirm, setShowDestroyConfirm] = useState(false)
+   const [showNukeConfirm, setShowNukeConfirm] = useState(false)
    const startEnvironment = useEnvironmentStore((s) => s.startEnvironment)
    const stopEnvironment = useEnvironmentStore((s) => s.stopEnvironment)
    const restartEnvironment = useEnvironmentStore((s) => s.restartEnvironment)
    const destroyEnvironment = useEnvironmentStore((s) => s.destroyEnvironment)
+   const nukeEnvironment = useEnvironmentStore((s) => s.nukeEnvironment)
    const isLoading = useEnvironmentStore((s) => s.isLoading)
 
    const handleStart = useCallback(() => {
@@ -34,6 +36,13 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
          setShowDestroyConfirm(false)
       }
    }, [environment, destroyEnvironment])
+
+   const handleNuke = useCallback(async () => {
+      if (environment) {
+         await nukeEnvironment(environment.id)
+         setShowNukeConfirm(false)
+      }
+   }, [environment, nukeEnvironment])
 
    if (!environment) {
       return (
@@ -98,6 +107,16 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
                <IconTrash className="h-3 w-3" />
                Destroy
             </Button>
+            <Button
+               variant="destructive"
+               size="sm"
+               onClick={() => setShowNukeConfirm(true)}
+               disabled={environment.status === "creating" || isLoading}
+               className="h-7 text-xs gap-1"
+            >
+               <IconBomb className="h-3 w-3" />
+               Nuke
+            </Button>
          </div>
 
          {environment.status === "running" && environment.uptime !== null && (
@@ -124,6 +143,31 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
                         </Button>
                         <Button variant="destructive" size="sm" onClick={handleDestroy} disabled={isLoading}>
                            {isLoading ? "Destroying..." : "Destroy"}
+                        </Button>
+                     </ModalFooter>
+                  </ModalContent>
+               </ModalPortal>
+            )}
+         </Modal>
+
+         <Modal open={showNukeConfirm} onOpenChange={setShowNukeConfirm}>
+            {showNukeConfirm && (
+               <ModalPortal>
+                  <ModalOverlay />
+                  <ModalContent>
+                     <ModalHeader>
+                        <ModalTitle>Nuke Environment</ModalTitle>
+                        <ModalDescription>
+                           Are you sure you want to nuke <strong>{environment.name || environment.dbType}</strong>?
+                           This will permanently delete the container and ALL data. The environment will be kept in a clean state so you can start fresh.
+                        </ModalDescription>
+                     </ModalHeader>
+                     <ModalFooter>
+                        <Button variant="secondary" size="sm" onClick={() => setShowNukeConfirm(false)}>
+                           Cancel
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={handleNuke} disabled={isLoading}>
+                           {isLoading ? "Nuking..." : "Nuke"}
                         </Button>
                      </ModalFooter>
                   </ModalContent>

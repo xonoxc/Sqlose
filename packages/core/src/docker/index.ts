@@ -3,7 +3,7 @@ import { ok, err } from "neverthrow"
 import { AppError, DockerError, okResult } from "@sqlose/shared"
 import type { DBType, AsyncAppResult, AppResult } from "@sqlose/shared"
 import { findAvailablePort, reservePort, releasePort } from "./port"
-import { loadEnvironments, deleteEnvironment } from "../environment/store"
+import { loadEnvironments, saveEnvironment } from "../environment/store"
 
 const PULL_TIMEOUT_MS = 5 * 60 * 1000
 const OP_TIMEOUT_MS = 60 * 1000
@@ -291,34 +291,71 @@ export function destroyContainer(containerId: string): AsyncAppResult<void> {
       )
 }
 
-export function cleanupOrphans(): AsyncAppResult<number> {
+export function stopAllContainers(): AsyncAppResult<number> {
    const docker = getDocker()
    return docker
       .listContainers({ all: true })
       .then((containers) => {
-         let cleaned = 0
-         const removePromises: Promise<void>[] = []
+         let acted = 0
+         const stopPromises: Promise<void>[] = []
 
          for (const containerInfo of containers) {
             const name = containerInfo.Names[0] ?? ""
-            if (name.includes("sqlose")) {
+            if (name.includes("sqlose") && containerInfo.State === "running") {
                const container = docker.getContainer(containerInfo.Id)
-               removePromises.push(
-                  container.remove({ v: true, force: true }).then(() => {
-                     cleaned++
-                  }),
+               stopPromises.push(
+                  withTimeout(
+                     container.stop(),
+                     15000,
+                     "Stopping container",
+                  )
+                     .then(() => { acted++ })
+                     .catch(() => {}),
                )
             }
          }
 
-         return Promise.all(removePromises).then(() => ok(cleaned))
+         return Promise.all(stopPromises).then(() => {
+            const envs = loadEnvironments()
+            for (const env of envs) {
+               if (env.containerId && containers.some((c) => c.Id === env.containerId)) {
+                  saveEnvironment({ ...env, status: "stopped", uptime: 0 })
+               }
+            }
+            return ok(acted)
+         })
       })
-      .catch((e: Error) => err(new DockerError("docker:cleanup_failed", e.message ?? "Cleanup failed")))
+      .catch((e: Error) => err(new DockerError("docker:stop_failed", e.message ?? "Failed to stop containers")))
 }
 
-export function cleanupStaleEnvironments(): AsyncAppResult<number> {
+export function stopOrphanedContainers(): AsyncAppResult<number> {
    const docker = getDocker()
-   let cleaned = 0
+   return docker
+      .listContainers({ all: true })
+      .then((containers) => {
+         const envs = loadEnvironments()
+         const envContainerIds = new Set(envs.filter((e) => e.containerId).map((e) => e.containerId))
+         let stopped = 0
+         const stopPromises: Promise<void>[] = []
+
+         for (const containerInfo of containers) {
+            const name = containerInfo.Names[0] ?? ""
+            if (name.includes("sqlose") && containerInfo.State === "running" && !envContainerIds.has(containerInfo.Id)) {
+               const container = docker.getContainer(containerInfo.Id)
+               stopPromises.push(
+                  container.stop().then(() => { stopped++ }).catch(() => {}),
+               )
+            }
+         }
+
+         return Promise.all(stopPromises).then(() => ok(stopped))
+      })
+      .catch((e: Error) => err(new DockerError("docker:cleanup_failed", e.message ?? "Failed to stop orphaned containers")))
+}
+
+export function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
+   const docker = getDocker()
+   let updated = 0
 
    const envs = loadEnvironments()
    const checks: Promise<void>[] = []
@@ -332,14 +369,20 @@ export function cleanupStaleEnvironments(): AsyncAppResult<number> {
          .getContainer(containerId)
          .inspect()
          .then((info) => {
-            if (!info.State.Running) {
-               docker.getContainer(containerId).remove({ v: true, force: true }).catch(() => {})
+            if (info.State.Running) {
+               const startedAt = info.State.StartedAt ? new Date(info.State.StartedAt).getTime() : Date.now()
+               const uptime = Math.floor((Date.now() - startedAt) / 1000)
+               saveEnvironment({ ...env, status: "running", uptime })
+               updated++
+            } else {
+               saveEnvironment({ ...env, status: "stopped", uptime: 0 })
+               updated++
             }
          })
          .catch((e: { statusCode?: number }) => {
             if (e.statusCode === 404) {
-               deleteEnvironment(env.id)
-               cleaned++
+               saveEnvironment({ ...env, status: "error", containerId: null })
+               updated++
             }
          })
 
@@ -347,6 +390,6 @@ export function cleanupStaleEnvironments(): AsyncAppResult<number> {
    }
 
    return Promise.all(checks)
-      .then(() => ok(cleaned))
-      .catch(() => ok(cleaned))
+      .then(() => ok(updated))
+      .catch(() => ok(updated))
 }

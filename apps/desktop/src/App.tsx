@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "motion/react"
-import { StatusBar, cn } from "@sqlose/ui"
+import { StatusBar, cn, Button } from "@sqlose/ui"
 import { queryClient } from "./lib/query/queryClient"
 import { api } from "./lib/api"
 import type { QueryResult } from "@sqlose/shared"
@@ -25,6 +25,7 @@ import { isMac } from "./lib/types"
 import {
    IconX, IconChevronRight, IconChevronDown,
    IconCopy, IconDownload, IconTrash,
+   IconPlayerPlay, IconBomb,
 } from "@tabler/icons-react"
 
 async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean) {
@@ -56,11 +57,14 @@ function AppContent() {
    const [executingTabId, setExecutingTabId] = useState<string | null>(null)
    const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null)
    const [resultsCollapsed, setResultsCollapsed] = useState(false)
+   const [stuckEnvId, setStuckEnvId] = useState<string | null>(null)
    const prevExecutionRef = useRef<number>(0)
 
    const fetchEnvironments = useEnvironmentStore(s => s.fetchEnvironments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
+   const startEnvironment = useEnvironmentStore(s => s.startEnvironment)
+   const nukeEnvironment = useEnvironmentStore(s => s.nukeEnvironment)
    const environments = useEnvironmentStore(s => s.environments)
 
    const queryDraft = useEditorStore(s => s.queryDraft)
@@ -100,6 +104,17 @@ function AppContent() {
          }
       }
    }, [activeTabId])
+
+   useEffect(() => {
+      if (!selectedEnvironmentId) {
+         setStuckEnvId(null)
+      } else if (stuckEnvId === null) {
+         const env = environments.find(e => e.id === selectedEnvironmentId)
+         if (env && env.status === "stopped" && env.containerId) {
+            setStuckEnvId(env.id)
+         }
+      }
+   }, [selectedEnvironmentId, environments, stuckEnvId])
 
    const handleNewQuery = useCallback(() => {
       const result = openTab()
@@ -293,6 +308,21 @@ function AppContent() {
       document.addEventListener("keydown", handleKeyDown, true)
       return () => document.removeEventListener("keydown", handleKeyDown, true)
    }, [handleExecuteQuery, handleNewQuery, handleCloseTab, handleSwitchTab])
+
+   const handleRestoreEnv = useCallback(async () => {
+      if (stuckEnvId) {
+         await startEnvironment(stuckEnvId)
+         setStuckEnvId(null)
+      }
+   }, [stuckEnvId, startEnvironment])
+
+   const handleExitAndNuke = useCallback(async () => {
+      if (stuckEnvId) {
+         await nukeEnvironment(stuckEnvId)
+         selectEnvironment(null)
+         setStuckEnvId(null)
+      }
+   }, [stuckEnvId, nukeEnvironment, selectEnvironment])
 
    const selectedEnv = selectedEnvironmentId
       ? environments.find(e => e.id === selectedEnvironmentId) ?? null
@@ -598,6 +628,50 @@ function AppContent() {
             onOpenQuery={handleOpenQuery}
          />
          <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+         {stuckEnvId && (
+            <div
+               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+               onKeyDown={(e) => e.preventDefault()}
+            >
+               <div className="w-full max-w-md rounded-xl border border-border bg-bg-secondary p-8 shadow-2xl">
+                  <div className="flex flex-col items-center text-center">
+                     <div className="mb-5 h-14 w-14 rounded-full bg-warning/15 border border-warning/25 flex items-center justify-center">
+                        <IconBomb className="h-6 w-6 text-warning" />
+                     </div>
+                     <h2 className="text-lg font-semibold text-text-primary mb-2">Container Halted</h2>
+                     <p className="text-sm text-text-muted mb-1">
+                        The database container for{" "}
+                        <strong className="text-text-primary">{selectedEnv?.name || selectedEnv?.dbType}</strong>{" "}
+                        is available but halted.
+                     </p>
+                     <p className="text-sm text-text-muted mb-6">
+                        Would you like to restore it or nuke the environment?
+                     </p>
+                     <div className="flex gap-3 w-full">
+                        <Button
+                           variant="destructive"
+                           size="default"
+                           onClick={handleExitAndNuke}
+                           className="flex-1 gap-2"
+                        >
+                           <IconBomb className="h-4 w-4" />
+                           Exit &amp; Nuke
+                        </Button>
+                        <Button
+                           variant="default"
+                           size="default"
+                           onClick={handleRestoreEnv}
+                           className="flex-1 gap-2"
+                        >
+                           <IconPlayerPlay className="h-4 w-4" />
+                           Restore
+                        </Button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         )}
       </div>
    )
 }

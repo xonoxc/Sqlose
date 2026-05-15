@@ -23,6 +23,7 @@ export const IPC_CHANNELS = [
    "env:get",
    "env:duplicate",
    "env:reset",
+   "env:nuke",
    "query:execute",
    "import:csv",
    "import:sql",
@@ -47,6 +48,7 @@ export interface IPCRequestMap {
    "env:get": { environmentId: string }
    "env:duplicate": { environmentId: string }
    "env:reset": { environmentId: string }
+   "env:nuke": { environmentId: string }
    "query:execute": { environmentId: string; sql: string }
    "import:csv": ImportPayload & { format: "csv" }
    "import:sql": ImportPayload & { format: "sql" }
@@ -69,6 +71,7 @@ export interface IPCResponseMap {
    "env:get": Environment
    "env:duplicate": Environment
    "env:reset": Environment
+   "env:nuke": Environment
    "query:execute": QueryResult
    "import:csv": ImportResult
    "import:sql": { tablesCreated: string[] }
@@ -105,6 +108,7 @@ export const IPC_CHANNEL_GROUPS: Record<IPCChannel, IPCChannelGroup> = {
    "env:get": "env",
    "env:duplicate": "env",
    "env:reset": "env",
+   "env:nuke": "env",
    "query:execute": "query",
    "import:csv": "import",
    "import:sql": "import",

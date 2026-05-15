@@ -39,6 +39,7 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
 
    const environments = useEnvironmentStore((s) => s.environments)
    const selectEnvironment = useEnvironmentStore((s) => s.selectEnvironment)
+   const nukeEnvironment = useEnvironmentStore((s) => s.nukeEnvironment)
    const openTab = useWorkspaceStore((s) => s.openTab)
    const tabs = useWorkspaceStore((s) => s.tabs)
    const activeTabId = useWorkspaceStore((s) => s.activeTabId)
@@ -124,8 +125,20 @@ export function CommandPalette({ isOpen, onClose, onExecuteQuery, onClearResults
              }
           },
        },
-       {
-          id: "toggle-vim",
+        {
+           id: "nuke-env",
+           label: "Nuke Environment",
+           description: "Delete the active environment's container and data, but keep the environment for a fresh start",
+           icon: <IconTrash className="h-4 w-4" />,
+           category: "action",
+           onSelect: () => {
+              if (activeTab?.environmentId) {
+                 nukeEnvironment(activeTab.environmentId)
+              }
+           },
+        },
+        {
+           id: "toggle-vim",
           label: vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode",
           description: vimModeEnabled ? "Turn off Vim keybindings in the editor" : "Turn on Vim keybindings in the editor",
           icon: vimModeEnabled ? <IconToggleRight className="h-4 w-4" /> : <IconToggleLeft className="h-4 w-4" />,

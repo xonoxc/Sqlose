@@ -12,8 +12,8 @@ import {
    restartEnvironment as dockerRestartEnvironment,
    healthCheck as dockerHealthCheck,
    destroyContainer as dockerDestroyContainer,
-   cleanupOrphans as dockerCleanupOrphans,
-   pullImage as dockerPullImage,
+    stopOrphanedContainers as dockerStopOrphanedContainers,
+    pullImage as dockerPullImage,
 } from "@sqlose/core"
 import {
    createEnvironmentRecord,
@@ -168,7 +168,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:cleanup", async () => {
-      const result = await dockerCleanupOrphans()
+      const result = await dockerStopOrphanedContainers()
       if (result.isErr()) return serializeErr(result.error)
       return serializeOk({ cleaned: result.value })
    })
@@ -326,6 +326,30 @@ export function registerAllHandlers(): void {
          const updated = await updateEnvironment(environmentId, { connectionString: dbPath, status: "running" })
          if (updated.isErr()) return serializeErr(updated.error)
          return serializeOk(updated.value)
+      }
+
+      const result = await resetEnvironmentRecord(environmentId)
+      return serializeResult(result)
+   })
+
+   ipcMain.handle("env:nuke", async (_event, payload: unknown) => {
+      const validationError = validateRequest(payload, { environmentId: "string" })
+      if (validationError) return validationError
+
+      const { environmentId } = payload as IPCRequest<"env:nuke">
+      const env = loadEnvironment(environmentId)
+      if (!env) return serializeErr(new AppError("env:not_found", `Environment ${environmentId} not found`))
+
+      await dockerDestroyContainer(env.containerId ?? "")
+
+      if (env.port > 0) releasePort(env.port)
+
+      if (env.dbType === "sqlite") {
+         try {
+            fs.unlinkSync(getSqliteDbPath(environmentId))
+         } catch {
+            // file may not exist
+         }
       }
 
       const result = await resetEnvironmentRecord(environmentId)
