@@ -71,7 +71,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
    if (step === "provisioning") {
       return (
          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-            <div className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-10 max-w-md w-full mx-4 shadow-2xl">
+             <div className="bg-bg-primary border border-border rounded-2xl p-10 max-w-md w-full mx-4 shadow-2xl">
                <div className="flex flex-col items-center gap-8">
                   <div className="relative">
                      <div className="h-16 w-16 rounded-full border-2 border-accent/30 flex items-center justify-center">
@@ -113,7 +113,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                                    ? "bg-success/5"
                                    : ps.status === "error"
                                      ? "bg-error/10"
-                                     : "bg-[#111] opacity-50"
+                                      : "bg-bg-secondary opacity-50"
                            }`}
                         >
                            {ps.status === "done" ? (
@@ -158,9 +158,9 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
    return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-         <div className="bg-[#0c0c0c] border border-white/10 rounded-2xl w-full max-w-2xl mx-4 shadow-2xl max-h-[85vh] flex flex-col">
+          <div className="bg-bg-primary border border-border rounded-2xl w-full max-w-2xl mx-4 shadow-2xl max-h-[85vh] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e1e1e] shrink-0">
+             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                      <span
@@ -178,7 +178,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                </div>
                <button
                   onClick={onClose}
-                  className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-[#1a1a1a] transition-colors"
+                   className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-tertiary transition-colors"
                >
                   <IconX className="h-4 w-4" />
                </button>
@@ -201,7 +201,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                            <button
                               key={card.type}
                               onClick={() => handleSelectType(card.type)}
-                              className="flex items-start gap-4 bg-[#111] border border-[#222] hover:border-accent/50 hover:bg-[#161616] rounded-xl p-4 text-left transition-all cursor-pointer group"
+                               className="flex items-start gap-4 bg-bg-secondary border border-border hover:border-accent/50 hover:bg-bg-tertiary rounded-xl p-4 text-left transition-all cursor-pointer group"
                            >
                               <div
                                  className={`h-12 w-12 rounded-xl bg-gradient-to-br ${card.accent} border border-white/5 flex items-center justify-center shrink-0`}
@@ -216,7 +216,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                                     {card.description}
                                  </p>
                               </div>
-                              <div className="h-8 w-8 rounded-full bg-[#1a1a1a] border border-[#333] flex items-center justify-center shrink-0 group-hover:border-accent/50 group-hover:bg-accent/10 transition-all">
+                               <div className="h-8 w-8 rounded-full bg-bg-tertiary border border-border flex items-center justify-center shrink-0 group-hover:border-accent/50 group-hover:bg-accent/10 transition-all">
                                  <IconArrowRight className="h-4 w-4 text-text-muted group-hover:text-accent transition-colors" />
                               </div>
                            </button>
@@ -261,7 +261,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                               <IconLoader2 className="h-5 w-5 text-text-muted animate-spin" />
                            </div>
                         ) : datasets.length === 0 ? (
-                           <div className="bg-[#111] border border-dashed border-[#333] rounded-xl p-6 text-center">
+                            <div className="bg-bg-secondary border border-dashed border-border rounded-xl p-6 text-center">
                               <IconDatabaseImport className="h-8 w-8 text-text-muted mx-auto mb-2" />
                               <p className="text-sm text-text-muted">No datasets available</p>
                               <p className="text-xs text-text-muted mt-1">
@@ -280,18 +280,18 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                                              selectedDataset?.id === ds.id ? null : ds
                                           )
                                        }
-                                       className={`flex items-center gap-3 rounded-xl p-3.5 text-left transition-all cursor-pointer border ${
-                                          selectedDataset?.id === ds.id
-                                             ? "border-accent/50 bg-accent/5"
-                                             : "border-[#222] bg-[#111] hover:border-[#444] hover:bg-[#161616]"
-                                       }`}
+                                        className={`flex items-center gap-3 rounded-xl p-3.5 text-left transition-all cursor-pointer border ${
+                                           selectedDataset?.id === ds.id
+                                              ? "border-accent/50 bg-accent/5"
+                                              : "border-border bg-bg-secondary hover:border-border-light hover:bg-bg-tertiary"
+                                        }`}
                                     >
                                        <div
-                                          className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${
-                                             selectedDataset?.id === ds.id
-                                                ? "bg-accent/20 text-accent"
-                                                : "bg-[#1a1a1a] text-text-muted"
-                                          }`}
+                                        className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${
+                                              selectedDataset?.id === ds.id
+                                                 ? "bg-accent/20 text-accent"
+                                                 : "bg-bg-tertiary text-text-muted"
+                                           }`}
                                        >
                                           <IconDatabaseImport className="h-5 w-5" />
                                        </div>
@@ -327,7 +327,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
             {/* Footer */}
             {step === "configure" && (
-               <div className="flex items-center justify-between px-6 py-4 border-t border-[#1e1e1e] shrink-0">
+                <div className="flex items-center justify-between px-6 py-4 border-t border-border shrink-0">
                   <button
                      onClick={() => {
                         setSelectedDataset(null)

@@ -76,15 +76,15 @@ export function SQLEditor({
                   <span className="text-[10px] text-text-muted font-mono">{executionTimeMs}ms</span>
                )}
 
-               <div className="flex items-center gap-1 ml-2 border-l border-[#222] pl-3">
-                  <div className="relative">
-                     <button
-                        onClick={() => {
-                           setSaveName("")
-                           setSaveDialogOpen(!saveDialogOpen)
-                        }}
-                        className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-[#222] transition-colors"
-                        aria-label="Save query"
+                <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
+                   <div className="relative">
+                      <button
+                         onClick={() => {
+                            setSaveName("")
+                            setSaveDialogOpen(!saveDialogOpen)
+                         }}
+                         className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                         aria-label="Save query"
                      >
                         <IconDeviceFloppy className="h-3.5 w-3.5" />
                      </button>

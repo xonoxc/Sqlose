@@ -21,6 +21,7 @@ import { useWorkspaceStore } from "./stores/workspaceStore"
 import { useSettingsStore } from "./stores/settingsStore"
 import { useDatabaseStore } from "./stores/databaseStore"
 import { useHistoryStore } from "./stores/historyStore"
+import { useThemeStore } from "./stores/theme-store"
 import { isMac } from "./lib/types"
 import {
    IconX,
@@ -93,6 +94,7 @@ function AppContent() {
 
    const addHistoryEntry = useHistoryStore(s => s.addEntry)
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
+   useThemeStore() // subscribe to persist rehydration for theme
 
    const RESULTS_MIN_HEIGHT = 80
    const RESULTS_MAX_HEIGHT = 800

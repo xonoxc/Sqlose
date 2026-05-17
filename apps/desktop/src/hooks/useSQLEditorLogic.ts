@@ -2,6 +2,8 @@ import { useRef, useCallback, useEffect, useState } from "react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useEditorStore } from "../stores/editorStore"
+import { useThemeStore } from "../stores/theme-store"
+import { themes } from "../themes"
 import { useSavedQueriesStore } from "../stores/savedQueriesStore"
 import type { VimMode } from "../lib/types"
 import type { editor } from "monaco-editor"
@@ -22,6 +24,7 @@ export function useSQLEditorLogic(
    onCommandMode?: () => void
 ) {
    const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
+   const monacoRef = useRef<typeof import("monaco-editor") | null>(null)
    const vimModeRef = useRef<{ dispose: () => void } | null>(null)
    const vimObserverRef = useRef<MutationObserver | null>(null)
    const vimStatusRef = useRef<HTMLDivElement>(null)
@@ -31,6 +34,7 @@ export function useSQLEditorLogic(
    const vimEnabled = useSettingsStore(s => s.vimModeEnabled)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const saveQuery = useSavedQueriesStore(s => s.saveQuery)
+   const themeId = useThemeStore(s => s.themeId)
 
    function setupVimObserver() {
       if (!vimStatusRef.current) return
@@ -55,45 +59,29 @@ export function useSQLEditorLogic(
       }
    }
 
+   const applyMonacoTheme = useCallback((monaco: typeof import("monaco-editor")) => {
+      const currentTheme = themes.find(t => t.id === themeId) ?? themes[0]
+      const m = currentTheme.monaco
+
+      monaco.editor.defineTheme("sqlose-theme", {
+         base: m.base,
+         inherit: true,
+         rules: m.rules,
+         colors: m.colors,
+      })
+
+      monaco.editor.setTheme("sqlose-theme")
+   }, [themeId])
+
    const handleEditorMount = useCallback(
       async (
          monacoEditor: editor.IStandaloneCodeEditor,
          monaco: typeof import("monaco-editor")
       ) => {
          editorRef.current = monacoEditor
+         monacoRef.current = monaco
 
-         monaco.editor.defineTheme("sqlose-dark", {
-            base: "vs-dark",
-            inherit: true,
-            rules: [
-               { token: "keyword", foreground: "7ec8e3", fontStyle: "bold" },
-               { token: "identifier", foreground: "f0f0f0" },
-               { token: "string", foreground: "d4a87c" },
-               { token: "number", foreground: "b5cea8" },
-               { token: "comment", foreground: "6a6a6a", fontStyle: "italic" },
-               { token: "operator", foreground: "a0a0a0" },
-               { token: "delimiter", foreground: "a0a0a0" },
-               { token: "type", foreground: "4ec9b0" },
-            ],
-            colors: {
-               "editor.background": "#0a0a0a",
-               "editor.foreground": "#f0f0f0",
-               "editorLineNumber.foreground": "#3a3a3a",
-               "editorLineNumber.activeForeground": "#8a8a8a",
-               "editor.selectionBackground": "#2a5f7a",
-               "editor.inactiveSelectionBackground": "#3a3d41",
-               "editorCursor.foreground": "#f0f0f0",
-               "editorIndentGuide.background": "#1a1a1a",
-               "editorIndentGuide.activeBackground": "#3a3a3a",
-               "editor.lineHighlightBackground": "#111111",
-               "editorWidget.background": "#141414",
-               "editorWidget.border": "#232323",
-               "editorBracketMatch.background": "#2a5f7a40",
-               "editorBracketMatch.border": "#2a5f7a",
-            },
-         })
-
-         monaco.editor.setTheme("sqlose-dark")
+         applyMonacoTheme(monaco)
 
          monaco.languages.registerCompletionItemProvider("sql", {
             provideCompletionItems: (model, position) => {
@@ -195,8 +183,14 @@ export function useSQLEditorLogic(
             })
          }
       },
-      [vimEnabled, onChange, onCommandMode]
+      [vimEnabled, onChange, onCommandMode, applyMonacoTheme]
    )
+
+   useEffect(() => {
+      if (monacoRef.current) {
+         applyMonacoTheme(monacoRef.current)
+      }
+   }, [themeId, applyMonacoTheme])
 
    const handleChange = useCallback(
       (newValue: string | undefined) => {

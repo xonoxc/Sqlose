@@ -7,7 +7,7 @@ export function Dashboard() {
       useDashboardState()
 
    return (
-      <div className="flex h-full w-full flex-col bg-[#0c0c0c] text-text-primary overflow-hidden rounded-xl border border-white/10 shadow-2xl relative">
+      <div className="flex h-full w-full flex-col bg-bg-primary text-text-primary overflow-hidden rounded-xl border border-border shadow-2xl relative">
          <div className="flex-1 overflow-y-auto px-8 py-12 custom-scrollbar">
             <div className="max-w-4xl mx-auto flex flex-col gap-8">
                <div className="flex flex-col gap-2">
@@ -23,9 +23,9 @@ export function Dashboard() {
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <button
                      onClick={() => setShowCreateFlow(true)}
-                     className="flex flex-col items-center justify-center bg-[#111] border border-dashed border-[#333] hover:border-accent hover:bg-[#161616] rounded-xl p-5 min-h-[160px] cursor-pointer transition-all duration-200 group gap-3"
-                  >
-                     <div className="h-10 w-10 rounded-full bg-[#1a1a1a] group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+                      className="flex flex-col items-center justify-center bg-bg-secondary border border-dashed border-border hover:border-accent hover:bg-bg-tertiary rounded-xl p-5 min-h-[160px] cursor-pointer transition-all duration-200 group gap-3"
+                   >
+                      <div className="h-10 w-10 rounded-full bg-bg-tertiary group-hover:bg-accent/20 flex items-center justify-center transition-colors">
                         <IconPlus className="h-5 w-5 text-text-muted group-hover:text-accent" />
                      </div>
                      <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary">
@@ -36,17 +36,17 @@ export function Dashboard() {
                   {environments.map(env => (
                      <div
                         key={env.id}
-                        className="flex flex-col bg-[#111] border border-[#222] hover:border-[#444] rounded-xl p-5 shadow-sm transition-all duration-200 cursor-pointer group"
+                         className="flex flex-col bg-bg-secondary border border-border hover:border-border-light rounded-xl p-5 shadow-sm transition-all duration-200 cursor-pointer group"
                         onClick={() => handleSelectEnv(env.id)}
                      >
                         <div className="flex items-start justify-between mb-4">
                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-lg bg-[#1a1a1a] border border-[#333] flex items-center justify-center text-text-primary">
-                                 {env.dbType === "sqlite" ? (
-                                    <IconDatabase className="h-5 w-5 text-accent" />
-                                 ) : (
-                                    <IconServer className="h-5 w-5 text-blue-400" />
-                                 )}
+                               <div className="h-10 w-10 rounded-lg bg-bg-tertiary border border-border flex items-center justify-center text-text-primary">
+                                  {env.dbType === "sqlite" ? (
+                                     <IconDatabase className="h-5 w-5 text-accent" />
+                                  ) : (
+                                     <IconServer className="h-5 w-5 text-accent" />
+                                  )}
                               </div>
                               <div className="flex flex-col">
                                  <span className="text-sm font-semibold text-text-primary">
@@ -65,11 +65,11 @@ export function Dashboard() {
                               <IconTrash className="h-4 w-4" />
                            </button>
                         </div>
-                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#222]">
-                           <div className="flex items-center gap-1.5">
-                              <div
-                                 className={`h-2 w-2 rounded-full ${env.status === "running" ? "bg-accent" : "bg-[#555]"}`}
-                              ></div>
+                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
+                            <div className="flex items-center gap-1.5">
+                               <div
+                                  className={`h-2 w-2 rounded-full ${env.status === "running" ? "bg-accent" : "bg-text-muted"}`}
+                               ></div>
                               <span className="text-xs text-text-muted">{env.status}</span>
                            </div>
                            <div className="text-[10px] text-text-muted font-mono">

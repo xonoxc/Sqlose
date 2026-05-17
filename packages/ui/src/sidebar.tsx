@@ -90,7 +90,7 @@ function SidebarItemRow({
 
 export function Sidebar({ items, selectedId, onSelect, className, header }: SidebarProps) {
    return (
-      <div className={cn("flex h-full flex-col bg-[#111111] text-[#909090] w-full", className)}>
+      <div className={cn("flex h-full flex-col bg-bg-secondary text-text-secondary w-full", className)}>
          {header && (
             <div className="px-3 pt-6 pb-2 min-h-[64px] flex items-center shrink-0 app-drag-region">
                {header}

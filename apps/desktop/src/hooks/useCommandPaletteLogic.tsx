@@ -4,6 +4,8 @@ import { useWorkspaceStore } from "../stores/workspaceStore"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useSavedQueriesStore } from "../stores/savedQueriesStore"
 import { useHistoryStore } from "../stores/historyStore"
+import { useThemeStore, applyTheme } from "../stores/theme-store"
+import { themes } from "../themes"
 import { isMac } from "../lib/types"
 import {
    IconDatabase,
@@ -18,6 +20,7 @@ import {
    IconToggleRight,
    IconBookmark,
    IconStar,
+   IconPalette,
 } from "@tabler/icons-react"
 
 interface PaletteAction {
@@ -30,6 +33,8 @@ interface PaletteAction {
    onSelect: () => void
 }
 
+export type PaletteMode = "default" | "themes"
+
 export function useCommandPaletteLogic(
    isOpen: boolean,
    onClose: () => void,
@@ -39,7 +44,9 @@ export function useCommandPaletteLogic(
 ) {
    const [query, setQuery] = useState("")
    const [selectedIndex, setSelectedIndex] = useState(0)
+   const [mode, setMode] = useState<PaletteMode>("default")
    const inputRef = useRef<HTMLInputElement>(null)
+   const previousThemeIdRef = useRef<string | null>(null)
 
    const environments = useEnvironmentStore(s => s.environments)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
@@ -53,6 +60,7 @@ export function useCommandPaletteLogic(
    const setVimModeEnabled = useSettingsStore(s => s.setVimModeEnabled)
    const savedQueries = useSavedQueriesStore(s => s.queries)
    const historyEntries = useHistoryStore(s => s.entries)
+   const { themeId, setTheme } = useThemeStore()
 
    const handleSelectEnvironment = useCallback(
       (envId: string) => {
@@ -61,6 +69,48 @@ export function useCommandPaletteLogic(
       },
       [selectEnvironment, openTab]
    )
+
+   const enterThemeMode = useCallback(() => {
+      previousThemeIdRef.current = themeId
+      setMode("themes")
+      setQuery("")
+      setSelectedIndex(0)
+   }, [themeId])
+
+   const handleThemeHover = useCallback((themeId: string | null) => {
+      if (themeId) {
+         const theme = themes.find(t => t.id === themeId)
+         if (theme) applyTheme(theme)
+      }
+   }, [])
+
+   const handleThemeSelect = useCallback(
+      (id: string) => {
+         previousThemeIdRef.current = null
+         setTheme(id)
+         setMode("default")
+         setQuery("")
+      },
+      [setTheme]
+   )
+
+   const exitThemeMode = useCallback(() => {
+      if (previousThemeIdRef.current) {
+         const original = themes.find(t => t.id === previousThemeIdRef.current)
+         if (original) applyTheme(original)
+      }
+      previousThemeIdRef.current = null
+      setMode("default")
+      setQuery("")
+   }, [])
+
+   const filteredThemes = useMemo(() => {
+      if (!query) return themes
+      const q = query.toLowerCase()
+      return themes.filter(
+         t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
+      )
+   }, [query])
 
    const actions = useMemo<PaletteAction[]>(
       () => [
@@ -123,7 +173,9 @@ export function useCommandPaletteLogic(
             category: "action",
             onSelect: () => {
                if (environments.length > 0) {
-                  const currentIdx = environments.findIndex(e => e.id === activeTab?.environmentId)
+                  const currentIdx = environments.findIndex(
+                     e => e.id === activeTab?.environmentId
+                  )
                   const nextIdx = (currentIdx + 1) % environments.length
                   handleSelectEnvironment(environments[nextIdx].id)
                }
@@ -142,6 +194,14 @@ export function useCommandPaletteLogic(
             ),
             category: "action",
             onSelect: () => setVimModeEnabled(!vimModeEnabled),
+         },
+         {
+            id: "switch-theme",
+            label: "Switch Theme",
+            description: "Browse and change the application color theme",
+            icon: <IconPalette className="h-4 w-4" />,
+            category: "action",
+            onSelect: () => enterThemeMode(),
          },
          {
             id: "nuke-env",
@@ -211,6 +271,7 @@ export function useCommandPaletteLogic(
          historyEntries,
          onOpenQuery,
          nukeEnvironment,
+         enterThemeMode,
       ]
    )
 
@@ -266,39 +327,84 @@ export function useCommandPaletteLogic(
 
    useEffect(() => {
       if (isOpen) {
-         setQuery("")
+         if (mode !== "themes") {
+            setQuery("")
+         }
          setSelectedIndex(0)
          setTimeout(() => inputRef.current?.focus(), 50)
       }
-   }, [isOpen])
+   }, [isOpen, mode])
+
+   useEffect(() => {
+      if (mode === "themes") {
+         const theme = filteredThemes[selectedIndex]
+         if (theme) handleThemeHover(theme.id)
+      }
+   }, [selectedIndex, mode, filteredThemes, handleThemeHover])
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
          if (!isOpen) return
          if (e.key === "Escape") {
             e.preventDefault()
-            onClose()
+            if (mode === "themes") {
+               exitThemeMode()
+            } else {
+               onClose()
+            }
             return
+         }
+         const next = () => {
+            const max = mode === "themes" ? filteredThemes.length - 1 : flatFiltered.length - 1
+            setSelectedIndex(p => Math.min(p + 1, Math.max(0, max)))
+         }
+         const prev = () => {
+            setSelectedIndex(p => Math.max(p - 1, 0))
          }
          if (e.key === "ArrowDown") {
             e.preventDefault()
-            setSelectedIndex(p => Math.min(p + 1, flatFiltered.length - 1))
+            next()
             return
          }
          if (e.key === "ArrowUp") {
             e.preventDefault()
-            setSelectedIndex(p => Math.max(p - 1, 0))
+            prev()
             return
          }
-         if (e.key === "Enter" && flatFiltered[selectedIndex]) {
-            e.preventDefault()
-            flatFiltered[selectedIndex].onSelect()
-            onClose()
+         if (e.key === "Enter") {
+            if (mode === "themes") {
+               if (filteredThemes[selectedIndex]) {
+                  e.preventDefault()
+                  handleThemeSelect(filteredThemes[selectedIndex].id)
+                  onClose()
+                  return
+               }
+               return
+            }
+            if (flatFiltered[selectedIndex]) {
+               e.preventDefault()
+               const action = flatFiltered[selectedIndex]
+               action.onSelect()
+               if (action.id !== "switch-theme") {
+                  onClose()
+               }
+               return
+            }
          }
       }
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
-   }, [isOpen, onClose, selectedIndex, flatFiltered])
+   }, [
+      isOpen,
+      onClose,
+      selectedIndex,
+      flatFiltered,
+      mode,
+      filteredThemes,
+      exitThemeMode,
+      handleThemeSelect,
+      vimModeEnabled,
+   ])
 
    return {
       query,
@@ -309,5 +415,13 @@ export function useCommandPaletteLogic(
       groupedItems,
       flatFiltered,
       activeTabId,
+      mode,
+      setMode,
+      exitThemeMode,
+      themes,
+      filteredThemes,
+      themeId,
+      handleThemeHover,
+      handleThemeSelect,
    }
 }

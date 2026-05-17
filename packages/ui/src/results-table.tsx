@@ -491,7 +491,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
 
          {ctxMenu.visible && (
             <div
-               className="fixed z-50 min-w-[160px] bg-[#141414] border border-[#333] rounded-lg shadow-2xl py-1 overflow-hidden"
+               className="fixed z-50 min-w-[160px] bg-bg-secondary border border-border rounded-lg shadow-2xl py-1 overflow-hidden"
                style={{ left: ctxMenu.x, top: ctxMenu.y }}
                onClick={e => e.stopPropagation()}
             >
