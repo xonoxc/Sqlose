@@ -2,6 +2,7 @@
 import { fileURLToPath } from "node:url"
 import path from "node:path"
 import { app, BrowserWindow } from "electron"
+import { autoUpdater } from "electron-updater"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -57,6 +58,21 @@ function createWindow() {
    }
 }
 
+autoUpdater.logger = console
+autoUpdater.autoDownload = false
+
+autoUpdater.on("update-available", (info) => {
+   win?.webContents?.send("update-available", info)
+})
+
+autoUpdater.on("download-progress", (progress) => {
+   win?.webContents?.send("download-progress", progress)
+})
+
+autoUpdater.on("update-downloaded", () => {
+   win?.webContents?.send("update-downloaded")
+})
+
 app.on("window-all-closed", () => {
    if (process.platform !== "darwin") {
       app.quit()
@@ -80,4 +96,8 @@ app.whenReady().then(async () => {
    await reconcileEnvironmentStatuses()
    registerAllHandlers()
    createWindow()
+
+   if (!VITE_DEV_SERVER_URL) {
+      autoUpdater.checkForUpdatesAndNotify()
+   }
 })

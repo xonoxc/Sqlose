@@ -1,16 +1,23 @@
 // @see - https://www.electron.build/configuration/configuration
 {
    $schema: "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-   appId: "YourAppID",
+   appId: "com.xonoxc.sqlose",
    asar: true,
-   productName: "YourAppName",
+   productName: "Sqlose",
    directories: {
       output: "release/${version}",
    },
    files: ["dist", "dist-electron"],
+   publish: {
+      provider: "github",
+      owner: "xonoxc",
+      repo: "Sqlose",
+      releaseType: "draft",
+   },
    mac: {
       target: ["dmg"],
       artifactName: "${productName}-Mac-${version}-Installer.${ext}",
+      identity: null,
    },
    win: {
       target: [
@@ -28,7 +35,11 @@
       deleteAppDataOnUninstall: false,
    },
    linux: {
-      target: ["AppImage"],
+      target: [
+         { target: "AppImage", arch: ["x64"] },
+         { target: "deb", arch: ["x64"] },
+      ],
+      category: "Development",
       artifactName: "${productName}-Linux-${version}.${ext}",
    },
 }

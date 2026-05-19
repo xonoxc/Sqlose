@@ -1,7 +1,13 @@
 {
    "name": "desktop",
    "private": true,
-   "version": "0.0.0",
+   "version": "0.1.0",
+   "description": "Sqlose - SQL development environment",
+   "author": {
+      "name": "xonoxc",
+      "email": "xonoxc@users.noreply.github.com"
+   },
+   "homepage": "https://github.com/xonoxc/Sqlose",
    "type": "module",
    "scripts": {
       "dev": "vite -- --ozone-platform-hint=auto --enable-features=WaylandWindowDecorations",
