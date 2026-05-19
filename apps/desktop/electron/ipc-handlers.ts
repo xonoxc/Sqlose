@@ -347,18 +347,11 @@ export function registerAllHandlers(): void {
          )
 
       if (env.dbType === "sqlite") {
-         const dbPath = getSqliteDbPath(environmentId)
          try {
-            fs.unlinkSync(dbPath)
+            fs.unlinkSync(getSqliteDbPath(environmentId))
          } catch {
             // file may not exist
          }
-         const updated = await updateEnvironment(environmentId, {
-            connectionString: dbPath,
-            status: "running",
-         })
-         if (updated.isErr()) return serializeErr(updated.error)
-         return serializeOk(updated.value)
       }
 
       const result = await resetEnvironmentRecord(environmentId)
@@ -388,8 +381,8 @@ export function registerAllHandlers(): void {
          }
       }
 
-      const result = await resetEnvironmentRecord(environmentId)
-      return serializeResult(result)
+      await destroyEnvironmentRecord(environmentId)
+      return serializeOk({ environmentId })
    })
 
    ipcMain.handle("query:execute", async (_event, payload: unknown) => {

@@ -22,7 +22,7 @@ interface EnvironmentStore {
    restartEnvironment: (environmentId: string) => Promise<Result<string, AppError>>
    duplicateEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
    resetEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
-   nukeEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
+   nukeEnvironment: (environmentId: string) => Promise<Result<string, AppError>>
    selectEnvironment: (environmentId: string | null) => Result<string | null, AppError>
    getEnvironment: (environmentId: string) => Environment | undefined
 }
@@ -205,21 +205,26 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
             return result
          },
 
-         nukeEnvironment: async (environmentId: string) => {
-            set({ isLoading: true, error: null })
-            const result = await api.env.nuke(environmentId)
+          nukeEnvironment: async (environmentId: string) => {
+             set({ isLoading: true, error: null })
+             const result = await api.env.nuke(environmentId)
 
-            if (result.isOk()) {
-               const environments = get().environments.map(e =>
-                  e.id === environmentId ? result.value : e
-               )
-               set({ environments, isLoading: false })
-            } else {
-               set({ error: result.error.message, isLoading: false })
-            }
+             if (result.isOk()) {
+                const current = get()
+                set({
+                   environments: current.environments.filter(e => e.id !== environmentId),
+                   selectedEnvironmentId:
+                      current.selectedEnvironmentId === environmentId
+                         ? null
+                         : current.selectedEnvironmentId,
+                   isLoading: false,
+                })
+                return ok(environmentId)
+             }
 
-            return result
-         },
+             set({ error: result.error.message, isLoading: false })
+             return err(result.error)
+          },
 
          selectEnvironment: (environmentId: string | null) => {
             if (environmentId !== null) {

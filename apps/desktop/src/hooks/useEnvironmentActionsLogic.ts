@@ -10,6 +10,7 @@ export function useEnvironmentActionsLogic(environment: Environment | null) {
    const restartEnvironment = useEnvironmentStore(s => s.restartEnvironment)
    const destroyEnvironment = useEnvironmentStore(s => s.destroyEnvironment)
    const nukeEnvironment = useEnvironmentStore(s => s.nukeEnvironment)
+   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const isLoading = useEnvironmentStore(s => s.isLoading)
 
    const handleStart = useCallback(() => {
@@ -34,9 +35,10 @@ export function useEnvironmentActionsLogic(environment: Environment | null) {
    const handleNuke = useCallback(async () => {
       if (environment) {
          await nukeEnvironment(environment.id)
+         selectEnvironment(null)
          setShowNukeConfirm(false)
       }
-   }, [environment, nukeEnvironment])
+   }, [environment, nukeEnvironment, selectEnvironment])
 
    return {
       showDestroyConfirm,

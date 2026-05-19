@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react"
+import { Toaster } from "sonner"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "motion/react"
 import { StatusBar, cn, Button } from "@sqlose/ui"
@@ -412,7 +413,7 @@ function AppContent() {
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative">
+                        <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative py-6">
                            <div className="flex items-center gap-2 app-no-drag">
                               {!sidebarOpen && (
                                  <button
@@ -813,6 +814,17 @@ function AppContent() {
                </div>
             </div>
          )}
+         <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+               style: {
+                  background: "var(--color-bg-secondary)",
+                  color: "var(--color-text-primary)",
+                  border: "1px solid var(--color-border)",
+               },
+            }}
+         />
       </div>
    )
 }

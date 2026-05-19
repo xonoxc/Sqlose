@@ -71,7 +71,7 @@ export interface IPCResponseMap {
    "env:get": Environment
    "env:duplicate": Environment
    "env:reset": Environment
-   "env:nuke": Environment
+   "env:nuke": { environmentId: string }
    "query:execute": QueryResult
    "import:csv": ImportResult
    "import:sql": { tablesCreated: string[] }

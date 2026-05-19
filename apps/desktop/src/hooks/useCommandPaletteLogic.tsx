@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react"
+import { toast } from "sonner"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useWorkspaceStore } from "../stores/workspaceStore"
 import { useSettingsStore } from "../stores/settingsStore"
@@ -49,6 +50,7 @@ export function useCommandPaletteLogic(
    const previousThemeIdRef = useRef<string | null>(null)
 
    const environments = useEnvironmentStore(s => s.environments)
+   const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const nukeEnvironment = useEnvironmentStore(s => s.nukeEnvironment)
    const openTab = useWorkspaceStore(s => s.openTab)
@@ -207,14 +209,18 @@ export function useCommandPaletteLogic(
             id: "nuke-env",
             label: "Nuke Environment",
             description:
-               "Delete the active environment's container and data, but keep the environment for a fresh start",
+                "Completely destroy the environment, its container and all data",
             icon: <IconTrash className="h-4 w-4" />,
             category: "action",
-            onSelect: () => {
-               if (activeTab?.environmentId) {
-                  nukeEnvironment(activeTab.environmentId)
-               }
-            },
+         onSelect: async () => {
+                const envId = selectedEnvironmentId
+                if (envId) {
+                   await nukeEnvironment(envId)
+                   selectEnvironment(null)
+                   onClose()
+                   toast.success("Environment has been nuked")
+                }
+             },
          },
          ...environments.map(env => ({
             id: `env-${env.id}` as const,
@@ -271,8 +277,9 @@ export function useCommandPaletteLogic(
          historyEntries,
          onOpenQuery,
          nukeEnvironment,
-         enterThemeMode,
-      ]
+          enterThemeMode,
+          selectedEnvironmentId,
+       ]
    )
 
    const groupedItems = useMemo(() => {
