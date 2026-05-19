@@ -13,7 +13,7 @@ export function Dashboard() {
                <div className="flex flex-col gap-2">
                   <h1 className="text-3xl font-bold tracking-tight text-text-primary flex items-center gap-3">
                      <IconDatabase className="h-8 w-8 text-accent" />
-                     Welcome to SQLLab
+                     Welcome to Sqlose
                   </h1>
                   <p className="text-text-muted text-base">
                      Select an existing database to start querying, or create a new one.

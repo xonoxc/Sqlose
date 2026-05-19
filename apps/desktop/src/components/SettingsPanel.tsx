@@ -55,7 +55,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                <ModalContent className="max-w-lg">
                   <ModalHeader>
                      <ModalTitle>Settings</ModalTitle>
-                     <ModalDescription>Configure your SQLLab preferences</ModalDescription>
+                     <ModalDescription>Configure your Sqlose preferences</ModalDescription>
                   </ModalHeader>
 
                   <div className="px-6 py-4 space-y-6">

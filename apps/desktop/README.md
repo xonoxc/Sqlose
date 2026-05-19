@@ -1,4 +1,4 @@
-# SQLLab Desktop
+# Sqlose Desktop
 
 Electron-based SQL client with multi-database support (Postgres, MySQL, SQLite), Vim-mode editor, and Docker-powered environments.
 
