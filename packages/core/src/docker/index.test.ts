@@ -8,6 +8,7 @@ import {
    startEnvironment,
    stopEnvironment,
    restartEnvironment,
+   pullImage,
    __setDocker,
 } from "./index"
 import * as portModule from "./port"
@@ -31,6 +32,7 @@ function makeMockDocker(
       createContainer: ReturnType<typeof vi.fn>
       getContainer: ReturnType<typeof vi.fn>
       listContainers: ReturnType<typeof vi.fn>
+      listImages: ReturnType<typeof vi.fn>
       pull: ReturnType<typeof vi.fn>
    }> = {}
 ) {
@@ -55,6 +57,8 @@ function makeMockDocker(
       createContainer: overrides.createContainer ?? vi.fn().mockResolvedValue(mockContainer),
       getContainer: overrides.getContainer ?? vi.fn().mockReturnValue(mockContainer),
       listContainers: overrides.listContainers ?? vi.fn().mockResolvedValue([]),
+      listImages:
+         overrides.listImages ?? vi.fn().mockResolvedValue([{ Id: "sha256:mock", RepoTags: [] }]),
       pull:
          overrides.pull ??
          vi
@@ -98,6 +102,69 @@ describe("Docker Orchestration", () => {
       const { testMySQLConnection } = await import("../drivers/mysql")
       ;(testPostgresConnection as Mock).mockReturnValue(mockOkBool(true))
       ;(testMySQLConnection as Mock).mockReturnValue(mockOkBool(true))
+   })
+
+   describe("pullImage", () => {
+      it("should skip pull when image already exists locally", async () => {
+         const mockPull = vi.fn()
+         __setDocker(
+            makeMockDocker({
+               listImages: vi.fn().mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["postgres:16-alpine"] }]),
+               pull: mockPull,
+            }) as never
+         )
+
+         const result = await pullImage("postgres")
+
+         expect(result.isOk()).toBe(true)
+         expect(mockPull).not.toHaveBeenCalled()
+      })
+
+      it("should pull when image is not found locally", async () => {
+         __setDocker(
+            makeMockDocker({
+               listImages: vi.fn().mockResolvedValue([]),
+            }) as never
+         )
+
+         const result = await pullImage("postgres")
+
+         expect(result.isOk()).toBe(true)
+      })
+
+      it("should skip pull for sqlite image when already local", async () => {
+         const mockPull = vi.fn()
+         __setDocker(
+            makeMockDocker({
+               listImages: vi.fn().mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["nouchka/sqlite3:latest"] }]),
+               pull: mockPull,
+            }) as never
+         )
+
+         const result = await pullImage("sqlite")
+
+         expect(result.isOk()).toBe(true)
+         expect(mockPull).not.toHaveBeenCalled()
+      })
+
+      it("should return DockerError on pull failure", async () => {
+         __setDocker(
+            makeMockDocker({
+               listImages: vi.fn().mockResolvedValue([]),
+               pull: vi.fn().mockImplementation((_image, _opts, callback) => {
+                  callback(new Error("Network error"), null)
+               }),
+            }) as never
+         )
+
+         const result = await pullImage("postgres")
+
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(DockerError)
+            expect(result.error.code).toBe("docker:pull_failed")
+         }
+      })
    })
 
    describe("createEnvironment", () => {

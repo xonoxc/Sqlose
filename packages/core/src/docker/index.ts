@@ -80,23 +80,29 @@ export function pullImage(dbType: DBType): AsyncAppResult<void> {
    if (!config.image) return Promise.resolve(okResult(undefined))
 
    const docker = getDocker()
-   return withTimeout(
-      new Promise<void>((resolve, reject) => {
-         docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
-            if (err) return reject(err)
-            docker.modem.followProgress(
-               stream as NodeJS.ReadableStream,
-               (progressErr: Error | null) => {
-                  if (progressErr) reject(progressErr)
-                  else resolve()
-               }
-            )
-         })
-      }),
-      PULL_TIMEOUT_MS,
-      `Pulling image ${config.image}`
-   )
-      .then(() => okResult(undefined))
+
+   return docker
+      .listImages({ filters: { reference: [config.image] } })
+      .then(images => {
+         if (images.length > 0) return okResult(undefined)
+
+         return withTimeout(
+            new Promise<void>((resolve, reject) => {
+               docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
+                  if (err) return reject(err)
+                  docker.modem.followProgress(
+                     stream as NodeJS.ReadableStream,
+                     (progressErr: Error | null) => {
+                        if (progressErr) reject(progressErr)
+                        else resolve()
+                     }
+                  )
+               })
+            }),
+            PULL_TIMEOUT_MS,
+            `Pulling image ${config.image}`
+         ).then(() => okResult(undefined))
+      })
       .catch((e: Error) =>
          err(
             new DockerError(
