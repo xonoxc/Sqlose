@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import type { Environment } from "@sqlose/shared"
 
@@ -13,32 +13,32 @@ export function useEnvironmentActionsLogic(environment: Environment | null) {
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const isLoading = useEnvironmentStore(s => s.isLoading)
 
-   const handleStart = useCallback(() => {
+   const handleStart = () => {
       if (environment) startEnvironment(environment.id)
-   }, [environment, startEnvironment])
+   }
 
-   const handleStop = useCallback(() => {
+   const handleStop = () => {
       if (environment) stopEnvironment(environment.id)
-   }, [environment, stopEnvironment])
+   }
 
-   const handleRestart = useCallback(() => {
+   const handleRestart = () => {
       if (environment) restartEnvironment(environment.id)
-   }, [environment, restartEnvironment])
+   }
 
-   const handleDestroy = useCallback(async () => {
+   const handleDestroy = async () => {
       if (environment) {
          await destroyEnvironment(environment.id)
          setShowDestroyConfirm(false)
       }
-   }, [environment, destroyEnvironment])
+   }
 
-   const handleNuke = useCallback(async () => {
+   const handleNuke = async () => {
       if (environment) {
          await nukeEnvironment(environment.id)
          selectEnvironment(null)
          setShowNukeConfirm(false)
       }
-   }, [environment, nukeEnvironment, selectEnvironment])
+   }
 
    return {
       showDestroyConfirm,

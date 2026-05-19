@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from "react"
+import { useRef, useEffect, useState } from "react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useEditorStore } from "../stores/editorStore"
@@ -59,7 +59,7 @@ export function useSQLEditorLogic(
       }
    }
 
-   const applyMonacoTheme = useCallback((monaco: typeof import("monaco-editor")) => {
+   const applyMonacoTheme = (monaco: typeof import("monaco-editor")) => {
       const currentTheme = themes.find(t => t.id === themeId) ?? themes[0]
       const m = currentTheme.monaco
 
@@ -71,120 +71,117 @@ export function useSQLEditorLogic(
       })
 
       monaco.editor.setTheme("sqlose-theme")
-   }, [themeId])
+   }
 
-   const handleEditorMount = useCallback(
-      async (
-         monacoEditor: editor.IStandaloneCodeEditor,
-         monaco: typeof import("monaco-editor")
-      ) => {
-         editorRef.current = monacoEditor
-         monacoRef.current = monaco
+   const handleEditorMount = async (
+      monacoEditor: editor.IStandaloneCodeEditor,
+      monaco: typeof import("monaco-editor")
+   ) => {
+      editorRef.current = monacoEditor
+      monacoRef.current = monaco
 
-         applyMonacoTheme(monaco)
+      applyMonacoTheme(monaco)
 
-         monaco.languages.registerCompletionItemProvider("sql", {
-            provideCompletionItems: (model, position) => {
-               const word = model.getWordUntilPosition(position)
-               const range = {
-                  startLineNumber: position.lineNumber,
-                  endLineNumber: position.lineNumber,
-                  startColumn: word.startColumn,
-                  endColumn: word.endColumn,
-               }
-               const suggestions = [
-                  {
-                     label: "SELECT",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "SELECT ",
-                     range,
-                  },
-                  {
-                     label: "FROM",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "FROM ",
-                     range,
-                  },
-                  {
-                     label: "WHERE",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "WHERE ",
-                     range,
-                  },
-                  {
-                     label: "INSERT",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "INSERT INTO ",
-                     range,
-                  },
-                  {
-                     label: "UPDATE",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "UPDATE ",
-                     range,
-                  },
-                  {
-                     label: "DELETE",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "DELETE FROM ",
-                     range,
-                  },
-                  {
-                     label: "JOIN",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "JOIN ",
-                     range,
-                  },
-                  {
-                     label: "LEFT JOIN",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "LEFT JOIN ",
-                     range,
-                  },
-                  {
-                     label: "GROUP BY",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "GROUP BY ",
-                     range,
-                  },
-                  {
-                     label: "ORDER BY",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "ORDER BY ",
-                     range,
-                  },
-                  {
-                     label: "LIMIT",
-                     kind: monaco.languages.CompletionItemKind.Keyword,
-                     insertText: "LIMIT ",
-                     range,
-                  },
-               ]
-               return { suggestions }
-            },
-         })
-
-         monacoEditor.onKeyDown(e => {
-            if (e.browserEvent.key !== ":") return
-            const state = useEditorStore.getState()
-            if (state.vimEnabled && state.vimMode === "normal") {
-               e.preventDefault()
-               e.stopPropagation()
-               onCommandMode?.()
+      monaco.languages.registerCompletionItemProvider("sql", {
+         provideCompletionItems: (model, position) => {
+            const word = model.getWordUntilPosition(position)
+            const range = {
+               startLineNumber: position.lineNumber,
+               endLineNumber: position.lineNumber,
+               startColumn: word.startColumn,
+               endColumn: word.endColumn,
             }
-         })
+            const suggestions = [
+               {
+                  label: "SELECT",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "SELECT ",
+                  range,
+               },
+               {
+                  label: "FROM",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "FROM ",
+                  range,
+               },
+               {
+                  label: "WHERE",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "WHERE ",
+                  range,
+               },
+               {
+                  label: "INSERT",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "INSERT INTO ",
+                  range,
+               },
+               {
+                  label: "UPDATE",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "UPDATE ",
+                  range,
+               },
+               {
+                  label: "DELETE",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "DELETE FROM ",
+                  range,
+               },
+               {
+                  label: "JOIN",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "JOIN ",
+                  range,
+               },
+               {
+                  label: "LEFT JOIN",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "LEFT JOIN ",
+                  range,
+               },
+               {
+                  label: "GROUP BY",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "GROUP BY ",
+                  range,
+               },
+               {
+                  label: "ORDER BY",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "ORDER BY ",
+                  range,
+               },
+               {
+                  label: "LIMIT",
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: "LIMIT ",
+                  range,
+               },
+            ]
+            return { suggestions }
+         },
+      })
 
-         if (vimEnabled && vimStatusRef.current) {
-            const { initVimMode } = await import("monaco-vim")
-            vimModeRef.current = initVimMode(monacoEditor, vimStatusRef.current)
-            setupVimObserver()
-            monacoEditor.onDidChangeModelContent(() => {
-               onChange(monacoEditor.getValue())
-            })
+      monacoEditor.onKeyDown(e => {
+         if (e.browserEvent.key !== ":") return
+         const state = useEditorStore.getState()
+         if (state.vimEnabled && state.vimMode === "normal") {
+            e.preventDefault()
+            e.stopPropagation()
+            onCommandMode?.()
          }
-      },
-      [vimEnabled, onChange, onCommandMode, applyMonacoTheme]
-   )
+      })
+
+      if (vimEnabled && vimStatusRef.current) {
+         const { initVimMode } = await import("monaco-vim")
+         vimModeRef.current = initVimMode(monacoEditor, vimStatusRef.current)
+         setupVimObserver()
+         monacoEditor.onDidChangeModelContent(() => {
+            onChange(monacoEditor.getValue())
+         })
+      }
+   }
 
    useEffect(() => {
       if (monacoRef.current) {
@@ -192,14 +189,11 @@ export function useSQLEditorLogic(
       }
    }, [themeId, applyMonacoTheme])
 
-   const handleChange = useCallback(
-      (newValue: string | undefined) => {
-         if (newValue !== undefined && !vimEnabled) {
-            onChange(newValue)
-         }
-      },
-      [vimEnabled, onChange]
-   )
+   const handleChange = (newValue: string | undefined) => {
+      if (newValue !== undefined && !vimEnabled) {
+         onChange(newValue)
+      }
+   }
 
    useEffect(() => {
       if (editorRef.current) {
@@ -227,13 +221,13 @@ export function useSQLEditorLogic(
       }
    }, [])
 
-   const handleSaveSubmit = useCallback(() => {
+   const handleSaveSubmit = () => {
       if (saveName.trim()) {
          saveQuery(saveName.trim(), value, [], selectedEnvironmentId)
          setSaveDialogOpen(false)
          setSaveName("")
       }
-   }, [saveName, value, selectedEnvironmentId, saveQuery])
+   }
 
    return {
       editorRef,

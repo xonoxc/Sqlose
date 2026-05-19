@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useWorkspaceStore } from "../stores/workspaceStore"
 import { useDatabaseStore } from "../stores/databaseStore"
 import { useEnvironmentStore } from "../stores/environmentStore"
@@ -32,12 +32,9 @@ export function useTableBrowserState() {
       }
    }, [tableName, selectedEnvironmentId, selectedEnv, fetchTableData])
 
-   const totalPages = useMemo(() => {
-      if (!tableData) return 0
-      return Math.ceil(tableData.totalCount / tableData.pageSize)
-   }, [tableData])
+   const totalPages = !tableData ? 0 : Math.ceil(tableData.totalCount / tableData.pageSize)
 
-   const handleRefresh = useCallback(() => {
+   const handleRefresh = () => {
       if (tableName && selectedEnvironmentId) {
          fetchTableData(
             selectedEnvironmentId,
@@ -46,19 +43,19 @@ export function useTableBrowserState() {
             tableData?.pageSize ?? 100
          )
       }
-   }, [tableName, selectedEnvironmentId, fetchTableData, tableData])
+   }
 
-   const handlePrevPage = useCallback(() => {
+   const handlePrevPage = () => {
       if (tableName && selectedEnvironmentId && tableData && tableData.page > 1) {
          fetchTableData(selectedEnvironmentId, tableName, tableData.page - 1, tableData.pageSize)
       }
-   }, [tableName, selectedEnvironmentId, fetchTableData, tableData])
+   }
 
-   const handleNextPage = useCallback(() => {
+   const handleNextPage = () => {
       if (tableName && selectedEnvironmentId && tableData && tableData.page < totalPages) {
          fetchTableData(selectedEnvironmentId, tableName, tableData.page + 1, tableData.pageSize)
       }
-   }, [tableName, selectedEnvironmentId, fetchTableData, tableData, totalPages])
+   }
 
    const displayTableName = tableName ?? tableNameRef.current
 

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
    useReactTable,
    getCoreRowModel,
@@ -143,7 +143,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
    const parentRef = useRef<HTMLDivElement>(null)
    const resizeRef = useRef<{ colId: string; startX: number; startPct: number } | null>(null)
 
-   const columnMeta = useMemo(() => {
+   const columnMeta = (() => {
       if (data.length === 0)
          return { types: {} as Record<string, ColumnType>, widths: {} as Record<string, string> }
       const keys = Object.keys(data[0])
@@ -167,47 +167,38 @@ export function ResultsTable<T extends Record<string, unknown>>({
       })
 
       return { types, widths }
-   }, [data])
+   })()
 
-   const columns: ColumnDef<T>[] = useMemo(() => {
-      if (data.length === 0) return []
-      return Object.keys(data[0]).map(key => {
-         const colType = columnMeta.types[key] ?? "text"
-         return {
-            id: key,
-            accessorKey: key,
-            header: () => (
-               <div className="flex items-center gap-1.5 w-full overflow-hidden">
-                  <span className="truncate text-[11px] font-medium leading-none">{key}</span>
-                  <ColumnTypeIcon type={colType} />
-               </div>
-            ),
-            cell: info => {
-               const value = info.getValue()
-               if (value === null) return <span className="text-text-muted italic">NULL</span>
-               if (typeof value === "object") return JSON.stringify(value)
-               return String(value)
-            },
-            enableSorting: true,
-         }
-      })
-   }, [data, columnMeta.types])
+   const columns: ColumnDef<T>[] = data.length === 0 ? [] : Object.keys(data[0]).map(key => {
+      const colType = columnMeta.types[key] ?? "text"
+      return {
+         id: key,
+         accessorKey: key,
+         header: () => (
+            <div className="flex items-center gap-1.5 w-full overflow-hidden">
+               <span className="truncate text-[11px] font-medium leading-none">{key}</span>
+               <ColumnTypeIcon type={colType} />
+            </div>
+         ),
+         cell: info => {
+            const value = info.getValue()
+            if (value === null) return <span className="text-text-muted italic">NULL</span>
+            if (typeof value === "object") return JSON.stringify(value)
+            return String(value)
+         },
+         enableSorting: true,
+      }
+   })
 
-   const dataKey = useMemo(() => {
-      if (data.length === 0) return ""
-      return Object.keys(data[0]).join(",")
-   }, [data])
+   const dataKey = data.length === 0 ? "" : Object.keys(data[0]).join(",")
 
    useEffect(() => {
       setResizeOverrides({})
    }, [dataKey])
 
-   const getColumnWidth = useCallback(
-      (colId: string): string => {
-         return resizeOverrides[colId] ?? columnMeta.widths[colId] ?? "auto"
-      },
-      [resizeOverrides, columnMeta.widths]
-   )
+   const getColumnWidth = (colId: string): string => {
+      return resizeOverrides[colId] ?? columnMeta.widths[colId] ?? "auto"
+   }
 
    const table = useReactTable({
       data: data as T[],
@@ -227,7 +218,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
       overscan: 15,
    })
 
-   const handleContextMenu = useCallback((e: React.MouseEvent, row?: Row<T>, colName?: string) => {
+   const handleContextMenu = (e: React.MouseEvent, row?: Row<T>, colName?: string) => {
       e.preventDefault()
       if (row && colName) {
          setCtxMenu({
@@ -248,9 +239,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
             rowIndex: row.index,
          })
       }
-   }, [])
+   }
 
-   const handleHeaderContextMenu = useCallback((e: React.MouseEvent) => {
+   const handleHeaderContextMenu = (e: React.MouseEvent) => {
       e.preventDefault()
       setCtxMenu({
          visible: true,
@@ -258,80 +249,74 @@ export function ResultsTable<T extends Record<string, unknown>>({
          y: e.clientY,
          type: "header",
       })
-   }, [])
+   }
 
-   const closeCtxMenu = useCallback(() => {
+   const closeCtxMenu = () => {
       setCtxMenu(prev => ({ ...prev, visible: false }))
-   }, [])
+   }
 
-   const columnNames = useMemo(() => {
-      if (data.length === 0) return []
-      return Object.keys(data[0])
-   }, [data])
+   const columnNames = data.length === 0 ? [] : Object.keys(data[0])
 
-   const handleResizeStart = useCallback(
-      (e: React.MouseEvent, colId: string) => {
-         e.preventDefault()
-         e.stopPropagation()
-         const startX = e.clientX
-         const currentPct = parseFloat(getColumnWidth(colId))
-         resizeRef.current = { colId, startX, startPct: currentPct }
+   const handleResizeStart = (e: React.MouseEvent, colId: string) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const startX = e.clientX
+      const currentPct = parseFloat(getColumnWidth(colId))
+      resizeRef.current = { colId, startX, startPct: currentPct }
 
-         const handleMouseMove = (moveE: MouseEvent) => {
-            if (!resizeRef.current) return
-            const container = parentRef.current
-            if (!container) return
-            const containerWidth = container.clientWidth
-            if (containerWidth <= 0) return
+      const handleMouseMove = (moveE: MouseEvent) => {
+         if (!resizeRef.current) return
+         const container = parentRef.current
+         if (!container) return
+         const containerWidth = container.clientWidth
+         if (containerWidth <= 0) return
 
-            const { colId, startX, startPct } = resizeRef.current
-            const delta = moveE.clientX - startX
-            const deltaPct = (delta / containerWidth) * 100
-            const newPct = Math.max(5, Math.min(80, startPct + deltaPct))
+         const { colId, startX, startPct } = resizeRef.current
+         const delta = moveE.clientX - startX
+         const deltaPct = (delta / containerWidth) * 100
+         const newPct = Math.max(5, Math.min(80, startPct + deltaPct))
 
-            const keys = Object.keys(columnMeta.widths)
-            const otherKeys = keys.filter(k => k !== colId)
+         const keys = Object.keys(columnMeta.widths)
+         const otherKeys = keys.filter(k => k !== colId)
 
-            let otherTotal = 0
-            const otherCurrent: Record<string, number> = {}
-            otherKeys.forEach(k => {
-               const pct = parseFloat(getColumnWidth(k))
-               otherCurrent[k] = pct
-               otherTotal += pct
-            })
+         let otherTotal = 0
+         const otherCurrent: Record<string, number> = {}
+         otherKeys.forEach(k => {
+            const pct = parseFloat(getColumnWidth(k))
+            otherCurrent[k] = pct
+            otherTotal += pct
+         })
 
-            if (otherTotal <= 0) return
+         if (otherTotal <= 0) return
 
-            const oldColPct = startPct
-            const deltaTotal = newPct - oldColPct
+         const oldColPct = startPct
+         const deltaTotal = newPct - oldColPct
 
-            const newOverrides: Record<string, string> = {
-               [colId]: `${Math.round(newPct * 10) / 10}%`,
-            }
-            otherKeys.forEach(k => {
-               const share = otherCurrent[k] / otherTotal
-               const adjusted = Math.max(otherCurrent[k] - deltaTotal * share, 2)
-               newOverrides[k] = `${Math.round(adjusted * 10) / 10}%`
-            })
-
-            setResizeOverrides(newOverrides)
+         const newOverrides: Record<string, string> = {
+            [colId]: `${Math.round(newPct * 10) / 10}%`,
          }
+         otherKeys.forEach(k => {
+            const share = otherCurrent[k] / otherTotal
+            const adjusted = Math.max(otherCurrent[k] - deltaTotal * share, 2)
+            newOverrides[k] = `${Math.round(adjusted * 10) / 10}%`
+         })
 
-         const handleMouseUp = () => {
-            resizeRef.current = null
-            document.removeEventListener("mousemove", handleMouseMove)
-            document.removeEventListener("mouseup", handleMouseUp)
-            document.body.style.cursor = ""
-            document.body.style.userSelect = ""
-         }
+         setResizeOverrides(newOverrides)
+      }
 
-         document.addEventListener("mousemove", handleMouseMove)
-         document.addEventListener("mouseup", handleMouseUp)
-         document.body.style.cursor = "col-resize"
-         document.body.style.userSelect = "none"
-      },
-      [columnMeta.widths, getColumnWidth]
-   )
+      const handleMouseUp = () => {
+         resizeRef.current = null
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
+
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+   }
 
    if (data.length === 0) {
       return (

@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react"
+import { useRef } from "react"
 import { useWorkspaceStore } from "../stores/workspaceStore"
 
 export function useTabBarLogic() {
@@ -12,15 +12,15 @@ export function useTabBarLogic() {
    const dragItem = useRef<number | null>(null)
    const dragOverItem = useRef<number | null>(null)
 
-   const handleDragStart = useCallback((index: number) => {
+   const handleDragStart = (index: number) => {
       dragItem.current = index
-   }, [])
+   }
 
-   const handleDragOver = useCallback((index: number) => {
+   const handleDragOver = (index: number) => {
       dragOverItem.current = index
-   }, [])
+   }
 
-   const handleDragEnd = useCallback(() => {
+   const handleDragEnd = () => {
       if (
          dragItem.current !== null &&
          dragOverItem.current !== null &&
@@ -30,25 +30,19 @@ export function useTabBarLogic() {
       }
       dragItem.current = null
       dragOverItem.current = null
-   }, [moveTab])
+   }
 
-   const handleOpenTab = useCallback(() => {
+   const handleOpenTab = () => {
       openTab()
-   }, [openTab])
+   }
 
-   const handleCloseTab = useCallback(
-      (tabId: string) => {
-         closeTab(tabId)
-      },
-      [closeTab]
-   )
+   const handleCloseTab = (tabId: string) => {
+      closeTab(tabId)
+   }
 
-   const handleSetActiveTab = useCallback(
-      (tabId: string) => {
-         setActiveTab(tabId)
-      },
-      [setActiveTab]
-   )
+   const handleSetActiveTab = (tabId: string) => {
+      setActiveTab(tabId)
+   }
 
    return {
       tabs,

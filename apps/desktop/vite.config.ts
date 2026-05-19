@@ -46,7 +46,11 @@ const NATIVE_EXTERNALS = [
 
 export default defineConfig({
    plugins: [
-      react(),
+      react({
+         babel: {
+            plugins: [["babel-plugin-react-compiler", {}]],
+         },
+      }),
       tailwindcss(),
       electron({
          main: {

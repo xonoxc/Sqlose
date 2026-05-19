@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { Environment, DBType } from "@sqlose/shared"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useEditorStore } from "../stores/editorStore"
@@ -18,14 +18,14 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const historyEntries = useHistoryStore(s => s.entries)
    const savedQueries = useSavedQueriesStore(s => s.queries)
 
-   const savedQueryNamesBySql = useMemo(() => {
+   const savedQueryNamesBySql = (() => {
       const map = new Map<string, string>()
       for (const q of savedQueries) {
          const key = q.sql.trim()
          if (!map.has(key)) map.set(key, q.name)
       }
       return map
-   }, [savedQueries])
+   })()
 
    const tables = useDatabaseStore(s => s.tables)
    const tableColumns = useDatabaseStore(s => s.tableColumns)
@@ -60,130 +60,98 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
    }, [selectedEnvironmentId, selectedEnv, fetchTables, reset])
 
-   const filteredTables = useMemo(() => {
-      if (!search) return tables
-      const q = search.toLowerCase()
-      return tables.filter(t => t.toLowerCase().includes(q))
-   }, [tables, search])
+   const filteredTables = !search
+      ? tables
+      : tables.filter(t => t.toLowerCase().includes(search.toLowerCase()))
 
-   const handleSelect = useCallback(
-      (id: string) => {
-         selectEnvironment(id)
-         setSelectedEnvironment(id)
-      },
-      [selectEnvironment, setSelectedEnvironment]
-   )
+   const handleSelect = (id: string) => {
+      selectEnvironment(id)
+      setSelectedEnvironment(id)
+   }
 
-   const handleTableClick = useCallback(
-      (tableName: string) => {
-         setActiveTable(tableName)
-         onOpenTable(tableName)
-      },
-      [setActiveTable, onOpenTable]
-   )
+   const handleTableClick = (tableName: string) => {
+      setActiveTable(tableName)
+      onOpenTable(tableName)
+   }
 
-   const handleChevronClick = useCallback(
-      (e: React.MouseEvent, tableName: string) => {
-         e.stopPropagation()
-         e.preventDefault()
-         if (!selectedEnvironmentId || !selectedEnv) return
-         setExpanded(tableName)
-         if (!tableColumns[tableName]) {
-            fetchColumns(selectedEnvironmentId, tableName, selectedEnv.dbType as DBType)
-         }
-      },
-      [selectedEnvironmentId, selectedEnv, setExpanded, tableColumns, fetchColumns]
-   )
+   const handleChevronClick = (e: React.MouseEvent, tableName: string) => {
+      e.stopPropagation()
+      e.preventDefault()
+      if (!selectedEnvironmentId || !selectedEnv) return
+      setExpanded(tableName)
+      if (!tableColumns[tableName]) {
+         fetchColumns(selectedEnvironmentId, tableName, selectedEnv.dbType as DBType)
+      }
+   }
 
-   const handleRefresh = useCallback(async () => {
+   const handleRefresh = async () => {
       if (!selectedEnvironmentId || !selectedEnv) return
       reset()
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
-   }, [selectedEnvironmentId, selectedEnv, reset, fetchTables])
+   }
 
-   const handleNavClick = useCallback((tab: NavTab) => {
+   const handleNavClick = (tab: NavTab) => {
       setActiveNav(prev => (prev === tab ? null : tab))
-   }, [])
+   }
 
-   const filteredIndex = useMemo(() => {
-      const target = activeTableId ? filteredTables.indexOf(activeTableId) : -1
-      return target
-   }, [activeTableId, filteredTables])
+   const filteredIndex = activeTableId ? filteredTables.indexOf(activeTableId) : -1
 
-   const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent) => {
-         if (filteredTables.length === 0) return
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (filteredTables.length === 0) return
 
-         let currentIndex =
-            keyboardFocusedIndex >= 0
-               ? keyboardFocusedIndex
-               : filteredIndex >= 0
-                 ? filteredIndex
-                 : 0
+      let currentIndex =
+         keyboardFocusedIndex >= 0
+            ? keyboardFocusedIndex
+            : filteredIndex >= 0
+              ? filteredIndex
+              : 0
 
-         switch (e.key) {
-            case "ArrowDown":
-               e.preventDefault()
-               currentIndex = Math.min(currentIndex + 1, filteredTables.length - 1)
-               setKeyboardFocusedIndex(currentIndex)
-               break
-            case "ArrowUp":
-               e.preventDefault()
-               currentIndex = Math.max(currentIndex - 1, 0)
-               setKeyboardFocusedIndex(currentIndex)
-               break
-            case "Enter": {
-               e.preventDefault()
-               const table = filteredTables[currentIndex]
-               if (table) {
-                  handleTableClick(table)
-               }
-               break
+      switch (e.key) {
+         case "ArrowDown":
+            e.preventDefault()
+            currentIndex = Math.min(currentIndex + 1, filteredTables.length - 1)
+            setKeyboardFocusedIndex(currentIndex)
+            break
+         case "ArrowUp":
+            e.preventDefault()
+            currentIndex = Math.max(currentIndex - 1, 0)
+            setKeyboardFocusedIndex(currentIndex)
+            break
+         case "Enter": {
+            e.preventDefault()
+            const table = filteredTables[currentIndex]
+            if (table) {
+               handleTableClick(table)
             }
-            case "ArrowRight": {
-               e.preventDefault()
-               const table = filteredTables[currentIndex]
-               if (table && selectedEnvironmentId && selectedEnv) {
-                  if (!expandedTableIds.includes(table)) {
-                     setExpanded(table)
-                     if (!tableColumns[table]) {
-                        fetchColumns(selectedEnvironmentId, table, selectedEnv.dbType as DBType)
-                     }
+            break
+         }
+         case "ArrowRight": {
+            e.preventDefault()
+            const table = filteredTables[currentIndex]
+            if (table && selectedEnvironmentId && selectedEnv) {
+               if (!expandedTableIds.includes(table)) {
+                  setExpanded(table)
+                  if (!tableColumns[table]) {
+                     fetchColumns(selectedEnvironmentId, table, selectedEnv.dbType as DBType)
                   }
                }
-               break
             }
-            case "ArrowLeft": {
-               e.preventDefault()
-               const table = filteredTables[currentIndex]
-               if (table && expandedTableIds.includes(table)) {
-                  setExpanded(table)
-               }
-               break
-            }
+            break
          }
-      },
-      [
-         filteredTables,
-         keyboardFocusedIndex,
-         filteredIndex,
-         setKeyboardFocusedIndex,
-         handleTableClick,
-         selectedEnvironmentId,
-         selectedEnv,
-         expandedTableIds,
-         setExpanded,
-         tableColumns,
-         fetchColumns,
-      ]
-   )
+         case "ArrowLeft": {
+            e.preventDefault()
+            const table = filteredTables[currentIndex]
+            if (table && expandedTableIds.includes(table)) {
+               setExpanded(table)
+            }
+            break
+         }
+      }
+   }
 
-   const handleTableDoubleClick = useCallback(
-      (tableName: string) => {
-         onOpenTable(tableName)
-      },
-      [onOpenTable]
-   )
+   const handleTableDoubleClick = (tableName: string) => {
+      onOpenTable(tableName)
+   }
 
    return {
       environments,

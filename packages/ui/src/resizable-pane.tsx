@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, type ReactNode } from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import { cn } from "./cn"
 
 interface ResizablePaneProps {
@@ -24,26 +24,23 @@ export function ResizablePane({
    const [isDragging, setIsDragging] = useState(false)
    const containerRef = useRef<HTMLDivElement>(null)
 
-   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+   const handleMouseDown = (e: React.MouseEvent) => {
       e.preventDefault()
       setIsDragging(true)
-   }, [])
+   }
 
-   const handleMouseMove = useCallback(
-      (e: MouseEvent) => {
-         if (!isDragging || !containerRef.current) return
-         const rect = containerRef.current.getBoundingClientRect()
-         let newWidth = e.clientX - rect.left
-         newWidth = Math.max(minLeftWidth, Math.min(maxLeftWidth, newWidth))
-         setLeftWidth(newWidth)
-         onResize?.(newWidth)
-      },
-      [isDragging, minLeftWidth, maxLeftWidth, onResize]
-   )
+   const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      let newWidth = e.clientX - rect.left
+      newWidth = Math.max(minLeftWidth, Math.min(maxLeftWidth, newWidth))
+      setLeftWidth(newWidth)
+      onResize?.(newWidth)
+   }
 
-   const handleMouseUp = useCallback(() => {
+   const handleMouseUp = () => {
       setIsDragging(false)
-   }, [])
+   }
 
    useEffect(() => {
       if (isDragging) {

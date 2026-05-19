@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useWorkspaceStore } from "../stores/workspaceStore"
@@ -64,39 +64,33 @@ export function useCommandPaletteLogic(
    const historyEntries = useHistoryStore(s => s.entries)
    const { themeId, setTheme } = useThemeStore()
 
-   const handleSelectEnvironment = useCallback(
-      (envId: string) => {
-         selectEnvironment(envId)
-         openTab(envId)
-      },
-      [selectEnvironment, openTab]
-   )
+   const handleSelectEnvironment = (envId: string) => {
+      selectEnvironment(envId)
+      openTab(envId)
+   }
 
-   const enterThemeMode = useCallback(() => {
+   const enterThemeMode = () => {
       previousThemeIdRef.current = themeId
       setMode("themes")
       setQuery("")
       setSelectedIndex(0)
-   }, [themeId])
+   }
 
-   const handleThemeHover = useCallback((themeId: string | null) => {
+   const handleThemeHover = (themeId: string | null) => {
       if (themeId) {
          const theme = themes.find(t => t.id === themeId)
          if (theme) applyTheme(theme)
       }
-   }, [])
+   }
 
-   const handleThemeSelect = useCallback(
-      (id: string) => {
-         previousThemeIdRef.current = null
-         setTheme(id)
-         setMode("default")
-         setQuery("")
-      },
-      [setTheme]
-   )
+   const handleThemeSelect = (id: string) => {
+      previousThemeIdRef.current = null
+      setTheme(id)
+      setMode("default")
+      setQuery("")
+   }
 
-   const exitThemeMode = useCallback(() => {
+   const exitThemeMode = () => {
       if (previousThemeIdRef.current) {
          const original = themes.find(t => t.id === previousThemeIdRef.current)
          if (original) applyTheme(original)
@@ -104,185 +98,162 @@ export function useCommandPaletteLogic(
       previousThemeIdRef.current = null
       setMode("default")
       setQuery("")
-   }, [])
+   }
 
-   const filteredThemes = useMemo(() => {
-      if (!query) return themes
-      const q = query.toLowerCase()
-      return themes.filter(
-         t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
-      )
-   }, [query])
+   const filteredThemes = !query
+      ? themes
+      : themes.filter(
+           t => t.name.toLowerCase().includes(query.toLowerCase()) || t.id.toLowerCase().includes(query.toLowerCase())
+        )
 
-   const actions = useMemo<PaletteAction[]>(
-      () => [
-         {
-            id: "new-query",
-            label: "New Query",
-            description: "Open a new query tab",
-            icon: <IconFileCode className="h-4 w-4" />,
-            shortcut: isMac() ? "⌘N" : "Ctrl+N",
-            category: "action",
-            onSelect: () => openTab(),
+   const actions: PaletteAction[] = [
+      {
+         id: "new-query",
+         label: "New Query",
+         description: "Open a new query tab",
+         icon: <IconFileCode className="h-4 w-4" />,
+         shortcut: isMac() ? "⌘N" : "Ctrl+N",
+         category: "action",
+         onSelect: () => openTab(),
+      },
+      {
+         id: "run-query",
+         label: "Run Query",
+         description: "Execute the current query",
+         icon: <IconPlayerPlay className="h-4 w-4" />,
+         shortcut: isMac() ? "⌘⏎" : "Ctrl+↵",
+         category: "action",
+         onSelect: () => onExecuteQuery?.(),
+      },
+      {
+         id: "save-query",
+         label: "Save Query",
+         description: "Save the current query",
+         icon: <IconDeviceFloppy className="h-4 w-4" />,
+         shortcut: isMac() ? "⌘S" : "Ctrl+S",
+         category: "action",
+         onSelect: () => {},
+      },
+      {
+         id: "clear-results",
+         label: "Clear Results",
+         description: "Clear the current query results",
+         icon: <IconTrash className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => onClearResults?.(),
+      },
+      {
+         id: "open-saved",
+         label: "Saved Queries",
+         description: "Browse saved queries",
+         icon: <IconBookmark className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => {},
+      },
+      {
+         id: "open-history",
+         label: "Query History",
+         description: "Browse past query executions",
+         icon: <IconHistory className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => {},
+      },
+      {
+         id: "switch-db",
+         label: "Switch Database",
+         description: "Change active database connection",
+         icon: <IconArrowLeftRight className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => {
+            if (environments.length > 0) {
+               const currentIdx = environments.findIndex(
+                  e => e.id === activeTab?.environmentId
+               )
+               const nextIdx = (currentIdx + 1) % environments.length
+               handleSelectEnvironment(environments[nextIdx].id)
+            }
          },
-         {
-            id: "run-query",
-            label: "Run Query",
-            description: "Execute the current query",
-            icon: <IconPlayerPlay className="h-4 w-4" />,
-            shortcut: isMac() ? "⌘⏎" : "Ctrl+↵",
-            category: "action",
-            onSelect: () => onExecuteQuery?.(),
-         },
-         {
-            id: "save-query",
-            label: "Save Query",
-            description: "Save the current query",
-            icon: <IconDeviceFloppy className="h-4 w-4" />,
-            shortcut: isMac() ? "⌘S" : "Ctrl+S",
-            category: "action",
-            onSelect: () => {},
-         },
-         {
-            id: "clear-results",
-            label: "Clear Results",
-            description: "Clear the current query results",
-            icon: <IconTrash className="h-4 w-4" />,
-            category: "action",
-            onSelect: () => onClearResults?.(),
-         },
-         {
-            id: "open-saved",
-            label: "Saved Queries",
-            description: "Browse saved queries",
-            icon: <IconBookmark className="h-4 w-4" />,
-            category: "action",
-            onSelect: () => {},
-         },
-         {
-            id: "open-history",
-            label: "Query History",
-            description: "Browse past query executions",
-            icon: <IconHistory className="h-4 w-4" />,
-            category: "action",
-            onSelect: () => {},
-         },
-         {
-            id: "switch-db",
-            label: "Switch Database",
-            description: "Change active database connection",
-            icon: <IconArrowLeftRight className="h-4 w-4" />,
-            category: "action",
-            onSelect: () => {
-               if (environments.length > 0) {
-                  const currentIdx = environments.findIndex(
-                     e => e.id === activeTab?.environmentId
-                  )
-                  const nextIdx = (currentIdx + 1) % environments.length
-                  handleSelectEnvironment(environments[nextIdx].id)
-               }
-            },
-         },
-         {
-            id: "toggle-vim",
-            label: vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode",
-            description: vimModeEnabled
-               ? "Turn off Vim keybindings in the editor"
-               : "Turn on Vim keybindings in the editor",
-            icon: vimModeEnabled ? (
-               <IconToggleRight className="h-4 w-4" />
-            ) : (
-               <IconToggleLeft className="h-4 w-4" />
-            ),
-            category: "action",
-            onSelect: () => setVimModeEnabled(!vimModeEnabled),
-         },
-         {
-            id: "switch-theme",
-            label: "Switch Theme",
-            description: "Browse and change the application color theme",
-            icon: <IconPalette className="h-4 w-4" />,
-            category: "action",
-            onSelect: () => enterThemeMode(),
-         },
-         {
-            id: "nuke-env",
-            label: "Nuke Environment",
-            description:
-                "Completely destroy the environment, its container and all data",
-            icon: <IconTrash className="h-4 w-4" />,
-            category: "action",
-         onSelect: async () => {
-                const envId = selectedEnvironmentId
-                if (envId) {
-                   await nukeEnvironment(envId)
-                   selectEnvironment(null)
-                   onClose()
-                   toast.success("Environment has been nuked")
-                }
-             },
-         },
-         ...environments.map(env => ({
-            id: `env-${env.id}` as const,
-            label: env.name || `${env.dbType} environment`,
-            description: `${env.dbType} · ${env.status}`,
-            icon: <IconDatabase className="h-4 w-4" />,
+      },
+      {
+         id: "toggle-vim",
+         label: vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode",
+         description: vimModeEnabled
+            ? "Turn off Vim keybindings in the editor"
+            : "Turn on Vim keybindings in the editor",
+         icon: vimModeEnabled ? (
+            <IconToggleRight className="h-4 w-4" />
+         ) : (
+            <IconToggleLeft className="h-4 w-4" />
+         ),
+         category: "action",
+         onSelect: () => setVimModeEnabled(!vimModeEnabled),
+      },
+      {
+         id: "switch-theme",
+         label: "Switch Theme",
+         description: "Browse and change the application color theme",
+         icon: <IconPalette className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => enterThemeMode(),
+      },
+      {
+         id: "nuke-env",
+         label: "Nuke Environment",
+         description:
+             "Completely destroy the environment, its container and all data",
+         icon: <IconTrash className="h-4 w-4" />,
+         category: "action",
+      onSelect: async () => {
+             const envId = selectedEnvironmentId
+             if (envId) {
+                await nukeEnvironment(envId)
+                selectEnvironment(null)
+                onClose()
+                toast.success("Environment has been nuked")
+             }
+          },
+      },
+      ...environments.map(env => ({
+         id: `env-${env.id}` as const,
+         label: env.name || `${env.dbType} environment`,
+         description: `${env.dbType} · ${env.status}`,
+         icon: <IconDatabase className="h-4 w-4" />,
+         shortcut: undefined as string | undefined,
+         category: "database" as const,
+         onSelect: () => handleSelectEnvironment(env.id),
+      })),
+      ...tabs
+         .filter(t => t.id !== activeTabId)
+         .map(tab => ({
+            id: `tab-${tab.id}` as const,
+            label: tab.title || "Untitled Query",
+            description: `Switch to tab${tab.isDirty ? " · unsaved" : ""}`,
+            icon: <IconEye className="h-4 w-4" />,
             shortcut: undefined as string | undefined,
-            category: "database" as const,
-            onSelect: () => handleSelectEnvironment(env.id),
+            category: "tab" as const,
+            onSelect: () => setActiveTab(tab.id),
          })),
-         ...tabs
-            .filter(t => t.id !== activeTabId)
-            .map(tab => ({
-               id: `tab-${tab.id}` as const,
-               label: tab.title || "Untitled Query",
-               description: `Switch to tab${tab.isDirty ? " · unsaved" : ""}`,
-               icon: <IconEye className="h-4 w-4" />,
-               shortcut: undefined as string | undefined,
-               category: "tab" as const,
-               onSelect: () => setActiveTab(tab.id),
-            })),
-         ...savedQueries.map(q => ({
-            id: `sq-${q.id}` as const,
-            label: q.name,
-            description: q.sql.slice(0, 60),
-            icon: <IconStar className="h-4 w-4 text-warning" />,
-            shortcut: undefined as string | undefined,
-            category: "saved" as const,
-            onSelect: () => onOpenQuery?.(q.sql),
-         })),
-         ...historyEntries.slice(0, 10).map(entry => ({
-            id: `hist-${entry.id}` as const,
-            label: entry.sql.slice(0, 40) + (entry.sql.length > 40 ? "..." : ""),
-            description: `${entry.dbType} · ${entry.duration}ms · ${entry.status}`,
-            icon: <IconHistory className="h-4 w-4" />,
-            shortcut: undefined as string | undefined,
-            category: "history" as const,
-            onSelect: () => onOpenQuery?.(entry.sql),
-         })),
-      ],
-      [
-         environments,
-         tabs,
-         activeTabId,
-         activeTab,
-         openTab,
-         onExecuteQuery,
-         onClearResults,
-         handleSelectEnvironment,
-         setActiveTab,
-         vimModeEnabled,
-         setVimModeEnabled,
-         savedQueries,
-         historyEntries,
-         onOpenQuery,
-         nukeEnvironment,
-          enterThemeMode,
-          selectedEnvironmentId,
-       ]
-   )
+      ...savedQueries.map(q => ({
+         id: `sq-${q.id}` as const,
+         label: q.name,
+         description: q.sql.slice(0, 60),
+         icon: <IconStar className="h-4 w-4 text-warning" />,
+         shortcut: undefined as string | undefined,
+         category: "saved" as const,
+         onSelect: () => onOpenQuery?.(q.sql),
+      })),
+      ...historyEntries.slice(0, 10).map(entry => ({
+         id: `hist-${entry.id}` as const,
+         label: entry.sql.slice(0, 40) + (entry.sql.length > 40 ? "..." : ""),
+         description: `${entry.dbType} · ${entry.duration}ms · ${entry.status}`,
+         icon: <IconHistory className="h-4 w-4" />,
+         shortcut: undefined as string | undefined,
+         category: "history" as const,
+         onSelect: () => onOpenQuery?.(entry.sql),
+      })),
+   ]
 
-   const groupedItems = useMemo(() => {
+   const groupedItems = (() => {
       if (!query) {
          return {
             actions: actions.filter(a => a.category === "action"),
@@ -320,17 +291,15 @@ export function useCommandPaletteLogic(
          saved: scored.filter(a => a.category === "saved"),
          history: scored.filter(a => a.category === "history"),
       }
-   }, [actions, query])
+   })()
 
-   const flatFiltered = useMemo(() => {
-      return [
-         ...groupedItems.actions,
-         ...groupedItems.databases,
-         ...groupedItems.tabs,
-         ...groupedItems.saved,
-         ...groupedItems.history,
-      ]
-   }, [groupedItems])
+   const flatFiltered = [
+      ...groupedItems.actions,
+      ...groupedItems.databases,
+      ...groupedItems.tabs,
+      ...groupedItems.saved,
+      ...groupedItems.history,
+   ]
 
    useEffect(() => {
       if (isOpen) {

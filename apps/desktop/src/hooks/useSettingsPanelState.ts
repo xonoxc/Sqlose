@@ -1,4 +1,3 @@
-import { useCallback } from "react"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useEditorStore } from "../stores/editorStore"
 
@@ -9,15 +8,15 @@ export function useSettingsPanelState() {
    const resetKeybindings = useSettingsStore(s => s.resetKeybindings)
    const setVimEnabled = useEditorStore(s => s.setVimEnabled)
 
-   const handleToggleVim = useCallback(() => {
+   const handleToggleVim = () => {
       const next = !vimModeEnabled
       toggleVimMode()
       setVimEnabled(next)
-   }, [vimModeEnabled, toggleVimMode, setVimEnabled])
+   }
 
-   const handleResetKeybindings = useCallback(() => {
+   const handleResetKeybindings = () => {
       resetKeybindings()
-   }, [resetKeybindings])
+   }
 
    return {
       vimModeEnabled,

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Toaster } from "sonner"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "motion/react"
@@ -128,32 +128,29 @@ function AppContent() {
       }
    }, [selectedEnvironmentId, environments, stuckEnvId])
 
-   const handleNewQuery = useCallback(() => {
+   const handleNewQuery = () => {
       const result = openTab()
       if (result.isOk()) {
          setQueryDraft("")
       }
-   }, [openTab, setQueryDraft])
+   }
 
-   const handleCloseTab = useCallback(() => {
+   const handleCloseTab = () => {
       if (activeTabId) {
          closeTab(activeTabId)
       }
-   }, [activeTabId, closeTab])
+   }
 
-   const handleSwitchTab = useCallback(
-      (direction: 1 | -1) => {
-         const currentIndex = tabs.findIndex(t => t.id === activeTabId)
-         if (currentIndex === -1) return
-         const nextIndex = (currentIndex + direction + tabs.length) % tabs.length
-         if (nextIndex !== currentIndex) {
-            setActiveTab(tabs[nextIndex].id)
-         }
-      },
-      [tabs, activeTabId, setActiveTab]
-   )
+   const handleSwitchTab = (direction: 1 | -1) => {
+      const currentIndex = tabs.findIndex(t => t.id === activeTabId)
+      if (currentIndex === -1) return
+      const nextIndex = (currentIndex + direction + tabs.length) % tabs.length
+      if (nextIndex !== currentIndex) {
+         setActiveTab(tabs[nextIndex].id)
+      }
+   }
 
-   const handleExecuteQuery = useCallback(async () => {
+   const handleExecuteQuery = async () => {
       if (!selectedEnvironmentId || !queryDraft.trim() || !activeTabId) return
 
       const executionId = Date.now()
@@ -208,119 +205,101 @@ function AppContent() {
             result.error.message
          )
       }
-   }, [selectedEnvironmentId, queryDraft, activeTabId, updateTab, addHistoryEntry, environments])
+   }
 
    const isExecuting = executingTabId === activeTabId
 
-   const handleQueryChange = useCallback(
-      (value: string) => {
-         setQueryDraft(value)
-         if (activeTabId) {
-            updateTab(activeTabId, { query: value, isDirty: true })
-         }
-      },
-      [activeTabId, updateTab, setQueryDraft]
-   )
+   const handleQueryChange = (value: string) => {
+      setQueryDraft(value)
+      if (activeTabId) {
+         updateTab(activeTabId, { query: value, isDirty: true })
+      }
+   }
 
-   const handleClearResults = useCallback(() => {
+   const handleClearResults = () => {
       if (activeTabId) {
          updateTab(activeTabId, { result: null, error: null })
          setExecutionTimeMs(null)
       }
-   }, [activeTabId, updateTab])
+   }
 
-   const handleCopyResults = useCallback(
-      (withHeaders: boolean) => {
-         if (activeTab?.result) {
-            copyResultsToClipboard(activeTab.result, withHeaders)
-         }
-      },
-      [activeTab]
-   )
+   const handleCopyResults = (withHeaders: boolean) => {
+      if (activeTab?.result) {
+         copyResultsToClipboard(activeTab.result, withHeaders)
+      }
+   }
 
-   const handleOpenTable = useCallback(
-      (tableName: string) => {
-         const result = openTab(selectedEnvironmentId ?? undefined, { tableName, title: tableName })
-         if (result.isOk()) {
-            const tab = result.value
-            setActiveTab(tab.id)
-         }
-      },
-      [openTab, selectedEnvironmentId, setActiveTab]
-   )
+   const handleOpenTable = (tableName: string) => {
+      const result = openTab(selectedEnvironmentId ?? undefined, { tableName, title: tableName })
+      if (result.isOk()) {
+         const tab = result.value
+         setActiveTab(tab.id)
+      }
+   }
 
-   const handleOpenQuery = useCallback(
-      (sql: string) => {
-         const result = openTab()
-         if (result.isOk()) {
-            const tab = result.value
-            updateTab(tab.id, { query: sql })
-            setQueryDraft(sql)
-            setActiveTab(tab.id)
-         }
-      },
-      [openTab, updateTab, setQueryDraft, setActiveTab]
-   )
+   const handleOpenQuery = (sql: string) => {
+      const result = openTab()
+      if (result.isOk()) {
+         const tab = result.value
+         updateTab(tab.id, { query: sql })
+         setQueryDraft(sql)
+         setActiveTab(tab.id)
+      }
+   }
 
-   const handleResultsDividerMouseDown = useCallback(
-      (e: React.MouseEvent) => {
-         e.preventDefault()
-         const startY = e.clientY
-         const startHeight = paneSizes.resultsHeight
+   const handleResultsDividerMouseDown = (e: React.MouseEvent) => {
+      e.preventDefault()
+      const startY = e.clientY
+      const startHeight = paneSizes.resultsHeight
 
-         const handleMouseMove = (moveE: MouseEvent) => {
-            const delta = startY - moveE.clientY
-            const newHeight = Math.max(
-               RESULTS_MIN_HEIGHT,
-               Math.min(RESULTS_MAX_HEIGHT, startHeight + delta)
-            )
-            updatePaneSizes({ resultsHeight: Math.round(newHeight) })
-         }
+      const handleMouseMove = (moveE: MouseEvent) => {
+         const delta = startY - moveE.clientY
+         const newHeight = Math.max(
+            RESULTS_MIN_HEIGHT,
+            Math.min(RESULTS_MAX_HEIGHT, startHeight + delta)
+         )
+         updatePaneSizes({ resultsHeight: Math.round(newHeight) })
+      }
 
-         const handleMouseUp = () => {
-            document.removeEventListener("mousemove", handleMouseMove)
-            document.removeEventListener("mouseup", handleMouseUp)
-            document.body.style.cursor = ""
-            document.body.style.userSelect = ""
-         }
+      const handleMouseUp = () => {
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
 
-         document.addEventListener("mousemove", handleMouseMove)
-         document.addEventListener("mouseup", handleMouseUp)
-         document.body.style.cursor = "row-resize"
-         document.body.style.userSelect = "none"
-      },
-      [paneSizes.resultsHeight, updatePaneSizes]
-   )
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "row-resize"
+      document.body.style.userSelect = "none"
+   }
 
-   const handleSidebarResizeStart = useCallback(
-      (e: React.MouseEvent) => {
-         e.preventDefault()
-         const startX = e.clientX
-         const startWidth = paneSizes.sidebarWidth
+   const handleSidebarResizeStart = (e: React.MouseEvent) => {
+      e.preventDefault()
+      const startX = e.clientX
+      const startWidth = paneSizes.sidebarWidth
 
-         const handleMouseMove = (moveE: MouseEvent) => {
-            const delta = moveE.clientX - startX
-            const newWidth = Math.max(
-               SIDEBAR_MIN_WIDTH,
-               Math.min(SIDEBAR_MAX_WIDTH, startWidth + delta)
-            )
-            updatePaneSizes({ sidebarWidth: Math.round(newWidth) })
-         }
+      const handleMouseMove = (moveE: MouseEvent) => {
+         const delta = moveE.clientX - startX
+         const newWidth = Math.max(
+            SIDEBAR_MIN_WIDTH,
+            Math.min(SIDEBAR_MAX_WIDTH, startWidth + delta)
+         )
+         updatePaneSizes({ sidebarWidth: Math.round(newWidth) })
+      }
 
-         const handleMouseUp = () => {
-            document.removeEventListener("mousemove", handleMouseMove)
-            document.removeEventListener("mouseup", handleMouseUp)
-            document.body.style.cursor = ""
-            document.body.style.userSelect = ""
-         }
+      const handleMouseUp = () => {
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
 
-         document.addEventListener("mousemove", handleMouseMove)
-         document.addEventListener("mouseup", handleMouseUp)
-         document.body.style.cursor = "col-resize"
-         document.body.style.userSelect = "none"
-      },
-      [paneSizes.sidebarWidth, updatePaneSizes]
-   )
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+   }
 
    useEffect(() => {
       const isMacPlatform = isMac()
@@ -364,20 +343,20 @@ function AppContent() {
       return () => document.removeEventListener("keydown", handleKeyDown, true)
    }, [handleExecuteQuery, handleNewQuery, handleCloseTab, handleSwitchTab])
 
-   const handleRestoreEnv = useCallback(async () => {
+   const handleRestoreEnv = async () => {
       if (stuckEnvId) {
          await startEnvironment(stuckEnvId)
          setStuckEnvId(null)
       }
-   }, [stuckEnvId, startEnvironment])
+   }
 
-   const handleExitAndNuke = useCallback(async () => {
+   const handleExitAndNuke = async () => {
       if (stuckEnvId) {
          await nukeEnvironment(stuckEnvId)
          selectEnvironment(null)
          setStuckEnvId(null)
       }
-   }, [stuckEnvId, nukeEnvironment, selectEnvironment])
+   }
 
    const selectedEnv = selectedEnvironmentId
       ? (environments.find(e => e.id === selectedEnvironmentId) ?? null)
