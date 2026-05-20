@@ -4,6 +4,7 @@ import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import type { Tab, PaneSizes } from "../lib/types"
 import { createTab, createDefaultPaneSizes, generateTabTitle } from "../lib/types"
+import { sqliteStorage } from "../lib/sqlite-storage"
 
 interface WorkspaceStore {
    tabs: Tab[]
@@ -160,18 +161,19 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             return state.tabs.find(t => t.id === state.activeTabId)
          },
       }),
-      {
-         name: "sqlose-workspace",
-         partialize: state => ({
-            tabs: state.tabs.map(tab => ({
-               ...tab,
-               result: null,
-               error: null,
-               isExecuting: false,
-            })),
-            activeTabId: state.activeTabId,
-            paneSizes: state.paneSizes,
-         }),
-      }
+       {
+          name: "sqlose-workspace",
+          storage: sqliteStorage,
+          partialize: state => ({
+             tabs: state.tabs.map(tab => ({
+                ...tab,
+                result: null,
+                error: null,
+                isExecuting: false,
+             })),
+             activeTabId: state.activeTabId,
+             paneSizes: state.paneSizes,
+          }),
+       }
    )
 )

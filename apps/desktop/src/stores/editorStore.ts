@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import type { VimMode } from "../lib/types"
+import { sqliteStorage } from "../lib/sqlite-storage"
 
 interface EditorStore {
    vimMode: VimMode
@@ -67,14 +68,15 @@ export const useEditorStore = create<EditorStore>()(
             return ok(environmentId)
          },
       }),
-      {
-         name: "sqlose-editor",
-         partialize: state => ({
-            vimMode: state.vimMode,
-            vimEnabled: state.vimEnabled,
-            queryDraft: state.queryDraft,
-            selectedEnvironmentId: state.selectedEnvironmentId,
-         }),
-      }
+       {
+          name: "sqlose-editor",
+          storage: sqliteStorage,
+          partialize: state => ({
+             vimMode: state.vimMode,
+             vimEnabled: state.vimEnabled,
+             queryDraft: state.queryDraft,
+             selectedEnvironmentId: state.selectedEnvironmentId,
+          }),
+       }
    )
 )

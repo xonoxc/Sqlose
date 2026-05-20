@@ -25,6 +25,7 @@ export const ERROR_CODES = [
    "ipc:invalid_payload",
    "ipc:handler_not_found",
    "ipc:unauthorized",
+   "db:error",
    "vim:mode_error",
    "vim:command_error",
 ] as const
@@ -38,7 +39,7 @@ type ImportErrorCode = Extract<ErrorCode, `import:${string}`>
 type IPCErrorCode = Extract<ErrorCode, `ipc:${string}`>
 type VimErrorCode = Extract<ErrorCode, `vim:${string}`>
 
-export const ERROR_CATEGORIES = ["docker", "env", "query", "import", "ipc", "vim"] as const
+export const ERROR_CATEGORIES = ["docker", "env", "query", "import", "ipc", "db", "vim"] as const
 
 export type ErrorCategory = (typeof ERROR_CATEGORIES)[number]
 

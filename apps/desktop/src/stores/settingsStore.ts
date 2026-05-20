@@ -4,6 +4,7 @@ import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import type { Keybinding } from "../lib/types"
 import { createDefaultKeybindings } from "../lib/types"
+import { sqliteStorage } from "../lib/sqlite-storage"
 
 interface SettingsStore {
    vimModeEnabled: boolean
@@ -88,8 +89,9 @@ export const useSettingsStore = create<SettingsStore>()(
             return ok(defaults)
          },
       }),
-      {
-         name: "sqlose-settings",
-      }
+       {
+          name: "sqlose-settings",
+          storage: sqliteStorage,
+       }
    )
 )

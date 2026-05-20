@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { themes } from "../themes"
+import { sqliteStorage } from "../lib/sqlite-storage"
 import type { Theme } from "../types/theme"
 
 export const CSS_VAR_MAP: Record<keyof Theme["colors"], string> = {
@@ -67,9 +68,10 @@ export const useThemeStore = create<ThemeStore>()(
             set({ themeId: id, currentTheme: theme })
          },
       }),
-      {
-         name: "sqlose-theme",
-         partialize: (state) => ({ themeId: state.themeId }),
+       {
+          name: "sqlose-theme",
+          storage: sqliteStorage,
+          partialize: (state) => ({ themeId: state.themeId }),
          onRehydrateStorage: () => (state) => {
             if (state) {
                const theme = themes.find(t => t.id === state.themeId) ?? themes[0]

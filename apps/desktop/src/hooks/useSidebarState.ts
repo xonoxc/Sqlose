@@ -18,9 +18,12 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const historyEntries = useHistoryStore(s => s.entries)
    const savedQueries = useSavedQueriesStore(s => s.queries)
 
+   const envSavedQueries = savedQueries.filter(q => q.environmentId === selectedEnvironmentId)
+   const envHistoryEntries = historyEntries.filter(h => h.environmentId === selectedEnvironmentId)
+
    const savedQueryNamesBySql = (() => {
       const map = new Map<string, string>()
-      for (const q of savedQueries) {
+      for (const q of envSavedQueries) {
          const key = q.sql.trim()
          if (!map.has(key)) map.set(key, q.name)
       }
@@ -157,9 +160,9 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       environments,
       selectedEnvironmentId,
       selectedEnv,
-      savedQueries,
+      savedQueries: envSavedQueries,
       savedQueryNamesBySql,
-      historyEntries,
+      historyEntries: envHistoryEntries,
       tables,
       tableColumns,
       schemaLoading,

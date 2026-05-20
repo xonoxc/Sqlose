@@ -39,9 +39,9 @@ const NATIVE_EXTERNALS = [
    "mysql2",
    "dockerode",
    "electron-store",
-   "better-sqlite3",
    "bindings",
    "node-gyp-build",
+   "sql.js",
 ]
 
 export default defineConfig({

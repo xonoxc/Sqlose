@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
 import { api } from "../lib/api"
+import { sqliteStorage } from "../lib/sqlite-storage"
 
 import type { Environment, DBType } from "@sqlose/shared"
 
@@ -243,12 +244,13 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
             return get().environments.find(e => e.id === environmentId)
          },
       }),
-      {
-         name: "sqlose-environments",
-         partialize: state => ({
-            environments: state.environments,
-            selectedEnvironmentId: state.selectedEnvironmentId,
-         }),
-      }
+       {
+          name: "sqlose-environments",
+          storage: sqliteStorage,
+          partialize: state => ({
+             environments: state.environments,
+             selectedEnvironmentId: state.selectedEnvironmentId,
+          }),
+       }
    )
 )

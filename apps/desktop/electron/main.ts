@@ -13,6 +13,8 @@ import {
    stopAllContainers,
 } from "@sqlose/core"
 import { registerAllHandlers } from "./ipc-handlers"
+import { initDatabase, closeDatabase } from "./db"
+import { registerDbHandlers } from "./db-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
 
@@ -88,13 +90,16 @@ app.on("activate", () => {
 
 app.on("will-quit", async () => {
    await stopAllContainers()
+   closeDatabase()
 })
 
 app.whenReady().then(async () => {
+   await initDatabase()
    await initDocker()
    await stopOrphanedContainers()
    await reconcileEnvironmentStatuses()
    registerAllHandlers()
+   registerDbHandlers()
    createWindow()
 
    if (!VITE_DEV_SERVER_URL) {

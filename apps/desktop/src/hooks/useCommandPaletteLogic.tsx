@@ -60,8 +60,14 @@ export function useCommandPaletteLogic(
    const setActiveTab = useWorkspaceStore(s => s.setActiveTab)
    const vimModeEnabled = useSettingsStore(s => s.vimModeEnabled)
    const setVimModeEnabled = useSettingsStore(s => s.setVimModeEnabled)
-   const savedQueries = useSavedQueriesStore(s => s.queries)
-   const historyEntries = useHistoryStore(s => s.entries)
+   const savedQueriesAll = useSavedQueriesStore(s => s.queries)
+   const historyEntriesAll = useHistoryStore(s => s.entries)
+   const savedQueries = selectedEnvironmentId
+      ? savedQueriesAll.filter(q => q.environmentId === selectedEnvironmentId)
+      : savedQueriesAll
+   const historyEntries = selectedEnvironmentId
+      ? historyEntriesAll.filter(h => h.environmentId === selectedEnvironmentId)
+      : historyEntriesAll
    const { themeId, setTheme } = useThemeStore()
 
    const handleSelectEnvironment = (envId: string) => {

@@ -22,6 +22,7 @@ import { useWorkspaceStore } from "./stores/workspaceStore"
 import { useSettingsStore } from "./stores/settingsStore"
 import { useDatabaseStore } from "./stores/databaseStore"
 import { useHistoryStore } from "./stores/historyStore"
+import { useSavedQueriesStore } from "./stores/savedQueriesStore"
 import { useThemeStore } from "./stores/theme-store"
 import { isMac } from "./lib/types"
 import {
@@ -94,6 +95,8 @@ function AppContent() {
    const updatePaneSizes = useWorkspaceStore(s => s.updatePaneSizes)
 
    const addHistoryEntry = useHistoryStore(s => s.addEntry)
+   const loadHistory = useHistoryStore(s => s.loadHistory)
+   const loadQueries = useSavedQueriesStore(s => s.loadQueries)
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
    useThemeStore() // subscribe to persist rehydration for theme
 
@@ -104,7 +107,9 @@ function AppContent() {
 
    useEffect(() => {
       fetchEnvironments()
-   }, [fetchEnvironments])
+      loadHistory()
+      loadQueries()
+   }, [fetchEnvironments, loadHistory, loadQueries])
 
    useEffect(() => {
       if (activeTab) {
