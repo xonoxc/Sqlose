@@ -33,6 +33,7 @@ export const dracula: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "bd93f9", fontStyle: "bold" },
+         { token: "predefined", foreground: "8be9fd" },
          { token: "identifier", foreground: "f8f8f2" },
          { token: "string", foreground: "f1fa8c" },
          { token: "number", foreground: "ffb86c" },
@@ -56,6 +57,9 @@ export const dracula: Theme = {
          "editorWidget.border": "#3f4151",
          "editorBracketMatch.background": "#3f3f5a",
          "editorBracketMatch.border": "#bd93f9",
+         "scrollbarSlider.background": "#3f415180",
+         "scrollbarSlider.hoverBackground": "#3f4151",
+         "scrollbarSlider.activeBackground": "#4a4d5e",
       },
    },
 }

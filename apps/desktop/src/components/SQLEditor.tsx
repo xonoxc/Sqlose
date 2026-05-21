@@ -2,7 +2,8 @@ import { lazy, Suspense } from "react"
 import { cn } from "@sqlose/ui"
 import { IconPlayerPlay, IconSettings, IconDeviceFloppy } from "@tabler/icons-react"
 import { isMac } from "../lib/types"
-import { useSQLEditorLogic } from "../hooks/useSQLEditorLogic"
+import { useSQLEditorLogic, defineMonacoTheme } from "../hooks/useSQLEditorLogic"
+import { useThemeStore } from "../stores/theme-store"
 
 const Editor = lazy(() => import("@monaco-editor/react"))
 
@@ -25,6 +26,8 @@ export function SQLEditor({
    isExecuting,
    executionTimeMs,
 }: SQLEditorProps) {
+   const themeId = useThemeStore(s => s.themeId)
+
    const {
       vimStatusRef,
       vimEnabled,
@@ -127,7 +130,7 @@ export function SQLEditor({
                </button>
             </div>
          </div>
-         <div className="flex-1 relative">
+         <div className="flex-1 relative overflow-hidden">
             <Suspense
                fallback={
                   <div className="flex items-center justify-center h-full text-sm text-text-muted">
@@ -138,8 +141,10 @@ export function SQLEditor({
                <Editor
                   height="100%"
                   defaultLanguage="sql"
+                  theme="sqlose-theme"
                   value={value}
                   onChange={handleChange}
+                  beforeMount={monaco => defineMonacoTheme(monaco, themeId)}
                   onMount={handleEditorMount}
                   options={{
                      minimap: { enabled: false },
@@ -154,15 +159,17 @@ export function SQLEditor({
                      suggestOnTriggerCharacters: true,
                      quickSuggestions: true,
                      scrollbar: {
-                        vertical: "hidden",
-                        horizontal: "hidden",
-                        verticalScrollbarSize: 0,
-                        horizontalScrollbarSize: 0,
+                        vertical: "visible",
+                        horizontal: "visible",
+                        verticalScrollbarSize: 10,
+                        horizontalScrollbarSize: 10,
                         alwaysConsumeMouseWheel: false,
                      },
                      cursorBlinking: "solid",
                      cursorSmoothCaretAnimation: "off",
-                     smoothScrolling: false,
+                     cursorSurroundingLines: 8,
+                     cursorSurroundingLinesStyle: "all",
+                     smoothScrolling: true,
                      renderLineHighlight: "line",
                      fontLigatures: true,
                      matchBrackets: "near",

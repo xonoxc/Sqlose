@@ -33,6 +33,7 @@ export const defaultTheme: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "2d7d6f", fontStyle: "bold" },
+         { token: "predefined", foreground: "4db89e" },
          { token: "identifier", foreground: "e8e8e8" },
          { token: "string", foreground: "2d7d6f" },
          { token: "number", foreground: "c28938" },
@@ -56,6 +57,9 @@ export const defaultTheme: Theme = {
          "editorWidget.border": "#1e1e1e",
          "editorBracketMatch.background": "#1a1a1a",
          "editorBracketMatch.border": "#2d7d6f",
+         "scrollbarSlider.background": "#1e1e1e80",
+         "scrollbarSlider.hoverBackground": "#1e1e1e",
+         "scrollbarSlider.activeBackground": "#2d2d2d",
       },
    },
 }

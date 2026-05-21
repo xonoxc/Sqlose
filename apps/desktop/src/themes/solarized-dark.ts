@@ -33,6 +33,7 @@ export const solarizedDark: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "859900", fontStyle: "bold" },
+         { token: "predefined", foreground: "268bd2" },
          { token: "identifier", foreground: "93a1a1" },
          { token: "string", foreground: "2aa198" },
          { token: "number", foreground: "d33682" },
@@ -56,6 +57,9 @@ export const solarizedDark: Theme = {
          "editorWidget.border": "#315d6b",
          "editorBracketMatch.background": "#09455280",
          "editorBracketMatch.border": "#268bd2",
+         "scrollbarSlider.background": "#315d6b80",
+         "scrollbarSlider.hoverBackground": "#315d6b",
+         "scrollbarSlider.activeBackground": "#427a8c",
       },
    },
 }

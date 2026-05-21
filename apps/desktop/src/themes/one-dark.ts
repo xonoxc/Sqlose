@@ -33,6 +33,7 @@ export const oneDark: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "c678dd", fontStyle: "bold" },
+         { token: "predefined", foreground: "56b6c2" },
          { token: "identifier", foreground: "abb2bf" },
          { token: "string", foreground: "98c379" },
          { token: "number", foreground: "d19a66" },
@@ -56,6 +57,9 @@ export const oneDark: Theme = {
          "editorWidget.border": "#3a3f4a",
          "editorBracketMatch.background": "#2d3139",
          "editorBracketMatch.border": "#61afef",
+         "scrollbarSlider.background": "#3a3f4a80",
+         "scrollbarSlider.hoverBackground": "#3a3f4a",
+         "scrollbarSlider.activeBackground": "#4b5263",
       },
    },
 }

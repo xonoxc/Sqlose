@@ -33,6 +33,7 @@ export const gruvboxDark: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "fb4934", fontStyle: "bold" },
+         { token: "predefined", foreground: "8ec07c" },
          { token: "identifier", foreground: "ebdbb2" },
          { token: "string", foreground: "98971a" },
          { token: "number", foreground: "d79921" },
@@ -56,6 +57,9 @@ export const gruvboxDark: Theme = {
          "editorWidget.border": "#504945",
          "editorBracketMatch.background": "#3d352e",
          "editorBracketMatch.border": "#d79921",
+         "scrollbarSlider.background": "#50494580",
+         "scrollbarSlider.hoverBackground": "#504945",
+         "scrollbarSlider.activeBackground": "#665c54",
       },
    },
 }

@@ -33,6 +33,7 @@ export const tokyoNight: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "7dcfff", fontStyle: "bold" },
+         { token: "predefined", foreground: "89ddff" },
          { token: "identifier", foreground: "c0caf5" },
          { token: "string", foreground: "9ece6a" },
          { token: "number", foreground: "ff9e64" },
@@ -56,6 +57,9 @@ export const tokyoNight: Theme = {
          "editorWidget.border": "#2f3346",
          "editorBracketMatch.background": "#1f2a45",
          "editorBracketMatch.border": "#7dcfff",
+         "scrollbarSlider.background": "#2f334680",
+         "scrollbarSlider.hoverBackground": "#2f3346",
+         "scrollbarSlider.activeBackground": "#3d4470",
       },
    },
 }

@@ -33,6 +33,7 @@ export const kanagawa: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "7e9cd8", fontStyle: "bold" },
+         { token: "predefined", foreground: "7fb4ca" },
          { token: "identifier", foreground: "dcd7ba" },
          { token: "string", foreground: "76946a" },
          { token: "number", foreground: "e6c384" },
@@ -56,6 +57,9 @@ export const kanagawa: Theme = {
          "editorWidget.border": "#36354a",
          "editorBracketMatch.background": "#2e2e42",
          "editorBracketMatch.border": "#7fb4ca",
+         "scrollbarSlider.background": "#36354a80",
+         "scrollbarSlider.hoverBackground": "#36354a",
+         "scrollbarSlider.activeBackground": "#484863",
       },
    },
 }

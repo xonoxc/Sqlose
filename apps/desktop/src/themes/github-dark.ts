@@ -33,6 +33,7 @@ export const githubDark: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "ff7b72", fontStyle: "bold" },
+         { token: "predefined", foreground: "79c0ff" },
          { token: "identifier", foreground: "e6edf3" },
          { token: "string", foreground: "a5d6ff" },
          { token: "number", foreground: "79c0ff" },
@@ -56,6 +57,9 @@ export const githubDark: Theme = {
          "editorWidget.border": "#30363d",
          "editorBracketMatch.background": "#1f3a5f",
          "editorBracketMatch.border": "#58a6ff",
+         "scrollbarSlider.background": "#30363d80",
+         "scrollbarSlider.hoverBackground": "#30363d",
+         "scrollbarSlider.activeBackground": "#484f58",
       },
    },
 }

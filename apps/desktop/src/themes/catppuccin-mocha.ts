@@ -33,6 +33,7 @@ export const catppuccinMocha: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "cba6f7", fontStyle: "bold" },
+         { token: "predefined", foreground: "89dceb" },
          { token: "identifier", foreground: "cdd6f4" },
          { token: "string", foreground: "a6e3a1" },
          { token: "number", foreground: "fab387" },
@@ -56,6 +57,9 @@ export const catppuccinMocha: Theme = {
          "editorWidget.border": "#313244",
          "editorBracketMatch.background": "#2a2a3d",
          "editorBracketMatch.border": "#cba6f7",
+         "scrollbarSlider.background": "#31324480",
+         "scrollbarSlider.hoverBackground": "#313244",
+         "scrollbarSlider.activeBackground": "#45475a",
       },
    },
 }

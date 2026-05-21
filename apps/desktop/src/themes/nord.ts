@@ -33,6 +33,7 @@ export const nord: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "81a1c1", fontStyle: "bold" },
+         { token: "predefined", foreground: "88c0d0" },
          { token: "identifier", foreground: "eceff4" },
          { token: "string", foreground: "a3be8c" },
          { token: "number", foreground: "b48ead" },
@@ -56,6 +57,9 @@ export const nord: Theme = {
          "editorWidget.border": "#4c566a",
          "editorBracketMatch.background": "#434c5e",
          "editorBracketMatch.border": "#88c0d0",
+         "scrollbarSlider.background": "#4c566a80",
+         "scrollbarSlider.hoverBackground": "#4c566a",
+         "scrollbarSlider.activeBackground": "#616e88",
       },
    },
 }

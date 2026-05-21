@@ -33,6 +33,7 @@ export const rosePine: Theme = {
       base: "vs-dark",
       rules: [
          { token: "keyword", foreground: "c4a7e7", fontStyle: "bold" },
+         { token: "predefined", foreground: "9ccfd8" },
          { token: "identifier", foreground: "e0def4" },
          { token: "string", foreground: "31748f" },
          { token: "number", foreground: "f6c177" },
@@ -56,6 +57,9 @@ export const rosePine: Theme = {
          "editorWidget.border": "#3b3557",
          "editorBracketMatch.background": "#2a2740",
          "editorBracketMatch.border": "#c4a7e7",
+         "scrollbarSlider.background": "#3b355780",
+         "scrollbarSlider.hoverBackground": "#3b3557",
+         "scrollbarSlider.activeBackground": "#524f67",
       },
    },
 }

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState, useCallback } from "react"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useSettingsStore } from "../stores/settingsStore"
 import { useEditorStore } from "../stores/editorStore"
@@ -7,6 +7,18 @@ import { themes } from "../themes"
 import { useSavedQueriesStore } from "../stores/savedQueriesStore"
 import type { VimMode } from "../lib/types"
 import type { editor } from "monaco-editor"
+
+export function defineMonacoTheme(monaco: typeof import("monaco-editor"), themeId: string) {
+   const currentTheme = themes.find(t => t.id === themeId) ?? themes[0]
+   const m = currentTheme.monaco
+   monaco.editor.defineTheme("sqlose-theme", {
+      base: m.base,
+      inherit: true,
+      rules: m.rules,
+      colors: m.colors,
+   })
+   monaco.editor.setTheme("sqlose-theme")
+}
 
 function parseVimMode(text: string): VimMode | null {
    const upper = text.toUpperCase().trim()
@@ -59,19 +71,12 @@ export function useSQLEditorLogic(
       }
    }
 
-   const applyMonacoTheme = (monaco: typeof import("monaco-editor")) => {
-      const currentTheme = themes.find(t => t.id === themeId) ?? themes[0]
-      const m = currentTheme.monaco
-
-      monaco.editor.defineTheme("sqlose-theme", {
-         base: m.base,
-         inherit: true,
-         rules: m.rules,
-         colors: m.colors,
-      })
-
-      monaco.editor.setTheme("sqlose-theme")
-   }
+   const applyMonacoTheme = useCallback(
+      (monaco: typeof import("monaco-editor")) => {
+         defineMonacoTheme(monaco, themeId)
+      },
+      [themeId]
+   )
 
    const handleEditorMount = async (
       monacoEditor: editor.IStandaloneCodeEditor,
@@ -184,10 +189,11 @@ export function useSQLEditorLogic(
    }
 
    useEffect(() => {
-      if (monacoRef.current) {
-         applyMonacoTheme(monacoRef.current)
+      const m = monacoRef.current
+      if (m) {
+         defineMonacoTheme(m, themeId)
       }
-   }, [themeId, applyMonacoTheme])
+   }, [themeId])
 
    const handleChange = (newValue: string | undefined) => {
       if (newValue !== undefined && !vimEnabled) {
