@@ -6,7 +6,7 @@ import { useThemeStore } from "../stores/theme-store"
 import { themes } from "../themes"
 import { useSavedQueriesStore } from "../stores/savedQueriesStore"
 import type { VimMode } from "../lib/types"
-import type { editor } from "monaco-editor"
+import type { editor, IDisposable } from "monaco-editor"
 
 export function defineMonacoTheme(monaco: typeof import("monaco-editor"), themeId: string) {
    const currentTheme = themes.find(t => t.id === themeId) ?? themes[0]
@@ -40,8 +40,12 @@ export function useSQLEditorLogic(
    const vimModeRef = useRef<{ dispose: () => void } | null>(null)
    const vimObserverRef = useRef<MutationObserver | null>(null)
    const vimStatusRef = useRef<HTMLDivElement>(null)
+   const onChangeRef = useRef(onChange)
+   const contentChangeDisposableRef = useRef<IDisposable | null>(null)
    const [saveDialogOpen, setSaveDialogOpen] = useState(false)
    const [saveName, setSaveName] = useState("")
+
+   onChangeRef.current = onChange
 
    const vimEnabled = useSettingsStore(s => s.vimModeEnabled)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
@@ -182,8 +186,9 @@ export function useSQLEditorLogic(
          const { initVimMode } = await import("monaco-vim")
          vimModeRef.current = initVimMode(monacoEditor, vimStatusRef.current)
          setupVimObserver()
-         monacoEditor.onDidChangeModelContent(() => {
-            onChange(monacoEditor.getValue())
+         contentChangeDisposableRef.current?.dispose()
+         contentChangeDisposableRef.current = monacoEditor.onDidChangeModelContent(() => {
+            onChangeRef.current(monacoEditor.getValue())
          })
       }
    }
@@ -207,13 +212,16 @@ export function useSQLEditorLogic(
          vimObserverRef.current = null
          vimModeRef.current?.dispose()
          vimModeRef.current = null
+         contentChangeDisposableRef.current?.dispose()
+         contentChangeDisposableRef.current = null
 
          if (vimEnabled && vimStatusRef.current) {
             import("monaco-vim").then(({ initVimMode }) => {
                vimModeRef.current = initVimMode(editorRef.current!, vimStatusRef.current!)
                setupVimObserver()
-               editorRef.current!.onDidChangeModelContent(() => {
-                  onChange(editorRef.current!.getValue())
+               contentChangeDisposableRef.current?.dispose()
+               contentChangeDisposableRef.current = editorRef.current!.onDidChangeModelContent(() => {
+                  onChangeRef.current(editorRef.current!.getValue())
                })
             })
          }
@@ -224,6 +232,7 @@ export function useSQLEditorLogic(
       return () => {
          vimObserverRef.current?.disconnect()
          vimModeRef.current?.dispose()
+         contentChangeDisposableRef.current?.dispose()
       }
    }, [])
 
