@@ -63,11 +63,11 @@ function createWindow() {
 autoUpdater.logger = console
 autoUpdater.autoDownload = false
 
-autoUpdater.on("update-available", (info) => {
+autoUpdater.on("update-available", info => {
    win?.webContents?.send("update-available", info)
 })
 
-autoUpdater.on("download-progress", (progress) => {
+autoUpdater.on("download-progress", progress => {
    win?.webContents?.send("download-progress", progress)
 })
 
@@ -94,15 +94,16 @@ app.on("will-quit", async () => {
 })
 
 app.whenReady().then(async () => {
-   await initDatabase()
-   await initDocker()
-   await stopOrphanedContainers()
-   await reconcileEnvironmentStatuses()
+   await Promise.all([
+      initDatabase(),
+      initDocker(),
+      stopOrphanedContainers(),
+      reconcileEnvironmentStatuses(),
+   ])
+
    registerAllHandlers()
    registerDbHandlers()
    createWindow()
 
-   if (!VITE_DEV_SERVER_URL) {
-      autoUpdater.checkForUpdatesAndNotify()
-   }
+   if (!VITE_DEV_SERVER_URL) autoUpdater.checkForUpdatesAndNotify()
 })
