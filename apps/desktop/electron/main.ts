@@ -94,12 +94,8 @@ app.on("will-quit", async () => {
 })
 
 app.whenReady().then(async () => {
-   await Promise.all([
-      initDatabase(),
-      initDocker(),
-      stopOrphanedContainers(),
-      reconcileEnvironmentStatuses(),
-   ])
+   await Promise.all([initDatabase(), initDocker()])
+   await Promise.all([stopOrphanedContainers(), reconcileEnvironmentStatuses()])
 
    registerAllHandlers()
    registerDbHandlers()

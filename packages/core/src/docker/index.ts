@@ -63,7 +63,7 @@ function getDocker(): Docker {
    return _docker as Docker
 }
 
-export function initDocker(): AsyncAppResult<void> {
+export async function initDocker(): AsyncAppResult<void> {
    if (_docker) return Promise.resolve(okResult(undefined))
    return import("dockerode")
       .then(mod => {
@@ -75,7 +75,7 @@ export function initDocker(): AsyncAppResult<void> {
       )
 }
 
-export function pullImage(dbType: DBType): AsyncAppResult<void> {
+export async function pullImage(dbType: DBType): AsyncAppResult<void> {
    const config = DB_IMAGE_MAP[dbType]
    if (!config.image) return Promise.resolve(okResult(undefined))
 
@@ -121,7 +121,7 @@ export function waitForDatabaseReady(
 
    let attempt = 0
 
-   function poll(): AsyncAppResult<void> {
+   async function poll(): AsyncAppResult<void> {
       attempt++
       if (attempt > DB_READY_RETRIES) {
          return Promise.resolve(
@@ -155,7 +155,7 @@ export function waitForDatabaseReady(
    return poll()
 }
 
-export function createEnvironment(dbType: DBType): AsyncAppResult<{
+export async function createEnvironment(dbType: DBType): AsyncAppResult<{
    port: number
    containerId: string
    connectionString: string
@@ -213,7 +213,7 @@ export function createEnvironment(dbType: DBType): AsyncAppResult<{
                   })
                   .then(container =>
                      withTimeout(container.start(), OP_TIMEOUT_MS, "Starting container").then(
-                        () => {
+                        async () => {
                            const connectionString = buildConnectionString(dbType, port)
                            return waitForDatabaseReady(dbType, connectionString).then(
                               readyResult => {
@@ -245,7 +245,7 @@ export function createEnvironment(dbType: DBType): AsyncAppResult<{
       )
 }
 
-export function startEnvironment(containerId: string): AsyncAppResult<void> {
+export async function startEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
    return withTimeout(docker.getContainer(containerId).start(), OP_TIMEOUT_MS, "Starting container")
       .then(() => okResult(undefined))
@@ -254,7 +254,7 @@ export function startEnvironment(containerId: string): AsyncAppResult<void> {
       )
 }
 
-export function stopEnvironment(containerId: string): AsyncAppResult<void> {
+export async function stopEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
    return withTimeout(docker.getContainer(containerId).stop(), OP_TIMEOUT_MS, "Stopping container")
       .then(() => okResult(undefined))
@@ -263,7 +263,7 @@ export function stopEnvironment(containerId: string): AsyncAppResult<void> {
       )
 }
 
-export function restartEnvironment(containerId: string): AsyncAppResult<void> {
+export async function restartEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
    return withTimeout(
       docker.getContainer(containerId).restart(),
@@ -276,7 +276,7 @@ export function restartEnvironment(containerId: string): AsyncAppResult<void> {
       )
 }
 
-export function healthCheck(
+export async function healthCheck(
    containerId: string
 ): AsyncAppResult<{ healthy: boolean; uptime: number }> {
    if (!containerId) {
@@ -304,7 +304,7 @@ export function healthCheck(
       })
 }
 
-export function destroyContainer(containerId: string): AsyncAppResult<void> {
+export async function destroyContainer(containerId: string): AsyncAppResult<void> {
    if (!containerId) return Promise.resolve(okResult(undefined))
 
    const docker = getDocker()
@@ -324,11 +324,11 @@ export function destroyContainer(containerId: string): AsyncAppResult<void> {
       )
 }
 
-export function stopAllContainers(): AsyncAppResult<number> {
+export async function stopAllContainers(): AsyncAppResult<number> {
    const docker = getDocker()
    return docker
       .listContainers({ all: true })
-      .then(containers => {
+      .then(async containers => {
          let acted = 0
          const stopPromises: Promise<void>[] = []
 
@@ -361,11 +361,11 @@ export function stopAllContainers(): AsyncAppResult<number> {
       )
 }
 
-export function stopOrphanedContainers(): AsyncAppResult<number> {
+export async function stopOrphanedContainers(): AsyncAppResult<number> {
    const docker = getDocker()
    return docker
       .listContainers({ all: true })
-      .then(containers => {
+      .then(async containers => {
          const envs = loadEnvironments()
          const envContainerIds = new Set(envs.filter(e => e.containerId).map(e => e.containerId))
          let stopped = 0
@@ -402,7 +402,7 @@ export function stopOrphanedContainers(): AsyncAppResult<number> {
       )
 }
 
-export function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
+export async function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
    const docker = getDocker()
    let updated = 0
 

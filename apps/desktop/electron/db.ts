@@ -142,12 +142,7 @@ export function saveQuery(
    persist()
 }
 
-export function updateSavedQuery(
-   id: string,
-   name: string,
-   sql: string,
-   tags: string[]
-): boolean {
+export function updateSavedQuery(id: string, name: string, sql: string, tags: string[]): boolean {
    const existing = db!.prepare("SELECT id FROM saved_queries WHERE id = ?")
    existing.bind([id])
    const found = rowToValue<{ id: string }>(existing) !== null
