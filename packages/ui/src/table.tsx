@@ -50,7 +50,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
       <th
          ref={ref}
          className={cn(
-            "h-9 px-3 text-[13px] font-medium tracking-wide text-text-secondary whitespace-nowrap bg-bg-secondary select-none",
+            "h-9 px-3 text-[14px] font-medium tracking-wide text-text-secondary whitespace-nowrap bg-bg-secondary select-none",
             className
          )}
          {...props}
@@ -64,7 +64,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
       <td
          ref={ref}
          className={cn(
-            "px-3 py-1.5 text-[13px] leading-none text-text-primary whitespace-nowrap overflow-hidden text-ellipsis border-b border-border/40",
+            "px-3 py-1.5 text-[14px] leading-none text-text-primary whitespace-nowrap overflow-hidden text-ellipsis border-b border-border/40",
             className
          )}
          {...props}

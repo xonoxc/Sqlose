@@ -149,7 +149,7 @@ export function AppSidebar({
                      <SelectItem
                         key={env.id}
                         value={env.id}
-                        className="text-[12px] hover:bg-bg-quaternary"
+                        className="text-[13px] hover:bg-bg-quaternary"
                      >
                         {env.name || `${env.dbType} ${env.port}`}
                      </SelectItem>
@@ -178,7 +178,7 @@ export function AppSidebar({
             {/* WORKSPACE Section */}
             <div className="px-3 pt-1 pb-0.5">
                <div className="flex items-center gap-1.5 px-2 py-1.5 mb-0.5">
-                  <span className="text-[10px] font-semibold tracking-widest uppercase text-text-muted/60">
+                  <span className="text-[11px] font-semibold tracking-widest uppercase text-text-muted/60">
                      Workspace
                   </span>
                </div>
@@ -214,7 +214,7 @@ export function AppSidebar({
                         openTab()
                         setActiveNav(null)
                      }}
-                     className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[11px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/50 transition-colors"
+                     className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/50 transition-colors"
                   >
                      <IconFileCode className="h-3.5 w-3.5" />
                      <span>New Query</span>
@@ -227,7 +227,7 @@ export function AppSidebar({
                   {savedQueries.length === 0 ? (
                      <div className="px-2 py-4 text-center">
                         <IconBookmark className="h-5 w-5 text-text-muted/30 mx-auto mb-1" />
-                        <p className="text-[10px] text-text-muted/60">No saved queries yet</p>
+                        <p className="text-[11px] text-text-muted/60">No saved queries yet</p>
                      </div>
                   ) : (
                      savedQueries.map(q => (
@@ -237,12 +237,12 @@ export function AppSidebar({
                               onOpenQuery(q.sql)
                               setActiveNav(null)
                            }}
-                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[11px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
+                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
                         >
                            <IconStar className="h-3 w-3 text-warning shrink-0" />
                            <span className="truncate flex-1">{q.name}</span>
                            {q.tags.length > 0 && (
-                              <span className="text-[9px] text-text-muted/60 font-mono">
+                              <span className="text-[10px] text-text-muted/60 font-mono">
                                  {q.tags[0]}
                               </span>
                            )}
@@ -257,7 +257,7 @@ export function AppSidebar({
                   {historyEntries.length === 0 ? (
                      <div className="px-2 py-4 text-center">
                         <IconClock className="h-5 w-5 text-text-muted/30 mx-auto mb-1" />
-                        <p className="text-[10px] text-text-muted/60">No query history yet</p>
+                        <p className="text-[11px] text-text-muted/60">No query history yet</p>
                      </div>
                   ) : (
                      historyEntries.slice(0, 15).map(entry => (
@@ -267,7 +267,7 @@ export function AppSidebar({
                               onOpenQuery(entry.sql)
                               setActiveNav(null)
                            }}
-                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[11px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
+                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
                         >
                            <div
                               className={cn(
@@ -277,13 +277,13 @@ export function AppSidebar({
                            />
                            <span className="truncate flex-1">
                               {savedQueryNamesBySql.get(entry.sql.trim()) ?? (
-                                 <span className="font-mono text-[10px]">
+                                 <span className="font-mono text-[11px]">
                                     {entry.sql.slice(0, 40)}
                                     {entry.sql.length > 40 ? "..." : ""}
                                  </span>
                               )}
                            </span>
-                           <span className="text-[9px] text-text-muted/60 font-mono shrink-0">
+                           <span className="text-[10px] text-text-muted/60 font-mono shrink-0">
                               {entry.duration}ms
                            </span>
                         </button>
@@ -305,7 +305,7 @@ export function AppSidebar({
                            tableTreeExpanded && "rotate-90"
                         )}
                      />
-                     <span className="text-[10px] font-semibold tracking-widest uppercase text-text-muted/60">
+                     <span className="text-[11px] font-semibold tracking-widest uppercase text-text-muted/60">
                         Tables
                      </span>
                   </button>
@@ -336,7 +336,7 @@ export function AppSidebar({
                               value={search}
                               onChange={e => setSearch(e.target.value)}
                               placeholder="Search tables..."
-                              className="flex-1 bg-transparent text-[11px] text-text-primary outline-none placeholder:text-text-muted/60"
+                              className="flex-1 bg-transparent text-[12px] text-text-primary outline-none placeholder:text-text-muted/60"
                            />
                         </div>
                      </div>
@@ -354,7 +354,7 @@ export function AppSidebar({
                            <div className="flex items-center justify-center py-6">
                               <div className="flex flex-col items-center gap-2">
                                  <div className="h-3 w-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-                                 <span className="text-[10px] text-text-muted">
+                                 <span className="text-[11px] text-text-muted">
                                     Loading tables...
                                  </span>
                               </div>
@@ -363,10 +363,10 @@ export function AppSidebar({
 
                         {schemaError && !schemaLoading && (
                            <div className="mx-1 mt-2 p-2 rounded bg-error/5 border border-error/20">
-                              <p className="text-[10px] text-error font-medium mb-1">
+                              <p className="text-[11px] text-error font-medium mb-1">
                                  Failed to load schema
                               </p>
-                              <p className="text-[9px] text-text-muted leading-relaxed">
+                              <p className="text-[10px] text-text-muted leading-relaxed">
                                  {schemaError}
                               </p>
                            </div>
@@ -378,7 +378,7 @@ export function AppSidebar({
                            selectedEnvironmentId && (
                               <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
                                  <IconTable className="h-6 w-6 text-text-muted/30 mb-1" />
-                                 <span className="text-[11px] text-text-muted">
+                                 <span className="text-[12px] text-text-muted">
                                     No tables found
                                  </span>
                               </div>
@@ -386,7 +386,7 @@ export function AppSidebar({
 
                         {!schemaLoading && filteredTables.length === 0 && tables.length > 0 && (
                            <div className="flex items-center justify-center py-6">
-                              <span className="text-[11px] text-text-muted">
+                              <span className="text-[12px] text-text-muted">
                                  No matching tables
                               </span>
                            </div>
@@ -405,7 +405,7 @@ export function AppSidebar({
                                     role="option"
                                     aria-selected={isActive}
                                     className={cn(
-                                       "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[12px] font-medium transition-all duration-150 outline-none cursor-pointer group",
+                                       "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
                                        isActive
                                           ? "bg-accent/10 text-accent border-l-[2.5px] border-accent"
                                           : "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/30 border-l-[2.5px] border-transparent",
@@ -444,7 +444,7 @@ export function AppSidebar({
                                     <span className="truncate flex-1 text-left">{tableName}</span>
 
                                     {columns && (
-                                       <span className="text-[9px] text-text-muted/50 font-mono shrink-0">
+                                       <span className="text-[10px] text-text-muted/50 font-mono shrink-0">
                                           {columns.length}
                                        </span>
                                     )}
@@ -459,13 +459,13 @@ export function AppSidebar({
                                        {isLoadingColumns && !columns && (
                                           <div className="flex items-center gap-2 pl-6 py-1.5">
                                              <div className="h-2 w-2 rounded-full border-[1.5px] border-accent border-t-transparent animate-spin" />
-                                             <span className="text-[9px] text-text-muted">
+                                             <span className="text-[10px] text-text-muted">
                                                 Loading...
                                              </span>
                                           </div>
                                        )}
                                        {columns && columns.length === 0 && !isLoadingColumns && (
-                                          <div className="py-1 pl-6 pr-2 text-[9px] text-text-muted italic">
+                                          <div className="py-1 pl-6 pr-2 text-[10px] text-text-muted italic">
                                              No columns
                                           </div>
                                        )}
@@ -481,15 +481,15 @@ export function AppSidebar({
                                                    ) : (
                                                       <IconCircleDot className="h-2 w-2 shrink-0 text-text-muted/30" />
                                                    )}
-                                                   <span className="text-[10px] font-mono text-text-primary truncate">
+                                                   <span className="text-[11px] font-mono text-text-primary truncate">
                                                       {col.name}
                                                    </span>
-                                                   <span className="text-[8px] font-mono text-text-muted/50 truncate ml-auto">
+                                                   <span className="text-[9px] font-mono text-text-muted/50 truncate ml-auto">
                                                       {col.type}
                                                    </span>
                                                    <span
                                                       className={cn(
-                                                         "text-[7px] font-mono px-1 rounded shrink-0 leading-none py-[2px]",
+                                                         "text-[8px] font-mono px-1 rounded shrink-0 leading-none py-[2px]",
                                                          col.nullable
                                                             ? "text-text-muted/40 bg-bg-tertiary/50"
                                                             : "text-error/50 bg-error/5"
@@ -532,7 +532,7 @@ function NavItem({
       <button
          onClick={onClick}
          className={cn(
-            "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[12px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-accent",
+            "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-accent",
             active
                ? "bg-accent/10 text-accent"
                : "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40"
@@ -541,7 +541,7 @@ function NavItem({
          <span className={cn("shrink-0", active ? "text-accent" : "text-text-muted")}>{icon}</span>
          <span className="truncate flex-1 text-left">{label}</span>
          {badge && (
-            <span className="text-[9px] font-mono text-text-muted bg-bg-tertiary px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-mono text-text-muted bg-bg-tertiary px-1.5 py-0.5 rounded">
                {badge}
             </span>
          )}

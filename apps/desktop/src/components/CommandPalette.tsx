@@ -88,9 +88,9 @@ export function CommandPalette({
                               ? "Search themes..."
                               : "Search tables, queries, commands..."
                         }
-                        className="flex-1 bg-transparent text-[14px] font-medium text-text-primary outline-none placeholder:text-text-muted/60"
+                        className="flex-1 bg-transparent text-[15px] font-medium text-text-primary outline-none placeholder:text-text-muted/60"
                      />
-                     <kbd className="text-[10px] text-text-muted font-mono border border-border/50 bg-bg-secondary rounded px-1.5 py-0.5">
+                     <kbd className="text-[11px] text-text-muted font-mono border border-border/50 bg-bg-secondary rounded px-1.5 py-0.5">
                         ESC
                      </kbd>
                   </div>
@@ -99,7 +99,7 @@ export function CommandPalette({
                   <div className="max-h-[55vh] overflow-y-auto py-1 custom-scrollbar">
                      {mode === "themes" ? (
                         <>
-                           <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase flex items-center gap-2">
+                           <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase flex items-center gap-2">
                               <IconPalette className="h-3 w-3" />
                               Themes
                            </div>
@@ -156,18 +156,18 @@ export function CommandPalette({
                                        <div className="flex flex-col">
                                           <span
                                              className={cn(
-                                                "text-[13px] font-medium truncate",
+                                                "text-[14px] font-medium truncate",
                                                 isActive && "text-text-primary"
                                              )}
                                           >
                                              {theme.name}
                                           </span>
-                                          <span className="text-[11px] text-text-muted truncate">
+                                          <span className="text-[12px] text-text-muted truncate">
                                              {theme.id}
                                           </span>
                                        </div>
                                        {isSelected && (
-                                          <span className="text-[10px] font-mono text-accent ml-3 border border-accent/30 bg-accent/10 px-1.5 py-0.5 rounded shrink-0">
+                                          <span className="text-[11px] font-mono text-accent ml-3 border border-accent/30 bg-accent/10 px-1.5 py-0.5 rounded shrink-0">
                                              Active
                                           </span>
                                        )}
@@ -189,7 +189,7 @@ export function CommandPalette({
 
                            {groupedItems.actions.length > 0 && (
                               <>
-                                 <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase">
+                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase">
                                     Actions
                                  </div>
                                   {groupedItems.actions.map(item => {
@@ -225,19 +225,19 @@ export function CommandPalette({
                                              <div className="flex flex-col">
                                                 <span
                                                    className={cn(
-                                                      "text-[13px] font-medium truncate",
+                                                      "text-[14px] font-medium truncate",
                                                       globalIndex === selectedIndex &&
                                                          "text-text-primary"
                                                    )}
                                                 >
                                                    {item.label}
                                                 </span>
-                                                <span className="text-[11px] text-text-muted truncate">
+                                                <span className="text-[12px] text-text-muted truncate">
                                                    {item.description}
                                                 </span>
                                              </div>
                                              {item.shortcut && (
-                                                <kbd className="text-[10px] font-mono text-text-muted ml-3 border border-border/40 bg-bg-quaternary px-1.5 py-0.5 rounded shrink-0">
+                                                <kbd className="text-[11px] font-mono text-text-muted ml-3 border border-border/40 bg-bg-quaternary px-1.5 py-0.5 rounded shrink-0">
                                                    {item.shortcut}
                                                 </kbd>
                                              )}
@@ -250,7 +250,7 @@ export function CommandPalette({
 
                            {groupedItems.saved.length > 0 && (
                               <>
-                                 <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
+                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
                                     Saved Queries
                                  </div>
                                  {groupedItems.saved.map(item => {
@@ -285,14 +285,14 @@ export function CommandPalette({
                                           <div className="flex-1 min-w-0">
                                              <span
                                                 className={cn(
-                                                   "text-[13px] font-medium truncate block",
+                                                   "text-[14px] font-medium truncate block",
                                                    globalIndex === selectedIndex &&
                                                       "text-text-primary"
                                                 )}
                                              >
                                                 {item.label}
                                              </span>
-                                             <span className="text-[11px] text-text-muted truncate block">
+                                             <span className="text-[12px] text-text-muted truncate block">
                                                 {item.description}
                                              </span>
                                           </div>
@@ -304,7 +304,7 @@ export function CommandPalette({
 
                            {groupedItems.history.length > 0 && (
                               <>
-                                 <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
+                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
                                     History
                                  </div>
                                  {groupedItems.history.map(item => {
@@ -339,14 +339,14 @@ export function CommandPalette({
                                           <div className="flex-1 min-w-0">
                                              <span
                                                 className={cn(
-                                                   "text-[13px] font-medium truncate block font-mono text-[12px]",
+                                                   "text-[14px] font-medium truncate block font-mono text-[13px]",
                                                    globalIndex === selectedIndex &&
                                                       "text-text-primary"
                                                 )}
                                              >
                                                 {item.label}
                                              </span>
-                                             <span className="text-[11px] text-text-muted truncate block">
+                                             <span className="text-[12px] text-text-muted truncate block">
                                                 {item.description}
                                              </span>
                                           </div>
@@ -358,7 +358,7 @@ export function CommandPalette({
 
                            {groupedItems.databases.length > 0 && (
                               <>
-                                 <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
+                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
                                     Databases
                                  </div>
                                  {groupedItems.databases.map(item => {
@@ -393,14 +393,14 @@ export function CommandPalette({
                                           <div className="flex-1 min-w-0">
                                              <span
                                                 className={cn(
-                                                   "text-[13px] font-medium truncate block",
+                                                   "text-[14px] font-medium truncate block",
                                                    globalIndex === selectedIndex &&
                                                       "text-text-primary"
                                                 )}
                                              >
                                                 {item.label}
                                              </span>
-                                             <span className="text-[11px] text-text-muted truncate block">
+                                             <span className="text-[12px] text-text-muted truncate block">
                                                 {item.description}
                                              </span>
                                           </div>
@@ -412,7 +412,7 @@ export function CommandPalette({
 
                            {groupedItems.tabs.length > 0 && (
                               <>
-                                 <div className="px-4 py-1.5 text-[10px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
+                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
                                     Open Tabs
                                  </div>
                                  {groupedItems.tabs.map(item => {
@@ -447,14 +447,14 @@ export function CommandPalette({
                                           <div className="flex-1 min-w-0">
                                              <span
                                                 className={cn(
-                                                   "text-[13px] font-medium truncate block",
+                                                   "text-[14px] font-medium truncate block",
                                                    globalIndex === selectedIndex &&
                                                       "text-text-primary"
                                                 )}
                                              >
                                                 {item.label}
                                              </span>
-                                             <span className="text-[11px] text-text-muted truncate block">
+                                             <span className="text-[12px] text-text-muted truncate block">
                                                 {item.description}
                                              </span>
                                           </div>

@@ -106,7 +106,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                  <span className="text-xs text-text-primary">
                                     {actionLabels[kb.action] || kb.action}
                                  </span>
-                                 <kbd className="text-[10px] font-mono text-text-muted bg-bg-tertiary border border-border rounded px-1.5 py-0.5">
+                                 <kbd className="text-[11px] font-mono text-text-muted bg-bg-tertiary border border-border rounded px-1.5 py-0.5">
                                     {formatKeybinding(kb)}
                                  </kbd>
                               </div>

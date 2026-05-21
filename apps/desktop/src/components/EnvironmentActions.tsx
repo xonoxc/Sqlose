@@ -63,11 +63,11 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
                              ? "destructive"
                              : "secondary"
                      }
-                     className="text-[10px] px-1.5 py-0"
+                     className="text-[11px] px-1.5 py-0"
                   >
                      {environment.status}
                   </Badge>
-                  <span className="text-[10px] text-text-muted font-mono">
+                  <span className="text-[11px] text-text-muted font-mono">
                      {environment.dbType}
                   </span>
                </div>
@@ -134,7 +134,7 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
          </div>
 
          {environment.status === "running" && environment.uptime !== null && (
-            <p className="text-[10px] text-text-muted font-mono">
+            <p className="text-[11px] text-text-muted font-mono">
                Uptime: {Math.floor(environment.uptime / 60)}m {environment.uptime % 60}s
             </p>
          )}

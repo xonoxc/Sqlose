@@ -176,7 +176,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
          accessorKey: key,
          header: () => (
             <div className="flex items-center gap-1.5 w-full overflow-hidden">
-               <span className="truncate text-[11px] font-medium leading-none">{key}</span>
+               <span className="truncate text-[12px] font-medium leading-none">{key}</span>
                <ColumnTypeIcon type={colType} />
             </div>
          ),
@@ -483,7 +483,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                {ctxMenu.type === "cell" && (
                   <>
                      <button
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                         onClick={() => {
                            copyToClipboard(ctxMenu.value ?? "")
                            closeCtxMenu()
@@ -493,7 +493,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                         Copy Cell
                      </button>
                      <button
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                         onClick={() => {
                            if (ctxMenu.rowIndex !== undefined && rows[ctxMenu.rowIndex]) {
                               const rowData = rows[ctxMenu.rowIndex].original as Record<
@@ -513,7 +513,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                {ctxMenu.type === "row" && (
                   <>
                      <button
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                         onClick={() => {
                            if (ctxMenu.rowIndex !== undefined && rows[ctxMenu.rowIndex]) {
                               const rowData = rows[ctxMenu.rowIndex].original as Record<
@@ -532,7 +532,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                )}
                <div className="border-t border-border/80 my-1" />
                <button
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                   onClick={() => {
                      copyToClipboard(formatAllRows(data as Record<string, unknown>[], columnNames))
                      closeCtxMenu()
@@ -542,7 +542,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                   Copy All ({data.length} rows)
                </button>
                <button
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-[12px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                   onClick={() => {
                      const header = columnNames.join("\t")
                      const full = [

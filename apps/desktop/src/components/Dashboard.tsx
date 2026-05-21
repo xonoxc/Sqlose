@@ -72,7 +72,7 @@ export function Dashboard() {
                                ></div>
                               <span className="text-xs text-text-muted">{env.status}</span>
                            </div>
-                           <div className="text-[10px] text-text-muted font-mono">
+                           <div className="text-[11px] text-text-muted font-mono">
                               {new Date(env.createdAt).toLocaleDateString()}
                            </div>
                         </div>

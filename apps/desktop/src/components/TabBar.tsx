@@ -78,7 +78,7 @@ function TabItem({
          onDragEnd={onDragEnd}
          onClick={onSelect}
          className={cn(
-            "group relative flex items-center gap-2 h-7 px-3 py-0 text-[12px] font-medium cursor-pointer select-none shrink-0 rounded-t-sm mx-[1px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+            "group relative flex items-center gap-2 h-7 px-3 py-0 text-[13px] font-medium cursor-pointer select-none shrink-0 rounded-t-sm mx-[1px] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
             isActive
                ? "bg-bg-primary text-text-primary border-t border-x border-border/70"
                : "text-text-muted hover:text-text-secondary hover:bg-bg-primary/40"
@@ -107,7 +107,7 @@ function TabItem({
                <polyline points="8 6 2 12 8 18" />
             </svg>
          )}
-         <span className="truncate max-w-36 text-[11px]">{tab.title}</span>
+         <span className="truncate max-w-36 text-[12px]">{tab.title}</span>
          <button
             onClick={onClose}
             className={cn(

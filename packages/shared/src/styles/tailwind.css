@@ -81,7 +81,7 @@
 @layer base {
    body {
       @apply bg-bg-primary text-text-primary font-sans antialiased selection:bg-accent/30;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;

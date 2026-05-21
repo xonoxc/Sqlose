@@ -304,7 +304,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                                                 variant={
                                                    CATEGORY_COLORS[ds.category] ?? "secondary"
                                                 }
-                                                className="text-[10px] px-1.5 py-0"
+                                                className="text-[11px] px-1.5 py-0"
                                              >
                                                 {ds.category}
                                              </Badge>

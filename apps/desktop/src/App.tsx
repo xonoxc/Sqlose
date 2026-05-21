@@ -423,7 +423,7 @@ function AppContent() {
                            <div className="flex-1 max-w-md mx-4 app-no-drag">
                               <button
                                  onClick={() => setPaletteOpen(true)}
-                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-1.5 text-[12px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-1.5 text-[13px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                               >
                                  <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -446,15 +446,15 @@ function AppContent() {
                                  <div className="ml-auto flex items-center gap-1 opacity-50">
                                     {isMac() ? (
                                        <>
-                                          <kbd className="bg-bg-primary text-[10px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                          <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                              ⌘
                                           </kbd>
-                                          <kbd className="bg-bg-primary text-[10px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                          <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                              K
                                           </kbd>
                                        </>
                                     ) : (
-                                       <kbd className="bg-bg-primary text-[10px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                       <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                           Ctrl+K
                                        </kbd>
                                     )}
@@ -566,13 +566,13 @@ function AppContent() {
                                                       <IconChevronDown className="h-3.5 w-3.5" />
                                                    )}
                                                 </div>
-                                                <span className="text-[12px] font-semibold tracking-wide text-text-primary">
+                                                <span className="text-[13px] font-semibold tracking-wide text-text-primary">
                                                    Results
                                                 </span>
                                              </button>
 
                                              {activeTab?.result && (
-                                                <div className="flex items-center gap-2 text-[11px] text-text-muted/80 font-sans tracking-wide border-l border-border/60 pl-3">
+                                                <div className="flex items-center gap-2 text-[12px] text-text-muted/80 font-sans tracking-wide border-l border-border/60 pl-3">
                                                    <span>
                                                       {activeTab.result.rowCount} row
                                                       {activeTab.result.rowCount !== 1 ? "s" : ""}
@@ -580,7 +580,7 @@ function AppContent() {
                                                    {executionTimeMs !== null && (
                                                       <>
                                                          <span className="opacity-40">•</span>
-                                                         <span className="font-mono text-[10px]">
+                                                         <span className="font-mono text-[11px]">
                                                             {executionTimeMs}ms
                                                          </span>
                                                       </>
@@ -590,7 +590,7 @@ function AppContent() {
                                              {isExecuting && (
                                                 <div className="flex items-center gap-1.5 text-accent border-l border-border/60 pl-3">
                                                    <div className="h-3 w-3 rounded-full border-[2px] border-accent/30 border-t-accent animate-spin" />
-                                                   <span className="text-[11px] font-medium tracking-wide">
+                                                   <span className="text-[12px] font-medium tracking-wide">
                                                       Executing
                                                    </span>
                                                 </div>
@@ -601,14 +601,14 @@ function AppContent() {
                                                 <>
                                                    <button
                                                       onClick={() => handleCopyResults(true)}
-                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[11px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[12px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                                                       title="Copy results with headers"
                                                    >
                                                       <IconCopy className="h-3.5 w-3.5 opacity-70" />
                                                       Copy
                                                    </button>
                                                    <button
-                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[11px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[12px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                                                       title="Export results"
                                                    >
                                                       <IconDownload className="h-3.5 w-3.5 opacity-70" />
@@ -667,10 +667,10 @@ function AppContent() {
                                              <path d="m14.5 4-5 16" />
                                           </svg>
                                        </div>
-                                       <h2 className="text-[15px] font-semibold text-text-primary mb-2 tracking-wide">
+                                       <h2 className="text-[16px] font-semibold text-text-primary mb-2 tracking-wide">
                                           Ready to write queries
                                        </h2>
-                                       <p className="text-[13px] text-text-muted mb-8 leading-relaxed">
+                                       <p className="text-[14px] text-text-muted mb-8 leading-relaxed">
                                           Start interacting with your database by creating a new
                                           query tab or using the command system.
                                        </p>
@@ -680,21 +680,21 @@ function AppContent() {
                                              onClick={handleNewQuery}
                                              className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                                           >
-                                             <span className="text-[12px] font-medium text-text-secondary group-hover:text-text-primary">
+                                             <span className="text-[13px] font-medium text-text-secondary group-hover:text-text-primary">
                                                 New Query Workspace
                                              </span>
                                              <div className="flex items-center gap-1 opacity-60">
                                                 {isMac() ? (
                                                    <>
-                                                      <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                      <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                          ⌘
                                                       </kbd>
-                                                      <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                      <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                          N
                                                       </kbd>
                                                    </>
                                                 ) : (
-                                                   <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                   <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                       Ctrl+N
                                                    </kbd>
                                                 )}
@@ -704,21 +704,21 @@ function AppContent() {
                                              onClick={() => setPaletteOpen(true)}
                                              className="flex items-center justify-between w-full px-4 py-2.5 rounded-lg bg-bg-tertiary hover:bg-bg-quaternary border border-border/80 transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                                           >
-                                             <span className="text-[12px] font-medium text-text-secondary group-hover:text-text-primary">
+                                             <span className="text-[13px] font-medium text-text-secondary group-hover:text-text-primary">
                                                 Global Search
                                              </span>
                                              <div className="flex items-center gap-1 opacity-60">
                                                 {isMac() ? (
                                                    <>
-                                                      <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                      <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                          ⌘
                                                       </kbd>
-                                                      <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                      <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                          K
                                                       </kbd>
                                                    </>
                                                 ) : (
-                                                   <kbd className="font-mono text-[10px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                                                   <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
                                                       Ctrl+K
                                                    </kbd>
                                                 )}

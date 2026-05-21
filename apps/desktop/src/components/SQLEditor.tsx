@@ -49,7 +49,7 @@ export function SQLEditor({
                   onClick={onExecute}
                   disabled={isExecuting || !selectedEnvironmentId || !value.trim()}
                   className={cn(
-                     "flex items-center gap-1.5 h-7 px-3 rounded-md text-[12px] font-semibold transition-all outline-none",
+                     "flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-semibold transition-all outline-none",
                      isExecuting || !selectedEnvironmentId || !value.trim()
                         ? "bg-accent/20 text-white/50 cursor-not-allowed"
                         : "bg-accent hover:bg-accent-light text-white shadow-sm"
@@ -65,18 +65,18 @@ export function SQLEditor({
                         <IconPlayerPlay className="h-3 w-3 fill-current" />
                         Run Query
                         <div className="flex items-center gap-0.5 ml-1 opacity-70 border-l border-white/20 pl-2">
-                           <span className="text-[9px] font-sans font-medium">
+                           <span className="text-[10px] font-sans font-medium">
                               {isMac() ? "⌘" : "Ctrl"}
                            </span>
-                           {!isMac() && <span className="text-[9px] font-sans font-medium">+</span>}
-                           <span className="text-[9px] font-sans font-medium">↵</span>
+                           {!isMac() && <span className="text-[10px] font-sans font-medium">+</span>}
+                           <span className="text-[10px] font-sans font-medium">↵</span>
                         </div>
                      </>
                   )}
                </button>
 
                {executionTimeMs !== null && !isExecuting && (
-                  <span className="text-[10px] text-text-muted font-mono">{executionTimeMs}ms</span>
+                  <span className="text-[11px] text-text-muted font-mono">{executionTimeMs}ms</span>
                )}
 
                 <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
@@ -106,11 +106,11 @@ export function SQLEditor({
                                  }
                               }}
                               placeholder="Query name..."
-                              className="bg-bg-tertiary text-[11px] text-text-primary px-2 py-1 rounded border border-border outline-none w-36"
+                              className="bg-bg-tertiary text-[12px] text-text-primary px-2 py-1 rounded border border-border outline-none w-36"
                            />
                            <button
                               onClick={handleSaveSubmit}
-                              className="text-[10px] font-medium text-accent hover:text-accent-light px-1.5 py-1"
+                              className="text-[11px] font-medium text-accent hover:text-accent-light px-1.5 py-1"
                            >
                               Save
                            </button>
@@ -148,7 +148,7 @@ export function SQLEditor({
                   onMount={handleEditorMount}
                   options={{
                      minimap: { enabled: false },
-                     fontSize: 14,
+                     fontSize: 15,
                      fontFamily: "'Geist Mono', ui-monospace, monospace",
                      lineHeight: 20,
                      lineNumbersMinChars: 2,
@@ -180,7 +180,7 @@ export function SQLEditor({
             {vimEnabled && (
                <div
                   ref={vimStatusRef}
-                  className="h-5 text-[10px] bg-bg-tertiary border-t border-border flex items-center px-2 text-text-muted font-mono shrink-0"
+                  className="h-5 text-[11px] bg-bg-tertiary border-t border-border flex items-center px-2 text-text-muted font-mono shrink-0"
                />
             )}
          </div>
