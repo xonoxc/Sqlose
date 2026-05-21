@@ -49,8 +49,11 @@ export function CommandPalette({
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
                transition={{ duration: 0.1 }}
-               className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-[2px]"
-               onClick={onClose}
+                className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-[2px]"
+                onClick={() => {
+                   if (mode === "themes") exitThemeMode()
+                   onClose()
+                }}
             >
                <motion.div
                   initial={{ opacity: 0, scale: 0.97, y: -10 }}

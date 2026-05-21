@@ -86,6 +86,9 @@ export function useCommandPaletteLogic(
       if (themeId) {
          const theme = themes.find(t => t.id === themeId)
          if (theme) applyTheme(theme)
+      } else {
+         const current = useThemeStore.getState().currentTheme
+         applyTheme(current)
       }
    }
 

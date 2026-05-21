@@ -1,3 +1,4 @@
+import { defaultTheme } from "./default"
 import { tokyoNight } from "./tokyo-night"
 import { catppuccinMocha } from "./catppuccin-mocha"
 import { dracula } from "./dracula"
@@ -11,6 +12,7 @@ import { solarizedDark } from "./solarized-dark"
 import type { Theme } from "../types/theme"
 
 export const themes: Theme[] = [
+   defaultTheme,
    tokyoNight,
    catppuccinMocha,
    dracula,

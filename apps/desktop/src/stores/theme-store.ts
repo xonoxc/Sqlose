@@ -65,7 +65,7 @@ export const useThemeStore = create<ThemeStore>()(
          setTheme: (id: string) => {
             const theme = themes.find(t => t.id === id) ?? themes[0]
             applyTheme(theme)
-            set({ themeId: id, currentTheme: theme })
+            set({ themeId: theme.id, currentTheme: theme })
          },
       }),
        {
@@ -76,6 +76,7 @@ export const useThemeStore = create<ThemeStore>()(
             if (state) {
                const theme = themes.find(t => t.id === state.themeId) ?? themes[0]
                state.currentTheme = theme
+               state.themeId = theme.id
                applyTheme(theme)
             }
          },
