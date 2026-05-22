@@ -139,7 +139,7 @@ export function AppSidebar({
                <SelectTrigger className="w-full bg-transparent border-transparent shadow-none hover:bg-bg-quaternary/30 focus:ring-0 px-2 h-9 transition-colors truncate">
                   <div className="flex items-center gap-2 truncate">
                      <div className="h-6 w-6 rounded bg-bg-tertiary border border-border flex items-center justify-center text-accent shrink-0">
-                        <IconDatabase className="h-3.5 w-3.5" />
+                        <IconDatabase className="h-3.5 w-3.5 text-white/80" />
                      </div>
                      <SelectValue placeholder="Select Database" />
                   </div>

@@ -30,7 +30,6 @@ export function CommandPalette({
       mode,
       exitThemeMode,
       filteredThemes,
-      themeId,
       handleThemeHover,
       handleThemeSelect,
    } = useCommandPaletteLogic(
