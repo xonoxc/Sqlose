@@ -15,6 +15,7 @@ import {
    SettingsPanel,
    Dashboard,
    TableBrowser,
+   ShortcutsDialog,
 } from "./components"
 import { useEnvironmentStore } from "./stores/environmentStore"
 import { useEditorStore } from "./stores/editorStore"
@@ -66,6 +67,7 @@ function AppContent() {
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
    const [paletteOpen, setPaletteOpen] = useState(false)
    const [settingsOpen, setSettingsOpen] = useState(false)
+   const [shortcutsOpen, setShortcutsOpen] = useState(false)
    const [executingTabId, setExecutingTabId] = useState<string | null>(null)
    const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null)
    const [resultsCollapsed, setResultsCollapsed] = useState(false)
@@ -310,6 +312,12 @@ function AppContent() {
       const isMacPlatform = isMac()
 
       const handleKeyDown = (e: KeyboardEvent) => {
+         if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+            e.preventDefault()
+            setShortcutsOpen(true)
+            return
+         }
+
          const mod = isMacPlatform ? e.metaKey : e.ctrlKey
          if (!mod) return
 
@@ -750,6 +758,7 @@ function AppContent() {
             onOpenQuery={handleOpenQuery}
          />
          <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+         <ShortcutsDialog isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
          {stuckEnvId && (
             <div

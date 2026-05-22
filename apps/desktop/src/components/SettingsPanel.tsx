@@ -29,6 +29,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       "tab.close": "Close Tab",
       "tab.next": "Next Tab",
       "tab.prev": "Previous Tab",
+      "shortcuts.show": "Show Keyboard Shortcuts",
    }
 
    const formatKeybinding = (kb: {

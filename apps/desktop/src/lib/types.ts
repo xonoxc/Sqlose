@@ -178,5 +178,6 @@ export function createDefaultKeybindings(): Keybinding[] {
       { action: "tab.close", key: "w", ctrl: false, shift: false, alt: false, meta: true },
       { action: "tab.next", key: "Tab", ctrl: false, shift: false, alt: false, meta: true },
       { action: "tab.prev", key: "Tab", ctrl: false, shift: true, alt: false, meta: true },
+      { action: "shortcuts.show", key: "/", ctrl: false, shift: true, alt: false, meta: false },
    ]
 }
