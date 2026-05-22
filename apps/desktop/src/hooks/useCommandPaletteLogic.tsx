@@ -79,7 +79,8 @@ export function useCommandPaletteLogic(
       previousThemeIdRef.current = themeId
       setMode("themes")
       setQuery("")
-      setSelectedIndex(0)
+      const currentIdx = themes.findIndex(t => t.id === themeId)
+      setSelectedIndex(currentIdx >= 0 ? currentIdx : 0)
    }
 
    const handleThemeHover = (themeId: string | null) => {
@@ -314,8 +315,8 @@ export function useCommandPaletteLogic(
       if (isOpen) {
          if (mode !== "themes") {
             setQuery("")
+            setSelectedIndex(0)
          }
-         setSelectedIndex(0)
          setTimeout(() => inputRef.current?.focus(), 50)
       }
    }, [isOpen, mode])

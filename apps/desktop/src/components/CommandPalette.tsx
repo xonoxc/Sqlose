@@ -51,9 +51,8 @@ export function CommandPalette({
                transition={{ duration: 0.1 }}
                 className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-[2px]"
                 onClick={() => {
-                   if (mode === "themes") exitThemeMode()
-                   onClose()
-                }}
+                    if (mode !== "themes") onClose()
+                 }}
             >
                <motion.div
                   initial={{ opacity: 0, scale: 0.97, y: -10 }}
@@ -110,9 +109,8 @@ export function CommandPalette({
                                  </span>
                               </div>
                            )}
-                           {filteredThemes.map((theme, index) => {
-                              const isSelected = theme.id === themeId
-                              const isActive = index === selectedIndex
+                            {filteredThemes.map((theme, index) => {
+                               const isActive = index === selectedIndex
                               return (
                                  <button
                                     key={theme.id}
@@ -166,12 +164,7 @@ export function CommandPalette({
                                              {theme.id}
                                           </span>
                                        </div>
-                                       {isSelected && (
-                                          <span className="text-[11px] font-mono text-accent ml-3 border border-accent/30 bg-accent/10 px-1.5 py-0.5 rounded shrink-0">
-                                             Active
-                                          </span>
-                                       )}
-                                    </div>
+                                     </div>
                                  </button>
                               )
                            })}
