@@ -534,11 +534,11 @@ function NavItem({
          className={cn(
             "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-accent",
             active
-               ? "bg-accent/10 text-accent"
+               ? "bg-accent/85 text-white"
                : "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40"
          )}
       >
-         <span className={cn("shrink-0", active ? "text-accent" : "text-text-muted")}>{icon}</span>
+         <span className={cn("shrink-0", active ? "text-white" : "text-text-muted")}>{icon}</span>
          <span className="truncate flex-1 text-left">{label}</span>
          {badge && (
             <span className="text-[10px] font-mono text-text-muted bg-bg-tertiary px-1.5 py-0.5 rounded">
