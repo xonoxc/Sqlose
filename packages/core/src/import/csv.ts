@@ -138,7 +138,7 @@ function escapeSQLValue(value: string): string {
    return `'${value.replace(/'/g, "''")}'`
 }
 
-export function importCSV(content: string, tableName: string): AsyncAppResult<ImportResult> {
+export async function importCSV(content: string, tableName: string): AsyncAppResult<ImportResult> {
    return parseCSV(content).then(parseResult => {
       if (parseResult.isErr()) return err(parseResult.error)
 
@@ -152,7 +152,7 @@ export function importCSV(content: string, tableName: string): AsyncAppResult<Im
    })
 }
 
-export function previewCSV(
+export async function previewCSV(
    content: string
 ): AsyncAppResult<{ columns: string[]; preview: Record<string, string>[] }> {
    return parseCSV(content).then(parseResult => {

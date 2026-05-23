@@ -16,6 +16,7 @@ import {
    Dashboard,
    TableBrowser,
    ShortcutsDialog,
+   SchemaDiagram,
 } from "./components"
 import { useEnvironmentStore } from "./stores/environmentStore"
 import { useEditorStore } from "./stores/editorStore"
@@ -486,10 +487,21 @@ function AppContent() {
                            <TabBar />
                         </div>
 
-                        {/* Content: TableBrowser | Editor+Results | Empty */}
+                        {/* Content: TableBrowser | Editor+Results | Diagram | Empty */}
                         <div className="flex-1 min-h-0 overflow-hidden">
                            <AnimatePresence mode="wait">
-                              {activeTab?.tableName ? (
+                              {activeTab?.type === "diagram" ? (
+                                 <motion.div
+                                    key="schema-diagram"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.1 }}
+                                    className="h-full z-10 relative"
+                                 >
+                                    <SchemaDiagram />
+                                 </motion.div>
+                              ) : activeTab?.tableName ? (
                                  <motion.div
                                     key="table-browser"
                                     initial={{ opacity: 0 }}

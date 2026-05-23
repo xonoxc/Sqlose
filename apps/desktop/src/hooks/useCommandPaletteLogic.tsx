@@ -169,6 +169,15 @@ export function useCommandPaletteLogic(
          onSelect: () => {},
       },
       {
+         id: "view-diagram",
+         label: "View Schema Diagram",
+         description: "Open the ER diagram for the current database",
+         icon: <IconDeviceFloppy className="h-4 w-4" />,
+         shortcut: undefined,
+         category: "action",
+         onSelect: () => openTab(undefined, { type: "diagram", title: "Diagram: main" }),
+      },
+      {
          id: "switch-db",
          label: "Switch Database",
          description: "Change active database connection",
