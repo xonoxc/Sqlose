@@ -83,8 +83,8 @@ export function AppSidebar({
                className={cn(
                   "h-8 w-8 rounded flex items-center justify-center transition-colors",
                   activeNav === "playground"
-                     ? "text-accent bg-accent/10"
-                     : "text-text-muted hover:text-text-primary hover:bg-bg-quaternary"
+                     ? "text-white bg-white/10"
+                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
                )}
                aria-label="Playground"
             >
@@ -95,8 +95,8 @@ export function AppSidebar({
                className={cn(
                   "h-8 w-8 rounded flex items-center justify-center transition-colors",
                   activeNav === "saved"
-                     ? "text-accent bg-accent/10"
-                     : "text-text-muted hover:text-text-primary hover:bg-bg-quaternary"
+                     ? "text-white bg-white/10"
+                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
                )}
                aria-label="Saved Queries"
             >
@@ -107,8 +107,8 @@ export function AppSidebar({
                className={cn(
                   "h-8 w-8 rounded flex items-center justify-center transition-colors",
                   activeNav === "history"
-                     ? "text-accent bg-accent/10"
-                     : "text-text-muted hover:text-text-primary hover:bg-bg-quaternary"
+                     ? "text-white bg-white/10"
+                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
                )}
                aria-label="History"
             >
@@ -120,8 +120,8 @@ export function AppSidebar({
                className={cn(
                   "h-8 w-8 rounded flex items-center justify-center transition-colors",
                   tableTreeExpanded
-                     ? "text-accent bg-accent/10"
-                     : "text-text-muted hover:text-text-primary hover:bg-bg-quaternary"
+                     ? "text-white bg-white/10"
+                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
                )}
                aria-label="Tables"
             >
@@ -138,7 +138,7 @@ export function AppSidebar({
             <Select value={selectedEnvironmentId ?? ""} onValueChange={handleSelect}>
                <SelectTrigger className="w-full bg-transparent border-transparent shadow-none hover:bg-bg-quaternary/30 focus:ring-0 px-2 h-9 transition-colors truncate">
                   <div className="flex items-center gap-2 truncate">
-                     <div className="h-6 w-6 rounded bg-bg-tertiary border border-border flex items-center justify-center text-accent shrink-0">
+                     <div className="h-6 w-6 rounded bg-bg-tertiary border border-border flex items-center justify-center text-white/80 shrink-0">
                         <IconDatabase className="h-3.5 w-3.5 text-white/80" />
                      </div>
                      <SelectValue placeholder="Select Database" />
@@ -407,8 +407,8 @@ export function AppSidebar({
                                     className={cn(
                                        "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
                                        isActive
-                                          ? "bg-accent/10 text-accent border-l-[2.5px] border-accent"
-                                          : "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/30 border-l-[2.5px] border-transparent",
+                                          ? "bg-white/10 text-white border-l-[2.5px] border-white/50"
+                                          : "text-white/65 hover:text-white hover:bg-bg-quaternary/30 border-l-[2.5px] border-transparent",
                                        isFocused && "ring-1 ring-accent/40"
                                     )}
                                     onClick={() => handleTableClick(tableName)}
@@ -420,7 +420,7 @@ export function AppSidebar({
                                        className={cn(
                                           "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
                                           "hover:bg-bg-quaternary/60 hover:text-text-primary",
-                                          isExpanded && "text-accent"
+                                          isExpanded && "text-white"
                                        )}
                                        aria-label={
                                           isExpanded ? "Collapse columns" : "Expand columns"
@@ -532,10 +532,10 @@ function NavItem({
       <button
          onClick={onClick}
          className={cn(
-            "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-accent",
+            "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-white/40",
             active
-               ? "bg-accent/85 text-white"
-               : "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40"
+               ? "bg-white/10 text-white"
+               : "text-white/65 hover:text-white hover:bg-bg-quaternary/40"
          )}
       >
          <span className={cn("shrink-0", active ? "text-white" : "text-text-muted")}>{icon}</span>

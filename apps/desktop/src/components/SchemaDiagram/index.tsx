@@ -129,20 +129,20 @@ export function SchemaDiagram() {
              const fks = await fetchForeignKeys(envId, tName)
              for (const fk of fks) {
                  newEdges.push({
-                     id: `e-${tName}-${fk.fromCol}->${fk.toTable}`,
+                     id: `e-${tName}-${fk.fromCol}->${fk.toTable}-${fk.toCol}`,
                      source: tName,
+                     sourceHandle: `source-${fk.fromCol}`,
                      target: fk.toTable,
-                     label: `FK: ${fk.fromCol}`,
-                     labelStyle: { fill: currentTheme.colors.text, fontWeight: 500, fontSize: 10 },
-                     labelBgStyle: { fill: currentTheme.colors.surface, fillOpacity: 0.8 },
-                     animated: false,
-                     style: { stroke: currentTheme.colors.accent, strokeWidth: 1.5 },
-                     markerEnd: { type: MarkerType.ArrowClosed, color: currentTheme.colors.accent },
+                     targetHandle: `target-${fk.toCol}`,
+                     type: 'smoothstep',
+                     animated: true,
+                     style: { stroke: currentTheme.colors.textMuted, strokeWidth: 1.5, opacity: 0.4 },
+                     markerEnd: { type: MarkerType.ArrowClosed, color: currentTheme.colors.textMuted },
                  })
              }
          }
 
-         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(newNodes, newEdges)
+         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(newNodes, newEdges, "LR")
          setNodes(layoutedNodes)
          setEdges(layoutedEdges)
          
@@ -162,7 +162,7 @@ export function SchemaDiagram() {
    }
 
    return (
-      <div className="h-full w-full react-diagram-wrapper" style={{ backgroundColor: currentTheme.colors.background }}>
+      <div className="h-full w-full react-diagram-wrapper bg-black/20">
          <style>{`
             .react-diagram-wrapper {
                --xy-controls-button-background-color: ${currentTheme.colors.surface};
@@ -193,7 +193,7 @@ export function SchemaDiagram() {
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             colorMode={currentTheme.monaco.base === "vs-dark" ? "dark" : "light"}
-            style={{ backgroundColor: currentTheme.colors.background }}
+            style={{ backgroundColor: "transparent" }}
             fitView
             minZoom={0.1}
          >
