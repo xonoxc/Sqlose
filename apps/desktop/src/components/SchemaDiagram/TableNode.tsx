@@ -1,5 +1,5 @@
 import { Handle, Position } from "@xyflow/react"
-import { cn } from "@sqlose/ui"
+
 import { IconKey } from "@tabler/icons-react"
 import type { ColumnInfo } from "../../lib/schema"
 import { useThemeStore } from "../../stores/theme-store"
@@ -60,8 +60,8 @@ export function TableNode({ data }: { data: TableNodeData }) {
                </div>
             ))}
          </div>
-         <Handle type="target" position={Position.Top} className="w-2 h-2 border-none opacity-50" style={{ backgroundColor: currentTheme.colors.accent }} />
-         <Handle type="source" position={Position.Bottom} className="w-2 h-2 border-none opacity-50" style={{ backgroundColor: currentTheme.colors.accent }} />
+         <Handle type="target" position={Position.Top} className="w-2 h-2 opacity-50" style={{ backgroundColor: currentTheme.colors.accent, border: 'none' }} />
+         <Handle type="source" position={Position.Bottom} className="w-2 h-2 opacity-50" style={{ backgroundColor: currentTheme.colors.accent, border: 'none' }} />
       </div>
    )
 }

@@ -162,13 +162,37 @@ export function SchemaDiagram() {
    }
 
    return (
-      <div className="h-full w-full" style={{ backgroundColor: currentTheme.colors.background }}>
+      <div className="h-full w-full react-diagram-wrapper" style={{ backgroundColor: currentTheme.colors.background }}>
+         <style>{`
+            .react-diagram-wrapper {
+               --xy-controls-button-background-color: ${currentTheme.colors.surface};
+               --xy-controls-button-background-color-hover: ${currentTheme.colors.surface2};
+               --xy-controls-button-color: ${currentTheme.colors.text};
+               --xy-controls-button-color-hover: ${currentTheme.colors.text};
+               --xy-controls-button-border-color: ${currentTheme.colors.border};
+               --xy-minimap-background-color: ${currentTheme.colors.surface};
+            }
+            .react-diagram-wrapper .react-flow__minimap {
+               background-color: ${currentTheme.colors.surface};
+               border: 1px solid ${currentTheme.colors.border};
+               border-radius: 4px;
+            }
+            .react-diagram-wrapper .react-flow__controls-button {
+               background-color: ${currentTheme.colors.surface};
+               border-bottom: 1px solid ${currentTheme.colors.border};
+               fill: ${currentTheme.colors.text};
+            }
+            .react-diagram-wrapper .react-flow__controls-button:hover {
+               background-color: ${currentTheme.colors.surface2};
+            }
+         `}</style>
          <ReactFlow
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
+            colorMode={currentTheme.monaco.base === "vs-dark" ? "dark" : "light"}
             style={{ backgroundColor: currentTheme.colors.background }}
             fitView
             minZoom={0.1}
