@@ -483,7 +483,7 @@ function AppContent() {
                         </div>
 
                         {/* Tab bar */}
-                        <div className="flex items-end h-9 border-b border-border/70 bg-bg-secondary/70 px-1 shrink-0 w-full z-10 relative">
+                        <div className="flex items-end border-b border-border/30 bg-bg-secondary/40 px-3 shrink-0 w-full z-10 relative min-h-[52px]">
                            <TabBar />
                         </div>
 

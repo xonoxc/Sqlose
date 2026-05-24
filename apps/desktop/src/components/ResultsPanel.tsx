@@ -68,28 +68,57 @@ export function ResultsPanel({
 
    return (
       <div className="h-full bg-bg-primary flex flex-col">
-         {/* Tab bar */}
-         <div className="flex items-center gap-0.5 px-3 pt-2 pb-0 shrink-0 border-b border-border/30">
-            {tabs.map(tab => {
-               const isDisabled = tab.id === "plan" // Query Plan requires EXPLAIN support
-               return (
-                  <button
-                     key={tab.id}
-                     onClick={() => !isDisabled && setActiveTab(tab.id)}
-                     disabled={isDisabled}
-                     className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-t-sm transition-colors",
-                        activeTab === tab.id
-                           ? "text-text-primary bg-bg-primary border-t border-x border-border/40 -mb-px"
-                           : "text-text-muted hover:text-text-secondary",
-                        isDisabled && "opacity-30 cursor-not-allowed"
-                     )}
-                  >
-                     {tab.icon}
-                     {tab.label}
-                  </button>
-               )
-            })}
+         {/* Sub-tab bar */}
+         <div className="flex items-center px-3 py-1.5 shrink-0 border-b border-border/30 gap-2">
+            <div
+               className="flex items-center gap-px"
+               style={{
+                  background: "hsl(var(--secondary) / 0.30)",
+                  border: "1px solid hsl(var(--border) / 0.40)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  borderRadius: "8px",
+                  padding: "2px 3px",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 4px rgba(0,0,0,0.2)",
+               }}
+            >
+               {tabs.map(tab => {
+                  const isDisabled = tab.id === "plan"
+                  const isActive = activeTab === tab.id
+                  return (
+                     <button
+                        key={tab.id}
+                        onClick={() => !isDisabled && setActiveTab(tab.id)}
+                        disabled={isDisabled}
+                        className={cn(
+                           "relative flex items-center gap-2 px-3 py-1 text-[11.5px] tracking-wide rounded-md cursor-pointer select-none shrink-0",
+                           "transition-[background,border-color,box-shadow,color] duration-[180ms] ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
+                           isDisabled && "opacity-30 cursor-not-allowed"
+                        )}
+                        style={isActive ? {
+                           background: "linear-gradient(to bottom, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.08))",
+                           border: "1px solid hsl(var(--accent) / 0.25)",
+                           color: "rgba(255,255,255,0.95)",
+                           boxShadow: "0 0 8px hsl(var(--accent) / 0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
+                           fontWeight: 500,
+                        } : {
+                           border: "1px solid transparent",
+                           color: "rgba(255,255,255,0.40)",
+                        }}
+                     >
+                        {/* Top accent strip on active */}
+                        {isActive && (
+                           <span
+                              className="absolute top-0 left-2.5 right-2.5 h-[1.5px] rounded-full pointer-events-none"
+                              style={{ background: "hsl(var(--accent) / 0.65)" }}
+                           />
+                        )}
+                        {tab.icon}
+                        {tab.label}
+                     </button>
+                  )
+               })}
+            </div>
          </div>
          <div className="flex-1 min-h-0 overflow-hidden">{tabContent()}</div>
       </div>
