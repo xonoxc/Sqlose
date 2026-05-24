@@ -377,9 +377,14 @@ function AppContent() {
       : null
 
    return (
-      <div className="h-screen w-screen overflow-hidden bg-transparent p-2">
+      <div className={cn("h-screen w-screen overflow-hidden bg-transparent", isMac() ? "p-2" : "p-0")}>
          {selectedEnvironmentId ? (
-            <div className="flex h-full w-full bg-bg-primary text-text-primary overflow-hidden rounded-xl selection:bg-accent/30 font-sans border border-white/[0.07] shadow-2xl relative">
+            <div className={cn(
+               "flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative",
+               isMac()
+                  ? "rounded-xl selection:bg-accent/30 border border-white/[0.07] shadow-2xl"
+                  : ""
+            )}>
                <div className="flex-1 min-w-0 flex">
                   {sidebarOpen && (
                      <div
