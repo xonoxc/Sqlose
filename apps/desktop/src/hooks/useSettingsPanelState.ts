@@ -6,12 +6,18 @@ export function useSettingsPanelState() {
    const toggleVimMode = useSettingsStore(s => s.toggleVimMode)
    const keybindings = useSettingsStore(s => s.keybindings)
    const resetKeybindings = useSettingsStore(s => s.resetKeybindings)
+   const autoSave = useSettingsStore(s => s.autoSave)
+   const setAutoSaveAction = useSettingsStore(s => s.setAutoSave)
    const setVimEnabled = useEditorStore(s => s.setVimEnabled)
 
    const handleToggleVim = () => {
       const next = !vimModeEnabled
       toggleVimMode()
       setVimEnabled(next)
+   }
+
+   const handleToggleAutoSave = () => {
+      setAutoSaveAction(!autoSave)
    }
 
    const handleResetKeybindings = () => {
@@ -22,6 +28,8 @@ export function useSettingsPanelState() {
       vimModeEnabled,
       handleToggleVim,
       keybindings,
+      autoSave,
+      handleToggleAutoSave,
       handleResetKeybindings,
    }
 }
