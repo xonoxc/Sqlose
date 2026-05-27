@@ -6,16 +6,32 @@ import type { Keybinding } from "../lib/types"
 import { createDefaultKeybindings } from "../lib/types"
 import { sqliteStorage } from "../lib/sqlite-storage"
 
+export type AppearanceMode = "light" | "dark" | "system"
+export type RowSpacing = "comfortable" | "compact"
+export type ExecutionMode = "review" | "direct"
+
 interface SettingsStore {
    vimModeEnabled: boolean
    keybindings: Keybinding[]
    theme: "dark"
    autoSave: boolean
+   appearanceMode: AppearanceMode
+   rowSpacing: RowSpacing
+   alternatingRowColors: boolean
+   tableColumnPreview: boolean
+   editorFontSize: number
+   executionMode: ExecutionMode
 
    toggleVimMode: () => Result<boolean, AppError>
    setVimModeEnabled: (enabled: boolean) => Result<boolean, AppError>
    setTheme: (theme: "dark") => Result<"dark", AppError>
    setAutoSave: (enabled: boolean) => Result<boolean, AppError>
+   setAppearanceMode: (mode: AppearanceMode) => Result<AppearanceMode, AppError>
+   setRowSpacing: (spacing: RowSpacing) => Result<RowSpacing, AppError>
+   setAlternatingRowColors: (enabled: boolean) => Result<boolean, AppError>
+   setTableColumnPreview: (enabled: boolean) => Result<boolean, AppError>
+   setEditorFontSize: (size: number) => Result<number, AppError>
+   setExecutionMode: (mode: ExecutionMode) => Result<ExecutionMode, AppError>
    updateKeybinding: (index: number, binding: Keybinding) => Result<Keybinding, AppError>
    addKeybinding: (binding: Keybinding) => Result<Keybinding, AppError>
    removeKeybinding: (index: number) => Result<number, AppError>
@@ -29,6 +45,12 @@ export const useSettingsStore = create<SettingsStore>()(
          keybindings: createDefaultKeybindings(),
          theme: "dark",
          autoSave: true,
+         appearanceMode: "dark",
+         rowSpacing: "comfortable",
+         alternatingRowColors: false,
+         tableColumnPreview: true,
+         editorFontSize: 14,
+         executionMode: "direct",
 
          toggleVimMode: () => {
             const current = get().vimModeEnabled
@@ -53,6 +75,39 @@ export const useSettingsStore = create<SettingsStore>()(
          setAutoSave: (enabled: boolean) => {
             set({ autoSave: enabled })
             return ok(enabled)
+         },
+
+         setAppearanceMode: (mode: AppearanceMode) => {
+            set({ appearanceMode: mode })
+            return ok(mode)
+         },
+
+         setRowSpacing: (spacing: RowSpacing) => {
+            set({ rowSpacing: spacing })
+            return ok(spacing)
+         },
+
+         setAlternatingRowColors: (enabled: boolean) => {
+            set({ alternatingRowColors: enabled })
+            return ok(enabled)
+         },
+
+         setTableColumnPreview: (enabled: boolean) => {
+            set({ tableColumnPreview: enabled })
+            return ok(enabled)
+         },
+
+         setEditorFontSize: (size: number) => {
+            if (size < 8 || size > 32) {
+               return err(new AppError("ipc:invalid_payload", `Invalid font size: ${size}`))
+            }
+            set({ editorFontSize: size })
+            return ok(size)
+         },
+
+         setExecutionMode: (mode: ExecutionMode) => {
+            set({ executionMode: mode })
+            return ok(mode)
          },
 
          updateKeybinding: (index: number, binding: Keybinding) => {

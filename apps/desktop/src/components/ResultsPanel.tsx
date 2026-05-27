@@ -12,6 +12,7 @@ import {
 import type { QueryResult } from "@sqlose/shared"
 import { isMac } from "../lib/types"
 import { useResultsPanelState } from "../hooks/useResultsPanelState"
+import { useSettingsStore } from "../stores/settingsStore"
 
 interface ResultsPanelProps {
    result: QueryResult | null
@@ -134,6 +135,8 @@ function ResultsTab({
    error: string | null
    isExecuting: boolean
 }) {
+   const rowSpacing = useSettingsStore(s => s.rowSpacing)
+   const alternatingRowColors = useSettingsStore(s => s.alternatingRowColors)
    if (isExecuting) {
       return (
          <div className="flex items-center justify-center h-full bg-bg-primary">
@@ -199,7 +202,11 @@ function ResultsTab({
    return (
       <div className="h-full bg-bg-primary overflow-hidden flex flex-col">
          <div className="flex-1 min-h-0">
-            <ResultsTable data={result.rows as Record<string, unknown>[]} />
+            <ResultsTable
+               data={result.rows as Record<string, unknown>[]}
+               rowHeight={rowSpacing === "compact" ? 20 : 26}
+               alternatingRows={alternatingRowColors}
+            />
          </div>
       </div>
    )

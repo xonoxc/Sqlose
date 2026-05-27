@@ -1,355 +1,137 @@
 "use client"
 
-import { Database, Terminal, Layout, Cpu, Download, Code2, Box, ChevronRight } from "lucide-react"
+import { Database, MessageCircle } from "lucide-react"
 
-const CornerMarker = ({ className = "bg-white/30" }: { className?: string }) => (
-   <div className={`absolute w-1.5 h-1.5 ${className} z-10`} />
-)
-
-export default function SQLoseLinyPage() {
+export default function SQLoseLandingPage() {
    return (
-      <div className="min-h-screen bg-[#050505] text-zinc-300 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
-         <div
-            className="fixed inset-0 pointer-events-none opacity-[0.15]"
-            style={{
-               backgroundImage: `
-            linear-gradient(to right, #ffffff 1px, transparent 1px),
-            linear-gradient(to bottom, #ffffff 1px, transparent 1px)
-          `,
-               backgroundSize: "4rem 4rem",
-            }}
-         />
-         <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,#050505_100%)]" />
+      <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans antialiased selection:bg-white/20 overflow-x-hidden">
+         {/* Navigation */}
+         <nav className="relative z-50">
+            <div className="max-w-[1400px] mx-auto flex items-center justify-between h-20 px-6 lg:px-8">
+               <div className="flex items-center gap-12">
+                  <div className="flex items-center gap-2 text-white">
+                     <Database className="w-6 h-6" />
+                     <span className="font-semibold tracking-tight text-lg">sqlose</span>
+                  </div>
 
-         <nav className="relative border-b border-white/10 bg-[#050505]/80 backdrop-blur-md z-50">
-            <div className="max-w-7xl mx-auto flex items-center justify-between h-16 px-6 relative">
-               <CornerMarker className="bottom-[-3px] left-0 bg-emerald-500" />
-               <CornerMarker className="bottom-[-3px] right-0 bg-emerald-500" />
+                  <div className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+                     <a href="#docs" className="hover:text-white transition-colors">
+                        Docs
+                     </a>
+                     <a href="#pricing" className="hover:text-white transition-colors">
+                        Pricing
+                     </a>
+                     <a href="#features" className="hover:text-white transition-colors">
+                        Features
+                     </a>
+                     <a href="#releases" className="hover:text-white transition-colors">
+                        Releases
+                     </a>
+                     <a href="#login" className="hover:text-white transition-colors">
+                        Legacy login
+                     </a>
+                  </div>
+               </div>
 
                <div className="flex items-center gap-3">
-                  <Database className="w-5 h-5 text-emerald-500" />
-                  <span className="font-bold text-white tracking-tight text-lg">
-                     SQL<span className="text-emerald-500">ose</span>
-                  </span>
-               </div>
-
-               <div className="hidden md:flex items-center gap-8 text-sm font-mono text-zinc-500">
-                  <a href="#features" className="hover:text-amber-400 transition-colors">
-                     .features()
+                  <a
+                     href="#"
+                     className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                  >
+                     <MessageCircle className="w-4 h-4" />
+                     Discord
                   </a>
-                  <a href="#stack" className="hover:text-purple-400 transition-colors">
-                     .stack()
+                  <a
+                     href="#"
+                     className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                  >
+                     <GitHub className="w-4 h-4" />
+                     174
                   </a>
-                  <a href="#docs" className="hover:text-blue-400 transition-colors">
-                     .docs()
-                  </a>
-               </div>
-
-               <div className="flex items-center gap-4">
-                  <a href="#" className="text-zinc-500 hover:text-white transition-colors">
-                     <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-                     </svg>
-                  </a>
-                  <button className="flex items-center gap-2 border border-white/20 bg-white/5 hover:bg-white/10 text-white px-4 py-1.5 text-sm font-medium transition-colors font-mono">
-                     <Download className="w-4 h-4" />
+                  <button className="bg-white text-black hover:bg-zinc-200 px-5 py-2 rounded-full text-sm font-medium transition-colors">
                      Get App
                   </button>
                </div>
             </div>
          </nav>
 
-         <section className="relative max-w-7xl mx-auto px-6 pt-24 pb-32 flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-1 relative z-10">
-               <div className="inline-flex items-center gap-2 px-3 py-1 border border-white/10 bg-white/5 text-xs font-mono text-amber-400 mb-8">
-                  <span className="w-2 h-2 bg-amber-400 animate-pulse" />
-                  v1.0.0_release
+         {/* Hero Section */}
+         <main className="max-w-[1400px] mx-auto px-6 lg:px-8 pt-20 md:pt-32 pb-24 relative z-10 flex flex-col items-center">
+            {/* Centered Text Content */}
+            <div className="max-w-4xl flex flex-col items-center text-center">
+               <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-white/10 bg-white/5 rounded-full text-xs font-medium text-zinc-400 mb-8">
+                  <GitHub className="w-3.5 h-3.5" />
+                  v1.0.0 · Latest
                </div>
 
-               <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-                  The{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">
-                     ephemeral
-                  </span>{" "}
-                  stack <br />
-                  for data artisans.
+               <h1 className="text-5xl sm:text-6xl md:text-[5rem] font-medium tracking-tight text-white mb-6 leading-[1.05]">
+                  Ephemeral SQL environments, <br className="hidden md:block" />
+                  now open source
                </h1>
 
-               <p className="text-xl text-zinc-400 mb-10 max-w-xl font-light leading-relaxed">
-                  <span className="text-purple-400 font-mono text-sm mr-2">const</span>
-                  flow ={" "}
-                  <span className="text-amber-300 font-mono text-sm">
-                     ['spin up', 'query', 'throw away']
-                  </span>
-                  ;
-                  <br className="mb-2" />
-                  SQLose gives you fully isolated DB environments with zero configuration and zero
-                  leftover clutter.
+               <p className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl font-normal leading-relaxed">
+                  Use SQLose to spin up fully isolated databases in minutes, or self-host it on your
+                  own infrastructure. Zero leftover clutter.
                </p>
 
-               <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="flex items-center justify-center gap-2 border border-emerald-500 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 px-6 py-3 font-mono transition-colors">
-                     <Download className="w-5 h-5" />
-                     Download for Mac
+               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                  <button className="w-full sm:w-auto flex items-center justify-center px-6 py-3 rounded-full bg-white text-black font-medium hover:bg-zinc-200 transition-colors">
+                     Get started
                   </button>
-                  <button className="flex items-center justify-center gap-2 border border-white/20 bg-transparent text-white hover:bg-white/5 px-6 py-3 font-mono transition-colors">
-                     <Terminal className="w-5 h-5" />
-                     brew install sqlose
+                  <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-colors">
+                     <GitHub className="w-5 h-5" />
+                     Open in Github
                   </button>
                </div>
             </div>
 
-            <div className="flex-1 w-full h-[500px] flex items-center justify-center relative perspective-[1000px]">
-               <div
-                  className="relative w-72 h-72 scale-75 md:scale-100"
-                  style={{
-                     transformStyle: "preserve-3d",
-                     transform: "rotateX(60deg) rotateZ(-45deg)",
-                  }}
-               >
-                  <div
-                     className="absolute inset-0 border border-purple-500 bg-purple-950/40 backdrop-blur-md shadow-[0_0_30px_rgba(168,85,247,0.15)] flex items-end p-4 transition-transform duration-700 hover:translate-z-10"
-                     style={{ transform: "translateZ(120px)" }}
-                  >
-                     <div className="font-mono text-xs text-purple-400 border border-purple-500/30 bg-purple-950/50 px-2 py-1">
-                        Electron.Window
-                     </div>
-                  </div>
+            {/* Application Mockup with Double Border over Photo */}
+            <div className="mt-20 md:mt-28 relative w-full max-w-5xl mx-auto">
+               {/* Outer "Double" Border Frame (Padding & Outer Border) */}
+               <div className="rounded-2xl border border-white/10 bg-[#161616]/50 p-2 sm:p-3 shadow-2xl backdrop-blur-sm">
+                  {/* Inner Container implementing the requested border overlay */}
+                  <div className="flex flex-col w-full relative rounded-[12px] bg-[#0a0a0a]">
+                     <img
+                        src="/ss.png"
+                        alt="SQLose Application Interface"
+                        className="w-full object-cover rounded-[12px] opacity-100 block"
+                        onError={e => {
+                           e.currentTarget.style.display = "none"
+                           const fallback = e.currentTarget.parentElement?.querySelector(
+                              ".fallback-msg"
+                           ) as HTMLElement
+                           if (fallback) fallback.classList.remove("hidden")
+                        }}
+                     />
 
-                  <div
-                     className="absolute top-1/2 left-1/2 w-px h-[60px] bg-white/20 border-l border-dashed border-purple-500/50"
-                     style={{ transform: "rotateX(-90deg) translateZ(30px) translateY(-30px)" }}
-                  />
+                     {/* The crisp absolute overlay border over the photo */}
+                     <div className="flex flex-col absolute left-0 top-0 right-0 bottom-0 border-solid border z-10 pointer-events-none rounded-[12px] border-white/5" />
 
-                  <div
-                     className="absolute inset-4 border border-amber-500/80 bg-amber-950/40 backdrop-blur-md shadow-[0_0_30px_rgba(245,158,11,0.1)] flex items-end p-4"
-                     style={{ transform: "translateZ(60px)" }}
-                  >
-                     <div className="font-mono text-xs text-amber-400 border border-amber-500/30 bg-amber-950/50 px-2 py-1">
-                        Core.Manager
-                     </div>
-                  </div>
-
-                  <div
-                     className="absolute top-1/2 left-1/4 w-px h-[60px] bg-white/20 border-l border-dashed border-amber-500/50"
-                     style={{ transform: "rotateX(-90deg) translateZ(-30px) translateY(-30px)" }}
-                  />
-                  <div
-                     className="absolute top-1/2 right-1/4 w-px h-[60px] bg-white/20 border-l border-dashed border-amber-500/50"
-                     style={{ transform: "rotateX(-90deg) translateZ(-30px) translateY(-30px)" }}
-                  />
-
-                  <div
-                     className="absolute inset-[-10px] border border-blue-500/50 bg-blue-950/20 grid grid-cols-2 gap-4 p-4"
-                     style={{ transform: "translateZ(0px)" }}
-                  >
-                     <div className="border border-blue-400/30 bg-blue-500/10 flex items-center justify-center">
-                        <span className="font-mono text-[10px] text-blue-300">PGSQL</span>
-                     </div>
-                     <div className="border border-blue-400/30 bg-blue-500/10 flex items-center justify-center">
-                        <span className="font-mono text-[10px] text-blue-300">MYSQL</span>
-                     </div>
-                     <div className="border border-blue-400/30 bg-blue-500/10 flex items-center justify-center col-span-2">
-                        <span className="font-mono text-[10px] text-blue-300">SQLITE</span>
-                     </div>
-
-                     <div className="absolute -bottom-6 left-2 font-mono text-xs text-blue-500">
-                        Docker.Daemon
+                     {/* Fallback for missing image */}
+                     <div className="fallback-msg hidden absolute inset-0 flex flex-col items-center justify-center font-medium text-sm text-zinc-600 bg-[#0a0a0a] rounded-[12px]">
+                        <Database className="w-12 h-12 mb-4 text-white/5" />
+                        <span>[ Place your app screenshot at /public/ss.png ]</span>
                      </div>
                   </div>
                </div>
             </div>
-         </section>
-
-         <section className="relative border-y border-white/10 bg-[#0a0a0c] overflow-hidden">
-            <CornerMarker className="top-[-3px] left-1/4 bg-amber-500 hidden md:block" />
-            <CornerMarker className="bottom-[-3px] left-1/4 bg-amber-500 hidden md:block" />
-            <CornerMarker className="top-[-3px] right-1/4 bg-amber-500 hidden md:block" />
-            <CornerMarker className="bottom-[-3px] right-1/4 bg-amber-500 hidden md:block" />
-
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-white/10">
-               <div className="p-6 md:p-8 flex items-center justify-center md:justify-start w-full md:w-1/4">
-                  <span className="font-mono text-xs text-zinc-500 tracking-widest uppercase">
-                     <span className="text-amber-500 mr-2">{"//"}</span> Tech Stack
-                  </span>
-               </div>
-               <div className="p-6 md:p-8 flex items-center justify-center w-full md:w-1/4 font-mono text-sm text-zinc-400 hover:text-white hover:bg-white/[0.02] transition-colors">
-                  <Box className="w-4 h-4 mr-2 text-purple-400" /> Electron
-               </div>
-               <div className="p-6 md:p-8 flex items-center justify-center w-full md:w-1/4 font-mono text-sm text-zinc-400 hover:text-white hover:bg-white/[0.02] transition-colors">
-                  <Code2 className="w-4 h-4 mr-2 text-blue-400" /> React + Zustand
-               </div>
-               <div className="p-6 md:p-8 flex items-center justify-center w-full md:w-1/4 font-mono text-sm text-zinc-400 hover:text-white hover:bg-white/[0.02] transition-colors">
-                  <Cpu className="w-4 h-4 mr-2 text-emerald-400" /> Monaco Editor
-               </div>
-            </div>
-         </section>
-
-         <section className="relative max-w-6xl mx-auto px-6 py-24 z-10">
-            <div className="mb-12">
-               <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">The Workspace</h2>
-               <p className="font-mono text-sm text-zinc-500">
-                  class UI extends App {"{"} ... {"}"}
-               </p>
-            </div>
-
-            <div className="relative border border-white/20 bg-[#050505] p-2 md:p-4 before:absolute before:-inset-2 before:border before:border-white/5 before:pointer-events-none">
-               <CornerMarker className="top-[-3px] left-[-3px] bg-purple-500" />
-               <CornerMarker className="top-[-3px] right-[-3px] bg-purple-500" />
-               <CornerMarker className="bottom-[-3px] left-[-3px] bg-purple-500" />
-               <CornerMarker className="bottom-[-3px] right-[-3px] bg-purple-500" />
-
-               <div className="border border-white/10 relative overflow-hidden bg-[#0d0d0d]">
-                  <div className="border-b border-white/10 h-10 flex items-center px-4 justify-between bg-[#111]">
-                     <div className="flex gap-2">
-                        <div className="w-3 h-3 border border-zinc-600 rounded-full" />
-                        <div className="w-3 h-3 border border-zinc-600 rounded-full" />
-                        <div className="w-3 h-3 border border-zinc-600 rounded-full" />
-                     </div>
-                     <div className="font-mono text-xs text-zinc-500">sqlose-database</div>
-                     <div className="w-10"></div>
-                  </div>
-
-                  <img
-                     src="/ss.png"
-                     alt="SQLose Application Interface"
-                     className="w-full h-auto object-cover block"
-                     onError={e => {
-                        e.currentTarget.style.display = "none"
-                        ;(e.currentTarget.nextElementSibling as HTMLElement)?.classList.remove(
-                           "hidden"
-                        )
-                     }}
-                  />
-
-                  <div className="hidden h-[400px] w-full flex items-center justify-center font-mono text-xs text-zinc-600 bg-[#050505]">
-                     [ Image Missing: Drop ss.png in /public ]
-                  </div>
-               </div>
-            </div>
-         </section>
-
-         <section id="features" className="relative border-t border-white/10 bg-[#050505]">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
-               <div className="p-10 md:p-16 relative group hover:bg-white/[0.01] transition-colors">
-                  <CornerMarker className="top-[-3px] left-[-3px] bg-zinc-700 hidden md:block" />
-                  <div className="mb-8 p-4 border border-white/10 w-16 h-16 flex items-center justify-center text-emerald-400 bg-emerald-500/5">
-                     <Database className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Ephemeral by Design</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                     Launch isolated environments instantly. Close the app, and the containers
-                     vanish.
-                  </p>
-                  <div className="font-mono text-xs text-zinc-600 group-hover:text-emerald-500 transition-colors">
-                     docker run --rm sqlose
-                  </div>
-               </div>
-
-               <div className="p-10 md:p-16 relative group hover:bg-white/[0.01] transition-colors">
-                  <div className="mb-8 p-4 border border-white/10 w-16 h-16 flex items-center justify-center text-amber-400 bg-amber-500/5">
-                     <Code2 className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Monaco Powered</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                     Full syntax highlighting, autocomplete, and optional Vim bindings integrated
-                     out-of-the-box.
-                  </p>
-                  <div className="font-mono text-xs text-zinc-600 group-hover:text-amber-500 transition-colors">
-                     import {"{"} Editor {"}"} from '@monaco'
-                  </div>
-               </div>
-
-               <div className="p-10 md:p-16 relative group hover:bg-white/[0.01] transition-colors">
-                  <CornerMarker className="top-[-3px] right-[-3px] bg-zinc-700 hidden md:block" />
-                  <div className="mb-8 p-4 border border-white/10 w-16 h-16 flex items-center justify-center text-blue-400 bg-blue-500/5">
-                     <Layout className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-4">Resizable Architecture</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed mb-6">
-                     Built with a custom horizontal split layout using{" "}
-                     <span className="text-purple-400 font-mono">flex-1 min-w-0</span> for fluid
-                     scaling.
-                  </p>
-                  <div className="font-mono text-xs text-zinc-600 group-hover:text-blue-500 transition-colors">
-                     {"<ResizablePane />"}
-                  </div>
-               </div>
-            </div>
-         </section>
-
-         <footer className="border-t border-white/10 bg-[#020202] relative">
-            <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-12 font-mono text-sm">
-               <div className="col-span-1 md:col-span-2">
-                  <div className="flex items-center gap-2 mb-4">
-                     <Database className="w-5 h-5 text-emerald-500" />
-                     <span className="font-bold text-white text-base">SQLose</span>
-                  </div>
-                  <p className="text-zinc-500 mb-6 max-w-xs">
-                     ephemeral SQL environments. spin up. query. throw away.
-                  </p>
-                  <a
-                     href="#"
-                     className="inline-flex items-center text-emerald-400 hover:text-emerald-300 transition-colors"
-                  >
-                     Initialize <ChevronRight className="w-4 h-4 ml-1" />
-                  </a>
-               </div>
-
-               <div>
-                  <h4 className="text-zinc-300 mb-4 border-b border-white/10 pb-2 inline-block">
-                     Modules
-                  </h4>
-                  <ul className="space-y-3 text-zinc-500">
-                     <li>
-                        <a href="#" className="hover:text-blue-400 transition-colors">
-                           Desktop App
-                        </a>
-                     </li>
-                     <li>
-                        <a href="#" className="hover:text-blue-400 transition-colors">
-                           Core Engine
-                        </a>
-                     </li>
-                     <li>
-                        <a href="#" className="hover:text-blue-400 transition-colors">
-                           Docker Drivers
-                        </a>
-                     </li>
-                  </ul>
-               </div>
-
-               <div>
-                  <h4 className="text-zinc-300 mb-4 border-b border-white/10 pb-2 inline-block">
-                     System
-                  </h4>
-                  <ul className="space-y-3 text-zinc-500">
-                     <li>
-                        <a href="#" className="hover:text-amber-400 transition-colors">
-                           GitHub Repository
-                        </a>
-                     </li>
-                     <li>
-                        <a href="#" className="hover:text-amber-400 transition-colors">
-                           Documentation
-                        </a>
-                     </li>
-                     <li>
-                        <a href="#" className="hover:text-amber-400 transition-colors">
-                           Releases
-                        </a>
-                     </li>
-                  </ul>
-               </div>
-            </div>
-
-            <div className="border-t border-white/10 px-6 py-4 text-center font-mono text-xs text-zinc-600 flex justify-between items-center max-w-7xl mx-auto">
-               <span>&copy; {new Date().getFullYear()} SQLose. All rights reserved.</span>
-               <span>
-                  status: <span className="text-emerald-500">online</span>
-               </span>
-            </div>
-         </footer>
+         </main>
       </div>
    )
 }
+
+import type { SVGProps } from "react"
+
+const GitHub = (props: SVGProps<SVGSVGElement>) => (
+   <svg {...props} viewBox="0 0 1024 1024" fill="none">
+      <path
+         fillRule="evenodd"
+         clipRule="evenodd"
+         d="M8 0C3.58 0 0 3.58 0 8C0 11.54 2.29 14.53 5.47 15.59C5.87 15.66 6.02 15.42 6.02 15.21C6.02 15.02 6.01 14.39 6.01 13.72C4 14.09 3.48 13.23 3.32 12.78C3.23 12.55 2.84 11.84 2.5 11.65C2.22 11.5 1.82 11.13 2.49 11.12C3.12 11.11 3.57 11.7 3.72 11.94C4.44 13.15 5.59 12.81 6.05 12.6C6.12 12.08 6.33 11.73 6.56 11.53C4.78 11.33 2.92 10.64 2.92 7.58C2.92 6.71 3.23 5.99 3.74 5.43C3.66 5.23 3.38 4.41 3.82 3.31C3.82 3.31 4.49 3.1 6.02 4.13C6.66 3.95 7.34 3.86 8.02 3.86C8.7 3.86 9.38 3.95 10.02 4.13C11.55 3.09 12.22 3.31 12.22 3.31C12.66 4.41 12.38 5.23 12.3 5.43C12.81 5.99 13.12 6.7 13.12 7.58C13.12 10.65 11.25 11.33 9.47 11.53C9.76 11.78 10.01 12.26 10.01 13.01C10.01 14.08 10 14.94 10 15.21C10 15.42 10.15 15.67 10.55 15.59C13.71 14.53 16 11.53 16 8C16 3.58 12.42 0 8 0Z"
+         transform="scale(64)"
+         fill="#ffff"
+      />
+   </svg>
+)
+
+export { GitHub }

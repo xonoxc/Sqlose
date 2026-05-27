@@ -173,11 +173,15 @@ export function createDefaultKeybindings(): Keybinding[] {
       { action: "query.execute", key: "Enter", ctrl: false, shift: false, alt: false, meta: true },
       { action: "query.execute", key: "Enter", ctrl: true, shift: false, alt: false, meta: false },
       { action: "palette.open", key: "k", ctrl: false, shift: false, alt: false, meta: true },
-      { action: "palette.open", key: "p", ctrl: true, shift: true, alt: false, meta: false },
+      { action: "palette.open", key: "k", ctrl: true, shift: false, alt: false, meta: false },
       { action: "tab.new", key: "t", ctrl: false, shift: false, alt: false, meta: true },
+      { action: "tab.new", key: "t", ctrl: true, shift: false, alt: false, meta: false },
       { action: "tab.close", key: "w", ctrl: false, shift: false, alt: false, meta: true },
+      { action: "tab.close", key: "w", ctrl: true, shift: false, alt: false, meta: false },
       { action: "tab.next", key: "Tab", ctrl: false, shift: false, alt: false, meta: true },
+      { action: "tab.next", key: "Tab", ctrl: true, shift: false, alt: false, meta: false },
       { action: "tab.prev", key: "Tab", ctrl: false, shift: true, alt: false, meta: true },
+      { action: "tab.prev", key: "Tab", ctrl: true, shift: true, alt: false, meta: false },
       { action: "shortcuts.show", key: "/", ctrl: false, shift: true, alt: false, meta: false },
    ]
 }

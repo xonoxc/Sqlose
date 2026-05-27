@@ -4,6 +4,7 @@ import { IconPlayerPlay, IconSettings, IconDeviceFloppy } from "@tabler/icons-re
 import { isMac } from "../lib/types"
 import { useSQLEditorLogic, defineMonacoTheme } from "../hooks/useSQLEditorLogic"
 import { useThemeStore } from "../stores/theme-store"
+import { useSettingsStore } from "../stores/settingsStore"
 
 const Editor = lazy(() => import("@monaco-editor/react"))
 
@@ -27,6 +28,7 @@ export function SQLEditor({
    executionTimeMs,
 }: SQLEditorProps) {
    const themeId = useThemeStore(s => s.themeId)
+   const editorFontSize = useSettingsStore(s => s.editorFontSize)
 
    const {
       vimStatusRef,
@@ -146,9 +148,9 @@ export function SQLEditor({
                   onChange={handleChange}
                   beforeMount={monaco => defineMonacoTheme(monaco, themeId)}
                   onMount={handleEditorMount}
-                  options={{
-                     minimap: { enabled: false },
-                     fontSize: 15,
+                   options={{
+                      minimap: { enabled: false },
+                      fontSize: editorFontSize,
                      fontFamily: "'Geist Mono', ui-monospace, monospace",
                      lineHeight: 20,
                      lineNumbersMinChars: 2,

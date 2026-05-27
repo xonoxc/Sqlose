@@ -7,25 +7,54 @@ import {
    SelectValue,
    SelectContent,
    SelectItem,
+   cn,
 } from "@sqlose/ui"
-import { IconRotate, IconToggleLeft, IconToggleRight, IconX, IconCheck } from "@tabler/icons-react"
+import {
+   IconRotate,
+   IconToggleLeft,
+   IconToggleRight,
+   IconX,
+   IconCheck,
+   IconSun,
+   IconMoon,
+   IconDeviceDesktop,
+   IconMinus,
+   IconPlus,
+} from "@tabler/icons-react"
 import { useSettingsPanelState } from "../hooks/useSettingsPanelState"
 import { useThemeStore } from "../stores/theme-store"
 import { themes } from "../themes"
+import { isMac, formatShortcut } from "../lib/types"
 
 interface SettingsPanelProps {
    isOpen: boolean
    onClose: () => void
 }
 
+const appearanceOptions = [
+   { value: "light" as const, icon: IconSun, label: "Light" },
+   { value: "dark" as const, icon: IconMoon, label: "Dark" },
+   { value: "system" as const, icon: IconDeviceDesktop, label: "System" },
+]
+
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
    const {
       vimModeEnabled,
       handleToggleVim,
       keybindings,
-      autoSave,
-      handleToggleAutoSave,
       handleResetKeybindings,
+      appearanceMode,
+      setAppearanceMode,
+      rowSpacing,
+      setRowSpacing,
+      alternatingRowColors,
+      setAlternatingRowColors,
+      tableColumnPreview,
+      setTableColumnPreview,
+      editorFontSize,
+      handleFontSizeChange,
+      executionMode,
+      setExecutionMode,
    } = useSettingsPanelState()
 
    const themeId = useThemeStore(s => s.themeId)
@@ -41,21 +70,17 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       "shortcuts.show": "Show Keyboard Shortcuts",
    }
 
-   const formatKeybinding = (kb: {
-      key: string
-      ctrl: boolean
-      shift: boolean
-      alt: boolean
-      meta: boolean
-   }) => {
-      const parts: string[] = []
-      if (kb.ctrl) parts.push("Ctrl")
-      if (kb.alt) parts.push("Alt")
-      if (kb.shift) parts.push("Shift")
-      if (kb.meta) parts.push("⌘")
-      parts.push(kb.key.charAt(0).toUpperCase() + kb.key.slice(1))
-      return parts.join(" + ")
-   }
+   const platformKeybindings = keybindings.filter(kb =>
+      isMac() ? kb.meta : kb.ctrl
+   )
+   const agnostic = keybindings.filter(kb => !kb.meta && !kb.ctrl)
+   platformKeybindings.push(...agnostic)
+   const seen = new Set<string>()
+   const deduped = platformKeybindings.filter(kb => {
+      if (seen.has(kb.action)) return false
+      seen.add(kb.action)
+      return true
+   })
 
    return (
       <AnimatePresence>
@@ -100,14 +125,38 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   <div className="max-h-[65vh] overflow-y-auto custom-scrollbar px-5 py-5 space-y-6">
                      {/* Appearance */}
                      <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-3">
+                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
                            Appearance
                         </h3>
+                        <p className="text-[13px] text-text-muted mb-3">
+                           Select how Sqlose looks on your device.
+                        </p>
+                        <div className="flex gap-1.5 mb-5">
+                           {appearanceOptions.map(opt => {
+                              const Icon = opt.icon
+                              const isActive = appearanceMode === opt.value
+                              return (
+                                 <button
+                                    key={opt.value}
+                                    onClick={() => setAppearanceMode(opt.value)}
+                                    className={cn(
+                                       "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all border",
+                                       isActive
+                                          ? "bg-accent/15 text-accent border-accent/40 shadow-sm"
+                                          : "bg-bg-tertiary text-text-secondary border-border/50 hover:bg-bg-quaternary hover:text-text-primary"
+                                    )}
+                                 >
+                                    <Icon className={cn("h-4 w-4", isActive && "text-accent")} />
+                                    {opt.label}
+                                 </button>
+                              )
+                           })}
+                        </div>
                         <div className="flex items-center justify-between">
                            <div>
                               <p className="text-sm text-text-primary">Theme</p>
                               <p className="text-xs text-text-muted mt-0.5">
-                                 Change the application color theme
+                                 Color theme for the current appearance
                               </p>
                            </div>
                            <Select value={themeId} onValueChange={setTheme}>
@@ -126,7 +175,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               </SelectTrigger>
                               <SelectContent>
                                  {themes.map(t => (
-                                    <SelectItem key={t.id} value={t.id} className="gap-2">
+                                    <SelectItem key={t.id} value={t.id}>
                                        <div className="flex items-center gap-2">
                                           <span
                                              className="h-3 w-3 rounded-full border border-border/60 block shrink-0"
@@ -143,12 +192,105 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
                      <Separator />
 
+                     {/* Table */}
+                     <section>
+                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Table
+                        </h3>
+                        <div className="space-y-4">
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Row Spacing</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Adjust the vertical spacing between rows in data tables.
+                                 </p>
+                              </div>
+                              <Select value={rowSpacing} onValueChange={v => setRowSpacing(v as "comfortable" | "compact")}>
+                                 <SelectTrigger className="w-[150px]">
+                                    <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectItem value="comfortable">Comfortable</SelectItem>
+                                    <SelectItem value="compact">Compact</SelectItem>
+                                 </SelectContent>
+                              </Select>
+                           </div>
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Alternating Row Colors</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Apply alternating background colors to rows in data tables for easier reading.
+                                 </p>
+                              </div>
+                              <button
+                                 onClick={() => setAlternatingRowColors(!alternatingRowColors)}
+                                 className="transition-all duration-200"
+                                 aria-label="Toggle alternating row colors"
+                              >
+                                 {alternatingRowColors ? (
+                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
+                                 ) : (
+                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
+                                 )}
+                              </button>
+                           </div>
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Table Column Preview</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Show expandable column details in the sidebar table list.
+                                 </p>
+                              </div>
+                              <button
+                                 onClick={() => setTableColumnPreview(!tableColumnPreview)}
+                                 className="transition-all duration-200"
+                                 aria-label="Toggle table column preview"
+                              >
+                                 {tableColumnPreview ? (
+                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
+                                 ) : (
+                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
+                                 )}
+                              </button>
+                           </div>
+                        </div>
+                     </section>
+
+                     <Separator />
+
                      {/* Editor */}
                      <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-3">
+                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
                            Editor
                         </h3>
                         <div className="space-y-4">
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Editor Font Size</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Adjust the font size for query editors.
+                                 </p>
+                              </div>
+                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
+                                 <button
+                                    onClick={() => handleFontSizeChange(-1)}
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    aria-label="Decrease font size"
+                                 >
+                                    <IconMinus className="h-3.5 w-3.5" />
+                                 </button>
+                                 <span className="text-[13px] font-mono text-text-primary min-w-[36px] text-center tabular-nums">
+                                    {editorFontSize}px
+                                 </span>
+                                 <button
+                                    onClick={() => handleFontSizeChange(1)}
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    aria-label="Increase font size"
+                                 >
+                                    <IconPlus className="h-3.5 w-3.5" />
+                                 </button>
+                              </div>
+                           </div>
                            <div className="flex items-center justify-between">
                               <div>
                                  <p className="text-sm text-text-primary">Vim Mode</p>
@@ -156,36 +298,58 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                     Enable Vim keybindings in the SQL editor
                                  </p>
                               </div>
-                           <button
-                                  onClick={handleToggleVim}
-                                  className="transition-all duration-200"
-                                  aria-label="Toggle Vim mode"
-                               >
-                                  {vimModeEnabled ? (
-                                     <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
-                                  ) : (
-                                     <IconToggleLeft className="h-5 w-5 text-text-muted" />
-                                  )}
-                               </button>
+                              <button
+                                 onClick={handleToggleVim}
+                                 className="transition-all duration-200"
+                                 aria-label="Toggle Vim mode"
+                              >
+                                 {vimModeEnabled ? (
+                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
+                                 ) : (
+                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
+                                 )}
+                              </button>
                            </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Auto-save</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Automatically save query drafts
-                                 </p>
-                              </div>
-                           <button
-                                  onClick={handleToggleAutoSave}
-                                  className="transition-all duration-200"
-                                  aria-label="Toggle auto-save"
-                               >
-                                  {autoSave ? (
-                                     <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
-                                  ) : (
-                                     <IconToggleLeft className="h-5 w-5 text-text-muted" />
-                                  )}
-                               </button>
+                        </div>
+                     </section>
+
+                     <Separator />
+
+                     {/* Execution */}
+                     <section>
+                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Execution
+                        </h3>
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <p className="text-sm text-text-primary">Execution Mode</p>
+                              <p className="text-xs text-text-muted mt-0.5">
+                                 Review Mode queues changes for review before applying. Direct Mode applies changes immediately.
+                              </p>
+                           </div>
+                           <div className="flex gap-1 bg-bg-tertiary border border-border rounded-lg p-0.5">
+                              <button
+                                 onClick={() => setExecutionMode("review")}
+                                 className={cn(
+                                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-all",
+                                    executionMode === "review"
+                                       ? "bg-accent/15 text-accent shadow-sm"
+                                       : "text-text-muted hover:text-text-primary"
+                                 )}
+                              >
+                                 Review Mode
+                              </button>
+                              <button
+                                 onClick={() => setExecutionMode("direct")}
+                                 className={cn(
+                                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-all",
+                                    executionMode === "direct"
+                                       ? "bg-accent/15 text-accent shadow-sm"
+                                       : "text-text-muted hover:text-text-primary"
+                                 )}
+                              >
+                                 Direct Mode
+                              </button>
                            </div>
                         </div>
                      </section>
@@ -198,18 +362,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                            <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80">
                               Keybindings
                            </h3>
-                            <Button
-                               variant="ghost"
-                               size="sm"
-                               onClick={handleResetKeybindings}
-                               className="h-6 text-xs gap-1 flex"
-                            >
-                               <IconRotate className="h-3 w-3" />
-                               Reset
-                            </Button>
+                           <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleResetKeybindings}
+                              className="h-6 text-xs gap-1 flex"
+                           >
+                              <IconRotate className="h-3 w-3" />
+                              Reset
+                           </Button>
                         </div>
                         <div className="space-y-0.5">
-                           {keybindings.map((kb, index) => (
+                           {deduped.map((kb, index) => (
                               <div
                                  key={index}
                                  className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-bg-quaternary/50 transition-colors"
@@ -218,7 +382,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                     {actionLabels[kb.action] || kb.action}
                                  </span>
                                  <kbd className="text-[11px] font-mono text-text-muted bg-bg-tertiary border border-border rounded-md px-1.5 py-0.5">
-                                    {formatKeybinding(kb)}
+                                    {formatShortcut(kb.meta || kb.ctrl, kb.shift, kb.alt, kb.key)}
                                  </kbd>
                               </div>
                            ))}
@@ -228,15 +392,15 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
                   {/* Footer */}
                   <div className="flex items-center justify-end px-5 py-3 border-t border-border/50 bg-bg-secondary/40">
-                      <Button
-                         variant="default"
-                         size="sm"
-                         onClick={onClose}
-                         className="gap-1.5 flex gap-2"
-                      >
-                         <IconCheck className="h-3.5 w-3.5" />
-                         Done
-                      </Button>
+                     <Button
+                        variant="default"
+                        size="sm"
+                        onClick={onClose}
+                        className="gap-1.5 flex gap-2"
+                     >
+                        <IconCheck className="h-3.5 w-3.5" />
+                        Done
+                     </Button>
                   </div>
                </motion.div>
             </motion.div>

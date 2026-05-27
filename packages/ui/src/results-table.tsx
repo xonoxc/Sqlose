@@ -30,6 +30,7 @@ interface ResultsTableProps<T extends Record<string, unknown>> {
    rowHeight?: number
    className?: string
    emptyMessage?: string
+   alternatingRows?: boolean
 }
 
 interface ContextMenuState {
@@ -129,6 +130,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
    rowHeight = 26,
    className,
    emptyMessage = "No results",
+   alternatingRows = false,
 }: ResultsTableProps<T>) {
    const [sorting, setSorting] = useState<SortingState>([])
    const [ctxMenu, setCtxMenu] = useState<ContextMenuState>({
@@ -399,12 +401,13 @@ export function ResultsTable<T extends Record<string, unknown>>({
                         const row = rows[virtualRow.index]
                         const isRowSelected = selectedRow === row.id
                         return (
-                           <TableRow
-                              key={row.id}
-                              className={cn(
-                                 "group transition-colors duration-100",
-                                 isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]"
-                              )}
+                            <TableRow
+                               key={row.id}
+                               className={cn(
+                                  "group transition-colors duration-100",
+                                  isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
+                                  alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
+                               )}
                               style={{ height: virtualRow.size }}
                               onContextMenu={e => handleContextMenu(e, row)}
                               onClick={() => setSelectedRow(row.id)}

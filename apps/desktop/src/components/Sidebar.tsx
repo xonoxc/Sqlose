@@ -17,6 +17,7 @@ import {
    IconCircleDot,
 } from "@tabler/icons-react"
 import { useSidebarState } from "../hooks/useSidebarState"
+import { useSettingsStore } from "../stores/settingsStore"
 import type { Environment } from "@sqlose/shared"
 
 interface AppSidebarProps {
@@ -64,9 +65,11 @@ export function AppSidebar({
       handleKeyDown,
       handleTableDoubleClick,
       openTab,
-   } = useSidebarState(onOpenTable)
+    } = useSidebarState(onOpenTable)
 
-   if (collapsed) {
+    const tableColumnPreview = useSettingsStore(s => s.tableColumnPreview)
+
+    if (collapsed) {
       return (
          <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/50 items-center py-2 gap-1">
             <button
@@ -414,26 +417,28 @@ export function AppSidebar({
                                     onClick={() => handleTableClick(tableName)}
                                     onDoubleClick={() => handleTableDoubleClick(tableName)}
                                  >
-                                    {/* Chevron button - separate from table selection */}
-                                    <button
-                                       onClick={e => handleChevronClick(e, tableName)}
-                                       className={cn(
-                                          "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
-                                          "hover:bg-bg-quaternary/60 hover:text-text-primary",
-                                          isExpanded && "text-white"
-                                       )}
-                                       aria-label={
-                                          isExpanded ? "Collapse columns" : "Expand columns"
-                                       }
-                                       tabIndex={-1}
-                                    >
-                                       <IconChevronRight
-                                          className={cn(
-                                             "h-2.5 w-2.5 transition-transform duration-160 ease-out",
-                                             isExpanded && "rotate-90"
-                                          )}
-                                       />
-                                    </button>
+                                  {/* Chevron button */}
+                                     {tableColumnPreview && (
+                                        <button
+                                           onClick={e => handleChevronClick(e, tableName)}
+                                           className={cn(
+                                              "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
+                                              "hover:bg-bg-quaternary/60 hover:text-text-primary",
+                                              isExpanded && "text-white"
+                                           )}
+                                           aria-label={
+                                              isExpanded ? "Collapse columns" : "Expand columns"
+                                           }
+                                           tabIndex={-1}
+                                        >
+                                           <IconChevronRight
+                                              className={cn(
+                                                 "h-2.5 w-2.5 transition-transform duration-160 ease-out",
+                                                 isExpanded && "rotate-90"
+                                              )}
+                                           />
+                                        </button>
+                                     )}
 
                                     <IconTable
                                        className={cn(
@@ -454,7 +459,7 @@ export function AppSidebar({
                                  </div>
 
                                  {/* Expanded columns */}
-                                 {isExpanded && (
+                                  {tableColumnPreview && isExpanded && (
                                     <div className="overflow-hidden transition-all duration-200 ease-out">
                                        {isLoadingColumns && !columns && (
                                           <div className="flex items-center gap-2 pl-6 py-1.5">
