@@ -70,7 +70,9 @@ export function SQLEditor({
                            <span className="text-[10px] font-sans font-medium">
                               {isMac() ? "⌘" : "Ctrl"}
                            </span>
-                           {!isMac() && <span className="text-[10px] font-sans font-medium">+</span>}
+                           {!isMac() && (
+                              <span className="text-[10px] font-sans font-medium">+</span>
+                           )}
                            <span className="text-[10px] font-sans font-medium">↵</span>
                         </div>
                      </>
@@ -81,15 +83,15 @@ export function SQLEditor({
                   <span className="text-[11px] text-text-muted font-mono">{executionTimeMs}ms</span>
                )}
 
-                <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
-                   <div className="relative">
-                      <button
-                         onClick={() => {
-                            setSaveName("")
-                            setSaveDialogOpen(!saveDialogOpen)
-                         }}
-                         className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                         aria-label="Save query"
+               <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
+                  <div className="relative">
+                     <button
+                        onClick={() => {
+                           setSaveName("")
+                           setSaveDialogOpen(!saveDialogOpen)
+                        }}
+                        className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                        aria-label="Save query"
                      >
                         <IconDeviceFloppy className="h-3.5 w-3.5" />
                      </button>
@@ -128,7 +130,7 @@ export function SQLEditor({
                   className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                   aria-label="Settings"
                >
-                  <IconSettings className="h-3.5 w-3.5" />
+                  <IconSettings className="h-4 w-4" />
                </button>
             </div>
          </div>
@@ -148,9 +150,9 @@ export function SQLEditor({
                   onChange={handleChange}
                   beforeMount={monaco => defineMonacoTheme(monaco, themeId)}
                   onMount={handleEditorMount}
-                   options={{
-                      minimap: { enabled: false },
-                      fontSize: editorFontSize,
+                  options={{
+                     minimap: { enabled: false },
+                     fontSize: editorFontSize,
                      fontFamily: "'Geist Mono', ui-monospace, monospace",
                      lineHeight: 20,
                      lineNumbersMinChars: 2,

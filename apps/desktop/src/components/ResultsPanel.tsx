@@ -25,10 +25,10 @@ interface ResultsPanelProps {
 type ResultTab = "results" | "messages" | "stats" | "plan"
 
 const tabs: { id: ResultTab; label: string; icon: React.ReactNode }[] = [
-   { id: "results", label: "Results", icon: <IconTable className="h-3 w-3" /> },
-   { id: "messages", label: "Messages", icon: <IconInfoCircle className="h-3 w-3" /> },
-   { id: "stats", label: "Stats", icon: <IconChartBar className="h-3 w-3" /> },
-   { id: "plan", label: "Query Plan", icon: <IconFileCode className="h-3 w-3" /> },
+   { id: "results", label: "Results", icon: <IconTable className="h-3.5 w-3.5" /> },
+   { id: "messages", label: "Messages", icon: <IconInfoCircle className="h-3.5 w-3.5" /> },
+   { id: "stats", label: "Stats", icon: <IconChartBar className="h-3.5 w-3.5" /> },
+   { id: "plan", label: "Query Plan", icon: <IconFileCode className="h-3.5 w-3.5" /> },
 ]
 
 export function ResultsPanel({
@@ -70,19 +70,8 @@ export function ResultsPanel({
    return (
       <div className="h-full bg-bg-primary flex flex-col">
          {/* Sub-tab bar */}
-         <div className="flex items-center px-3 py-1.5 shrink-0 border-b border-border/30 gap-2">
-            <div
-               className="flex items-center gap-px"
-               style={{
-                  background: "hsl(var(--secondary) / 0.30)",
-                  border: "1px solid hsl(var(--border) / 0.40)",
-                  backdropFilter: "blur(10px)",
-                  WebkitBackdropFilter: "blur(10px)",
-                  borderRadius: "8px",
-                  padding: "2px 3px",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 4px rgba(0,0,0,0.2)",
-               }}
-            >
+         <div className="flex items-center px-3 py-1.5 shrink-0 border-b-2 border-border/30 gap-2">
+            <div className="flex items-center gap-px">
                {tabs.map(tab => {
                   const isDisabled = tab.id === "plan"
                   const isActive = activeTab === tab.id
@@ -92,20 +81,26 @@ export function ResultsPanel({
                         onClick={() => !isDisabled && setActiveTab(tab.id)}
                         disabled={isDisabled}
                         className={cn(
-                           "relative flex items-center gap-2 px-3 py-1 text-[11.5px] tracking-wide rounded-md cursor-pointer select-none shrink-0",
+                           "relative flex items-center gap-2 px-3 py-1 text-[13px] rounded-md cursor-pointer select-none shrink-0",
                            "transition-[background,border-color,box-shadow,color] duration-[180ms] ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent",
                            isDisabled && "opacity-30 cursor-not-allowed"
                         )}
-                        style={isActive ? {
-                           background: "linear-gradient(to bottom, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.08))",
-                           border: "1px solid hsl(var(--accent) / 0.25)",
-                           color: "rgba(255,255,255,0.95)",
-                           boxShadow: "0 0 8px hsl(var(--accent) / 0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
-                           fontWeight: 500,
-                        } : {
-                           border: "1px solid transparent",
-                           color: "rgba(255,255,255,0.40)",
-                        }}
+                        style={
+                           isActive
+                              ? {
+                                   background:
+                                      "linear-gradient(to bottom, hsl(var(--accent) / 0.18), hsl(var(--accent) / 0.08))",
+                                   border: "1px solid hsl(var(--accent) / 0.25)",
+                                   color: "rgba(255,255,255,0.95)",
+                                   boxShadow:
+                                      "0 0 8px hsl(var(--accent) / 0.10), inset 0 1px 0 rgba(255,255,255,0.06)",
+                                   fontWeight: 500,
+                                }
+                              : {
+                                   border: "1px solid transparent",
+                                   color: "rgba(255,255,255,0.40)",
+                                }
+                        }
                      >
                         {/* Top accent strip on active */}
                         {isActive && (
@@ -176,18 +171,18 @@ function ResultsTab({
                <span className="text-[14px] font-medium tracking-wide">Ready to run query</span>
                <div className="flex flex-col gap-1.5 mt-3">
                   <div className="flex items-center gap-2 text-[11px] font-mono bg-bg-secondary px-2.5 py-1 rounded border border-border/50">
-                      <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
-                         {isMac() ? "⌘" : "Ctrl"}
-                      </kbd>
-                      <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
-                         ↵
-                      </kbd>
-                      <span className="text-text-muted">Run query</span>
-                   </div>
-                   <div className="flex items-center gap-2 text-[11px] font-mono bg-bg-secondary px-2.5 py-1 rounded border border-border/50">
-                      <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
-                         {isMac() ? "⌘" : "Ctrl"}
-                      </kbd>
+                     <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
+                        {isMac() ? "⌘" : "Ctrl"}
+                     </kbd>
+                     <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
+                        ↵
+                     </kbd>
+                     <span className="text-text-muted">Run query</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[11px] font-mono bg-bg-secondary px-2.5 py-1 rounded border border-border/50">
+                     <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
+                        {isMac() ? "⌘" : "Ctrl"}
+                     </kbd>
                      <kbd className="bg-bg-primary px-1 py-0.5 rounded border border-border/40 text-[10px]">
                         K
                      </kbd>

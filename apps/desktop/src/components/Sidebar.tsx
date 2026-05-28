@@ -65,19 +65,19 @@ export function AppSidebar({
       handleKeyDown,
       handleTableDoubleClick,
       openTab,
-    } = useSidebarState(onOpenTable)
+   } = useSidebarState(onOpenTable)
 
-    const tableColumnPreview = useSettingsStore(s => s.tableColumnPreview)
+   const tableColumnPreview = useSettingsStore(s => s.tableColumnPreview)
 
-    if (collapsed) {
+   if (collapsed) {
       return (
-         <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/50 items-center py-2 gap-1">
+         <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full items-center py-2 gap-1">
             <button
                onClick={onToggleCollapse}
                className="h-8 w-8 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                aria-label="Expand sidebar"
             >
-               <IconLayoutSidebarLeftCollapse className="h-4 w-4 rotate-180" />
+               <IconLayoutSidebarLeftCollapse className="h-4.5 w-4.5 rotate-180" />
             </button>
             <div className="w-6 h-px bg-border/60 my-1" />
 
@@ -135,19 +135,19 @@ export function AppSidebar({
    }
 
    return (
-      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/50">
+      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/10">
          {/* Header: DB Selector + Actions */}
          <div className="flex items-center justify-between w-full app-no-drag gap-1 px-3 pt-3 pb-2 shrink-0 app-drag-region">
             <Select value={selectedEnvironmentId ?? ""} onValueChange={handleSelect}>
                <SelectTrigger className="w-full bg-transparent border-transparent shadow-none hover:bg-bg-quaternary/30 focus:ring-0 px-2 h-9 transition-colors truncate">
                   <div className="flex items-center gap-2 truncate">
-                     <div className="h-6 w-6 rounded bg-bg-tertiary border border-border flex items-center justify-center text-white/80 shrink-0">
+                     <div className="h-6 w-6 rounded bg-bg-tertiary border border-border/50 flex items-center justify-center text-white/80 shrink-0">
                         <IconDatabase className="h-3.5 w-3.5 text-white/80" />
                      </div>
                      <SelectValue placeholder="Select Database" />
                   </div>
                </SelectTrigger>
-               <SelectContent className="border-border/80 bg-bg-tertiary min-w-[200px] shadow-2xl">
+               <SelectContent className="border-border/10 bg-bg-tertiary min-w-[200px] shadow-2xl">
                   {environments.map((env: Environment) => (
                      <SelectItem
                         key={env.id}
@@ -159,20 +159,20 @@ export function AppSidebar({
                   ))}
                </SelectContent>
             </Select>
-            <div className="flex items-center shrink-0">
+            <div className="flex items-center shrink-0 gap-2">
                <button
                   onClick={onSettingsOpen}
                   className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                   aria-label="Settings"
                >
-                  <IconSettings className="h-3.5 w-3.5" />
+                  <IconSettings className="h-4.5 w-4.5" />
                </button>
                <button
                   onClick={onToggleCollapse}
-                  className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                  className="h-5 w-5 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
                   aria-label="Collapse sidebar"
                >
-                  <IconLayoutSidebarLeftCollapse className="h-3.5 w-3.5" />
+                  <IconLayoutSidebarLeftCollapse className="h-4.2 w-4.2" />
                </button>
             </div>
          </div>
@@ -417,28 +417,28 @@ export function AppSidebar({
                                     onClick={() => handleTableClick(tableName)}
                                     onDoubleClick={() => handleTableDoubleClick(tableName)}
                                  >
-                                  {/* Chevron button */}
-                                     {tableColumnPreview && (
-                                        <button
-                                           onClick={e => handleChevronClick(e, tableName)}
-                                           className={cn(
-                                              "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
-                                              "hover:bg-bg-quaternary/60 hover:text-text-primary",
-                                              isExpanded && "text-white"
-                                           )}
-                                           aria-label={
-                                              isExpanded ? "Collapse columns" : "Expand columns"
-                                           }
-                                           tabIndex={-1}
-                                        >
-                                           <IconChevronRight
-                                              className={cn(
-                                                 "h-2.5 w-2.5 transition-transform duration-160 ease-out",
-                                                 isExpanded && "rotate-90"
-                                              )}
-                                           />
-                                        </button>
-                                     )}
+                                    {/* Chevron button */}
+                                    {tableColumnPreview && (
+                                       <button
+                                          onClick={e => handleChevronClick(e, tableName)}
+                                          className={cn(
+                                             "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
+                                             "hover:bg-bg-quaternary/60 hover:text-text-primary",
+                                             isExpanded && "text-white"
+                                          )}
+                                          aria-label={
+                                             isExpanded ? "Collapse columns" : "Expand columns"
+                                          }
+                                          tabIndex={-1}
+                                       >
+                                          <IconChevronRight
+                                             className={cn(
+                                                "h-2.5 w-2.5 transition-transform duration-160 ease-out",
+                                                isExpanded && "rotate-90"
+                                             )}
+                                          />
+                                       </button>
+                                    )}
 
                                     <IconTable
                                        className={cn(
@@ -459,7 +459,7 @@ export function AppSidebar({
                                  </div>
 
                                  {/* Expanded columns */}
-                                  {tableColumnPreview && isExpanded && (
+                                 {tableColumnPreview && isExpanded && (
                                     <div className="overflow-hidden transition-all duration-200 ease-out">
                                        {isLoadingColumns && !columns && (
                                           <div className="flex items-center gap-2 pl-6 py-1.5">

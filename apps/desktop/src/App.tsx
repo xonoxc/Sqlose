@@ -28,7 +28,6 @@ import { useSavedQueriesStore } from "./stores/savedQueriesStore"
 import { useThemeStore } from "./stores/theme-store"
 import { isMac } from "./lib/types"
 import {
-   IconX,
    IconChevronRight,
    IconChevronDown,
    IconCopy,
@@ -36,9 +35,10 @@ import {
    IconTrash,
    IconPlayerPlay,
    IconBomb,
+   IconLogout,
 } from "@tabler/icons-react"
 
-async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean) {
+async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean): Promise<void> {
    const headers = result.columns.join("\t")
    const rows = result.rows
       .map(r =>
@@ -50,21 +50,37 @@ async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean)
             .join("\t")
       )
       .join("\n")
+
    const text = withHeaders ? `${headers}\n${rows}` : rows
+
+   if (navigator.clipboard?.writeText) {
+      try {
+         await navigator.clipboard.writeText(text)
+         return
+      } catch (err) {
+         console.warn("Clipboard API failed, trying fallback:", err)
+      }
+   }
+
+   const ta = document.createElement("textarea")
+   ta.value = text
+   ta.style.position = "fixed"
+   ta.style.opacity = "0"
+
+   document.body.appendChild(ta)
+   ta.select()
+
    try {
-      await navigator.clipboard.writeText(text)
-   } catch {
-      const ta = document.createElement("textarea")
-      ta.value = text
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand("copy")
+      ;(document as any).execCommand("copy")
+   } catch (err) {
+      console.error("All clipboard copy methods failed:", err)
+   } finally {
       document.body.removeChild(ta)
    }
 }
 
 function AppContent() {
-   const [sidebarOpen, setSidebarOpen] = useState(true)
+   const [sidebarOpen, _] = useState(true)
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
    const [paletteOpen, setPaletteOpen] = useState(false)
    const [settingsOpen, setSettingsOpen] = useState(false)
@@ -377,19 +393,23 @@ function AppContent() {
       : null
 
    return (
-      <div className={cn("h-screen w-screen overflow-hidden bg-transparent", isMac() ? "p-2" : "p-0")}>
+      <div
+         className={cn("h-screen w-screen overflow-hidden bg-transparent", isMac() ? "p-2" : "p-0")}
+      >
          {selectedEnvironmentId ? (
-            <div className={cn(
-               "flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative",
-               isMac()
-                  ? "rounded-xl selection:bg-accent/30 border border-white/[0.07] shadow-2xl"
-                  : ""
-            )}>
+            <div
+               className={cn(
+                  "flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative",
+                  isMac()
+                     ? "rounded-xl selection:bg-accent/30 border border-white/[0.07] shadow-2xl"
+                     : ""
+               )}
+            >
                <div className="flex-1 min-w-0 flex">
                   {sidebarOpen && (
                      <div
                         style={{ width: sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
-                        className="flex flex-col h-full bg-bg-secondary border-r border-border shadow-[4px_0_24px_rgba(0,0,0,0.2)] z-30 overflow-hidden shrink-0 transition-all duration-150"
+                        className="flex flex-col h-full bg-bg-secondary border-r border-border/90 overflow-hidden shrink-0 transition-all duration-150"
                      >
                         <AppSidebar
                            onSettingsOpen={() => setSettingsOpen(true)}
@@ -411,33 +431,13 @@ function AppContent() {
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-border bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative py-6">
-                           <div className="flex items-center gap-2 app-no-drag">
-                              {!sidebarOpen && (
-                                 <button
-                                    onClick={() => setSidebarOpen(true)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
-                                    aria-label="Open sidebar"
-                                 >
-                                    <ChevronRightIcon className="h-3.5 w-3.5" />
-                                 </button>
-                              )}
-                              {sidebarOpen && sidebarCollapsed && (
-                                 <button
-                                    onClick={() => setSidebarCollapsed(false)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                    aria-label="Expand sidebar"
-                                 >
-                                    <ChevronRightIcon className="h-3.5 w-3.5" />
-                                 </button>
-                              )}
-                           </div>
-
+                        <div className="h-10 flex items-center justify-between px-3 border-b border-border/30 bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative py-7 flex items-center justify-between">
+                           <div />
                            {/* Command palette trigger */}
                            <div className="flex-1 max-w-md mx-4 app-no-drag">
                               <button
                                  onClick={() => setPaletteOpen(true)}
-                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-1.5 text-[13px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-2 text-[13.5px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                               >
                                  <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -460,15 +460,15 @@ function AppContent() {
                                  <div className="ml-auto flex items-center gap-1 opacity-50">
                                     {isMac() ? (
                                        <>
-                                          <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                          <kbd className="bg-bg-primary text-[11.5px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                              ⌘
                                           </kbd>
-                                          <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                          <kbd className="bg-bg-primary text-[11.5px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                              K
                                           </kbd>
                                        </>
                                     ) : (
-                                       <kbd className="bg-bg-primary text-[11px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
+                                       <kbd className="bg-bg-primary text-[11.5px] font-mono px-1.5 py-[2px] rounded border border-border/60 shadow-sm leading-none shrink-0">
                                           Ctrl+K
                                        </kbd>
                                     )}
@@ -479,16 +479,16 @@ function AppContent() {
                            <div className="flex items-center gap-1 app-no-drag">
                               <button
                                  onClick={() => selectEnvironment(null)}
-                                 className="h-7 w-7 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                 className="h-9 w-9 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors border-2 rounded-md border-border/25"
                                  aria-label="Back to dashboard"
                               >
-                                 <IconX className="h-4 w-4" />
+                                 <IconLogout className="h-4.5 w-4.5" />
                               </button>
                            </div>
                         </div>
 
                         {/* Tab bar */}
-                        <div className="flex items-end border-b border-border/30 bg-bg-secondary/40 px-3 shrink-0 w-full z-10 relative min-h-[52px]">
+                        <div className="flex items-end border-b border-border/20 bg-bg-secondary/40 px-3 py-0.5 shrink-0 w-full z-10 relative min-h-[52px]">
                            <TabBar />
                         </div>
 
@@ -836,25 +836,6 @@ function AppContent() {
             }}
          />
       </div>
-   )
-}
-
-function ChevronRightIcon({ className }: { className?: string }) {
-   return (
-      <svg
-         xmlns="http://www.w3.org/2000/svg"
-         width="14"
-         height="14"
-         viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         strokeWidth="2"
-         strokeLinecap="round"
-         strokeLinejoin="round"
-         className={className}
-      >
-         <path d="m9 18 6-6-6-6" />
-      </svg>
    )
 }
 

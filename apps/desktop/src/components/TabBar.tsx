@@ -17,7 +17,7 @@ export function TabBar() {
    } = useTabBarLogic()
 
    return (
-      <div className="flex h-full w-full items-end gap-2 pl-2 pr-1 overflow-hidden">
+      <div className="flex h-full w-full items-end gap-2 overflow-hidden">
          <div className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-none px-1 min-h-[44px]">
             <AnimatePresence mode="popLayout">
                {tabs.map((tab, index) => (
@@ -79,7 +79,7 @@ function TabItem({
          onDragEnd={onDragEnd}
          onClick={onSelect}
          className={cn(
-            "group relative flex items-center gap-2.5 px-4 py-1.5 text-[13px] cursor-pointer select-none shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent border transition-all duration-[200ms] ease-out",
+            "group relative flex items-center gap-2.5 px-4 py-1 border-2 border-black text-[13px] cursor-pointer select-none shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent border transition-all duration-[200ms] ease-out",
             isActive
                ? " bg-accent/85  border-accent/90 text-white font-medium my-2 shadow-[0_0_14px_var(--color-accent)/0.12,inset_0_1px_0_rgba(255,255,255,0.08)]"
                : "border-transparent text-white/40 hover:text-white/70 hover:bg-white/5"
