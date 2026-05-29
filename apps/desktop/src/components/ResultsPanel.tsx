@@ -70,7 +70,7 @@ export function ResultsPanel({
    return (
       <div className="h-full bg-bg-primary flex flex-col">
          {/* Sub-tab bar */}
-         <div className="flex items-center px-3 py-1.5 shrink-0 border-b-2 border-border/30 gap-2">
+         <div className="flex items-center px-3 py-1.5 shrink-0 border-b-2 border-border/10 gap-2">
             <div className="flex items-center gap-px">
                {tabs.map(tab => {
                   const isDisabled = tab.id === "plan"
@@ -105,7 +105,7 @@ export function ResultsPanel({
                         {/* Top accent strip on active */}
                         {isActive && (
                            <span
-                              className="absolute top-0 left-2.5 right-2.5 h-[1.5px] rounded-full pointer-events-none"
+                              className="absolute bottom-0 left-2.5 right-2.5 h-[1.5px] rounded-full pointer-events-none"
                               style={{ background: "hsl(var(--accent) / 0.65)" }}
                            />
                         )}

@@ -576,7 +576,7 @@ function AppContent() {
                                        }}
                                     >
                                        {/* Results Header */}
-                                       <div className="flex items-center justify-between px-3 py-1 bg-bg-tertiary/80 shrink-0 border-b border-border/30">
+                                       <div className="flex items-center justify-between px-3 py-1.5 bg-bg-tertiary/80 shrink-0 border-b border-border/30">
                                           <div className="flex items-center gap-3">
                                              <button
                                                 onClick={() =>
