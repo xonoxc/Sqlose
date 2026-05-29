@@ -409,7 +409,7 @@ function AppContent() {
                   {sidebarOpen && (
                      <div
                         style={{ width: sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
-                        className="flex flex-col h-full bg-bg-secondary border-r border-border/40 overflow-hidden shrink-0 transition-all duration-150"
+                        className="flex flex-col h-full bg-bg-secondary border-r border-border/80 overflow-hidden shrink-0 transition-all duration-150"
                      >
                         <AppSidebar
                            onSettingsOpen={() => setSettingsOpen(true)}
@@ -674,7 +674,7 @@ function AppContent() {
                                     className="flex flex-col items-center justify-center h-full bg-bg-primary overflow-hidden"
                                  >
                                     <div className="flex flex-col items-center max-w-sm text-center">
-                                       <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border shadow-2xl flex items-center justify-center mb-6 opacity-80">
+                                       <div className="w-16 h-16 rounded-2xl bg-bg-secondary border border-border flex items-center justify-center mb-6 opacity-80">
                                           <svg
                                              xmlns="http://www.w3.org/2000/svg"
                                              width="28"
