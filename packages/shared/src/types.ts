@@ -10,7 +10,14 @@ export const ENVIRONMENT_STATUSES = [
 ] as const
 export type EnvironmentStatus = (typeof ENVIRONMENT_STATUSES)[number]
 
-export const DATASET_CATEGORIES = ["ecommerce", "analytics", "social", "finance"] as const
+export const DATASET_CATEGORIES = [
+   "ecommerce",
+   "analytics",
+   "social",
+   "finance",
+   "retail",
+   "healthcare",
+] as const
 export type DatasetCategory = (typeof DATASET_CATEGORIES)[number]
 
 export const IMPORT_FORMATS = ["csv", "sql"] as const
