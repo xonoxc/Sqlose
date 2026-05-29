@@ -409,7 +409,7 @@ function AppContent() {
                   {sidebarOpen && (
                      <div
                         style={{ width: sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
-                        className="flex flex-col h-full bg-bg-secondary border-r border-border/90 overflow-hidden shrink-0 transition-all duration-150"
+                        className="flex flex-col h-full bg-bg-secondary border-r border-border/40 overflow-hidden shrink-0 transition-all duration-150"
                      >
                         <AppSidebar
                            onSettingsOpen={() => setSettingsOpen(true)}
@@ -422,7 +422,7 @@ function AppContent() {
                   )}
                   {sidebarOpen && !sidebarCollapsed && (
                      <div
-                        className="relative w-1.5 cursor-col-resize bg-transparent hover:bg-accent/30 transition-colors shrink-0"
+                        className="relative w-0.4 cursor-col-resize bg-transparent hover:bg-accent/30 transition-colors shrink-0"
                         onMouseDown={handleSidebarResizeStart}
                      >
                         <div className="absolute inset-y-0 -left-1 -right-1" />

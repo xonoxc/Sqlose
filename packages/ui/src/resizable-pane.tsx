@@ -38,9 +38,7 @@ export function ResizablePane({
       onResize?.(newWidth)
    }
 
-   const handleMouseUp = () => {
-      setIsDragging(false)
-   }
+   const handleMouseUp = () => setIsDragging(false)
 
    useEffect(() => {
       if (isDragging) {
@@ -60,7 +58,13 @@ export function ResizablePane({
    return (
       <div ref={containerRef} className={cn("flex h-full w-full overflow-hidden", className)}>
          {!!left && (
-            <div style={{ width: leftWidth, flexShrink: 0 }} className="overflow-hidden">
+            <div
+               style={{
+                  width: leftWidth,
+                  flexShrink: 0,
+               }}
+               className="overflow-hidden"
+            >
                {left}
             </div>
          )}
