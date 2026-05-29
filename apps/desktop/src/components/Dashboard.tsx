@@ -2,7 +2,6 @@ import { IconDatabase, IconPlus, IconServer, IconCircleFilled } from "@tabler/ic
 import { motion, AnimatePresence } from "motion/react"
 import { useDashboardState } from "../hooks/useDashboardState"
 import { CreateDatabaseFlow } from "./CreateDatabaseFlow"
-import { cn } from "@sqlose/ui"
 
 export function Dashboard() {
    const { showCreateFlow, setShowCreateFlow, environments, handleSelectEnv } = useDashboardState()
