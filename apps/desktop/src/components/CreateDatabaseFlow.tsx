@@ -48,13 +48,6 @@ const DB_CARDS: {
    },
 ]
 
-const CATEGORY_COLORS: Record<string, "default" | "secondary" | "warning" | "success"> = {
-   ecommerce: "success",
-   analytics: "default",
-   social: "warning",
-   finance: "secondary",
-}
-
 export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
    const {
       step,
@@ -74,387 +67,245 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       setStep,
    } = useCreateDatabaseFlowLogic(onClose)
 
-   const containerVariants = {
-      initial: { opacity: 0, scale: 0.95 },
-      animate: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: [0.25, 0, 0, 1] } },
-      exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
-   }
-
-   const cardVariants = {
-      initial: { opacity: 0, x: -10 },
-      animate: (i: number) => ({
-         opacity: 1,
-         x: 0,
-         transition: { delay: i * 0.05, duration: 0.3 }
-      }),
-   }
+   const steps = ["Source", "Identity", "Review"]
+   const currentStepIndex = step === "select-type" ? 0 : step === "configure" ? 1 : 2
+   const progress = ((currentStepIndex + 1) / steps.length) * 100
 
    if (step === "provisioning") {
       return (
-         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               className="absolute inset-0 bg-black/60 backdrop-blur-xl"
-               onClick={allDone ? onClose : undefined}
-            />
-            <motion.div
-               variants={containerVariants}
-               initial="initial"
-               animate="animate"
-               exit="exit"
-               className="bg-bg-primary border border-white/10 rounded-[2.5rem] p-12 max-w-md w-full relative z-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] overflow-hidden"
-            >
-               {/* Glowing success light */}
+         <div className="w-full max-w-xl animate-in fade-in duration-500">
+            <div className="bg-bg-secondary/40 border border-border/80 rounded-[3rem] p-12 w-full relative overflow-hidden backdrop-blur-md">
                {allDone && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-24 bg-accent/20 blur-[60px] pointer-events-none rounded-full" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-accent/20 blur-[80px] pointer-events-none rounded-full" />
                )}
 
                <div className="flex flex-col items-center gap-10 relative z-10">
-                  <div className="relative">
-                     <div className={cn(
-                        "h-24 w-24 rounded-[2rem] border border-white/5 flex items-center justify-center transition-all duration-500",
-                        allDone ? "bg-accent/10 border-accent/20 shadow-[0_0_40px_rgba(var(--color-accent),0.15)]" : "bg-bg-secondary"
-                     )}>
-                        {allDone ? (
-                           <IconCircleCheck className="h-10 w-10 text-accent" />
-                        ) : provisioningError ? (
-                           <IconX className="h-10 w-10 text-error" />
-                        ) : (
-                           <IconLoader2 className="h-10 w-10 text-accent animate-spin" />
-                        )}
-                     </div>
+                  <div className="h-24 w-24 rounded-[2.5rem] bg-bg-tertiary border border-border flex items-center justify-center shadow-[0_0_50px_rgba(var(--color-accent),0.1)] transition-all duration-700">
+                     {allDone ? (
+                        <IconCircleCheck className="h-10 w-10 text-accent" />
+                     ) : provisioningError ? (
+                        <IconX className="h-10 w-10 text-error" />
+                     ) : (
+                        <IconLoader2 className="h-10 w-10 text-accent animate-spin" />
+                     )}
                   </div>
 
                   <div className="text-center space-y-2">
-                     <h2 className="text-3xl font-bold text-white tracking-tight">
-                        {provisioningError ? "Setup Halted" : allDone ? "Project Ready" : "Initializing..."}
+                     <h2 className="text-3xl font-bold text-white tracking-tight uppercase tracking-widest">
+                        {provisioningError ? "FAILED" : allDone ? "DEPLOYED" : "INITIALIZING"}
                      </h2>
-                     <p className="text-base text-text-muted font-light leading-relaxed px-4">
+                     <p className="text-base text-text-muted font-medium max-w-[280px] mx-auto opacity-80">
                         {provisioningError
-                           ? "We encountered an error while provisioning your database container."
+                           ? "The deployment cycle was interrupted."
                            : allDone
-                              ? "Environment is active and ready for commands."
+                              ? "Your high-redundancy environment is online."
                               : "Provisioning isolated workspace container..."}
                      </p>
                   </div>
 
-                  <div className="w-full space-y-2.5">
+                  <div className="w-full space-y-3">
                      {provisioningSteps.map(ps => (
                         <div
                            key={ps.id}
                            className={cn(
-                              "flex items-center gap-4 px-5 py-3.5 rounded-2xl text-[13px] font-medium transition-all duration-300",
+                              "flex items-center gap-4 px-6 py-4 rounded-2xl text-[13px] font-bold border transition-all",
                               ps.status === "in-progress"
-                                 ? "bg-accent/10 border border-accent/20 text-white"
+                                 ? "bg-accent/10 border-accent/30 text-white"
                                  : ps.status === "done"
-                                   ? "bg-white/[0.03] border border-white/5 text-text-muted/80"
+                                   ? "bg-white/[0.03] border-white/10 text-text-muted"
                                    : ps.status === "error"
-                                     ? "bg-error/10 border border-error/20 text-error"
-                                      : "bg-transparent opacity-30 border border-transparent"
+                                     ? "bg-error/10 border-error/20 text-error"
+                                      : "bg-transparent border-transparent opacity-20"
                            )}
                         >
                            {ps.status === "done" ? (
-                              <IconCheck className="h-4 w-4 text-accent shrink-0" />
+                              <IconCheck className="h-4 w-4 text-accent" strokeWidth={3} />
                            ) : ps.status === "in-progress" ? (
-                              <IconLoader2 className="h-4 w-4 text-accent animate-spin shrink-0" />
+                              <IconLoader2 className="h-4 w-4 text-accent animate-spin" />
                            ) : ps.status === "error" ? (
-                              <IconX className="h-4 w-4 text-error shrink-0" />
+                              <IconX className="h-4 w-4 text-error" />
                            ) : (
-                              <div className="h-4 w-4 rounded-full border border-dashed border-white/20 shrink-0" />
+                              <div className="h-4 w-4 rounded-full border border-border" />
                            )}
-                           <span className="flex-1">{ps.label}</span>
-                           {ps.message && (
-                              <span className="text-[11px] opacity-60 font-mono">
-                                 {ps.message}
-                              </span>
-                           )}
+                           <span className="flex-1 uppercase tracking-widest leading-none">{ps.label}</span>
                         </div>
                      ))}
                   </div>
 
-                  {provisioningError && (
-                     <Button variant="secondary" onClick={onClose} className="w-full rounded-2xl h-12">
-                        Dismiss
+                  {(provisioningError || allDone) && (
+                     <Button onClick={onClose} className="w-full h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest shadow-xl shadow-accent/20">
+                        Enter Workspace
                      </Button>
                   )}
                </div>
-            </motion.div>
+            </div>
          </div>
       )
    }
 
    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-         <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 backdrop-blur-xl"
-            onClick={onClose}
-         />
-         <motion.div
-            variants={containerVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            className="bg-bg-primary border border-white/10 rounded-[2.5rem] w-full max-w-2xl relative z-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden max-h-[90vh]"
-         >
-            {/* Header */}
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/5 shrink-0">
-               <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-6">
-                     <div className="flex flex-col gap-0.5">
-                        <span className={cn(
-                           "text-[10px] font-black uppercase tracking-[0.2em] transition-colors",
-                           step === "select-type" ? "text-accent" : "text-text-muted"
-                        )}>
-                           Stage 01
-                        </span>
-                        <span className={cn(
-                           "text-sm font-bold",
-                           step === "select-type" ? "text-white" : "text-text-muted"
-                        )}>
-                           Engine Selection
-                        </span>
-                     </div>
-                     <IconArrowRight className="h-4 w-4 text-white/10" />
-                     <div className="flex flex-col gap-0.5">
-                        <span className={cn(
-                           "text-[10px] font-black uppercase tracking-[0.2em] transition-colors",
-                           step === "configure" ? "text-accent" : "text-text-muted"
-                        )}>
-                           Stage 02
-                        </span>
-                        <span className={cn(
-                           "text-sm font-bold",
-                           step === "configure" ? "text-white" : "text-text-muted"
-                        )}>
-                           Environment Setup
-                        </span>
-                     </div>
-                  </div>
-               </div>
-               <button
-                  onClick={onClose}
-                  className="h-10 w-10 bg-white/5 hover:bg-white/10 rounded-2xl flex items-center justify-center text-text-muted hover:text-white transition-all active:scale-95"
-               >
-                  <IconX className="h-5 w-5" />
-               </button>
+      <div className="w-full max-w-2xl px-6">
+         {/* Step Progress Bar */}
+         <div className="w-full h-[4px] bg-border/40 rounded-full mb-6 overflow-hidden relative border border-white/5">
+            <motion.div
+               initial={{ width: 0 }}
+               animate={{ width: `${progress}%` }}
+               transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+               className="h-full bg-accent shadow-[0_0_15px_rgba(var(--color-accent),0.4)]"
+            />
+         </div>
+         <div className="flex items-center justify-between mb-16">
+            <div className="text-[11px] font-black text-accent uppercase tracking-[0.3em]">
+               PROGRESS {currentStepIndex + 1}/{steps.length}
             </div>
+            <div className="text-[11px] font-black text-text-muted uppercase tracking-[0.3em]">
+               {steps[currentStepIndex]}
+            </div>
+         </div>
 
-            {/* Body */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-               {step === "select-type" && (
-                  <div className="space-y-8">
-                     <div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">
-                           Database Architecture
-                        </h2>
-                        <p className="text-base text-text-muted font-light mt-1.5 leading-relaxed">
-                           Choose the core engine for your new workspace environment.
-                        </p>
-                     </div>
-                     <div className="grid gap-4">
-                        {DB_CARDS.map((card, i) => (
-                           <motion.button
-                              key={card.type}
-                              custom={i}
-                              variants={cardVariants}
-                              animate="animate"
-                              initial="initial"
-                              whileHover={{ x: 4 }}
-                              onClick={() => handleSelectType(card.type)}
-                              className="flex items-center gap-6 bg-white/[0.02] border border-white/5 hover:border-accent/40 hover:bg-white/[0.04] rounded-[1.5rem] p-5 text-left transition-all cursor-pointer group"
-                           >
-                              <div
-                                 className={cn(
-                                    "h-16 w-16 rounded-2xl bg-gradient-to-br border border-white/5 flex items-center justify-center shrink-0 shadow-lg transition-transform duration-500 group-hover:scale-105",
-                                    card.accent
-                                 )}
-                              >
-                                 <card.icon className={cn("h-8 w-8 text-white shadow-xl", card.color)} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                 <h3 className="text-lg font-bold text-white group-hover:text-accent transition-colors">
-                                    {card.label}
-                                 </h3>
-                                 <p className="text-[13px] text-text-muted mt-1 leading-normal font-light">
-                                    {card.description}
-                                 </p>
-                              </div>
-                              <div className="h-10 w-10 rounded-full border border-white/5 bg-white/5 flex items-center justify-center shrink-0 group-hover:border-accent/40 group-hover:bg-accent/10 transition-all">
-                                 <IconArrowRight className="h-5 w-5 text-text-muted group-hover:text-accent transition-colors" />
-                              </div>
-                           </motion.button>
-                        ))}
-                     </div>
+         <AnimatePresence mode="wait">
+            {step === "select-type" && (
+               <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
+               >
+                  <div className="max-w-[480px]">
+                     <h1 className="text-4xl font-black text-white tracking-tight mb-4 uppercase">
+                        Select Engine
+                     </h1>
+                     <p className="text-lg text-text-muted leading-relaxed font-medium opacity-80">
+                        Choose the core architecture that will power your new workspace environment.
+                     </p>
                   </div>
-               )}
 
-               {step === "configure" && (
-                  <motion.div
-                     initial={{ opacity: 0, x: 20 }}
-                     animate={{ opacity: 1, x: 0 }}
-                     className="space-y-10"
-                  >
-                     <div className="space-y-6">
-                        <div>
-                           <h2 className="text-2xl font-bold text-white tracking-tight">Identity & Resources</h2>
-                           <p className="text-base text-text-muted font-light mt-1.5 leading-relaxed">
-                              Configure the workspace metadata and seed data.
-                           </p>
-                        </div>
+                  <div className="grid gap-4">
+                     {DB_CARDS.map((card, i) => (
+                        <button
+                           key={card.type}
+                           onClick={() => handleSelectType(card.type)}
+                           className="group flex items-center justify-between p-6 rounded-[1.5rem] bg-bg-secondary/40 border border-border hover:border-accent/60 hover:bg-bg-tertiary transition-all text-left overflow-hidden relative"
+                        >
+                           <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors" />
+                           <div className="flex items-center gap-6 relative z-10">
+                              <div className={cn("h-14 w-14 rounded-2xl bg-bg-tertiary border border-border flex items-center justify-center transition-all group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(var(--color-accent),0.1)]", card.color)}>
+                                 <card.icon className="h-7 w-7" />
+                              </div>
+                              <div>
+                                 <h3 className="text-lg font-bold text-white group-hover:text-accent transition-colors uppercase tracking-tight">{card.label}</h3>
+                                 <p className="text-[13px] text-text-muted max-w-[320px] font-medium mt-1 leading-snug opacity-70">{card.description}</p>
+                              </div>
+                           </div>
+                           <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center relative z-10 group-hover:bg-accent group-hover:border-accent group-hover:text-white transition-all shadow-lg active:scale-95">
+                              <IconArrowRight className="h-5 w-5" />
+                           </div>
+                        </button>
+                     ))}
+                  </div>
+               </motion.div>
+            )}
 
-                        <div className="space-y-2">
-                           <label className="text-[11px] font-black uppercase tracking-widest text-text-muted ml-1">Workspace Name</label>
+            {step === "configure" && (
+               <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  className="space-y-12"
+               >
+                  <div className="max-w-[480px]">
+                     <h1 className="text-4xl font-black text-white tracking-tight mb-4 uppercase">
+                        Configure
+                     </h1>
+                     <p className="text-lg text-text-muted leading-relaxed font-medium opacity-80">
+                        This environment will be isolated in a dedicated container with your selected blueprint.
+                     </p>
+                  </div>
+
+                  <div className="space-y-10">
+                     <div className="space-y-3">
+                        <label className="text-[11px] font-black text-accent px-1 uppercase tracking-[0.2em] leading-none">Workspace Identity</label>
+                        <div className="relative group">
                            <Input
                               autoFocus
                               value={dbName}
                               onChange={e => setDbName(e.target.value)}
-                              placeholder="e.g. production-mirror-test"
-                              className="w-full h-14 bg-white/[0.02] border-white/10 focus:border-accent/50 rounded-2xl text-lg px-6"
+                              placeholder="e.g. finance-sandbox-v1"
+                              className="w-full h-16 bg-bg-secondary/60 border-border focus:border-accent/60 focus:bg-bg-tertiary rounded-2xl text-xl px-7 transition-all font-bold text-white shadow-inner"
                            />
                         </div>
                      </div>
 
                      <div className="space-y-4">
-                        <div className="flex items-center justify-between px-1">
-                           <h3 className="text-sm font-bold text-white tracking-wide uppercase font-mono">
-                              Blueprint Templates
-                           </h3>
+                        <div className="flex items-center justify-between mb-2">
+                           <label className="text-[11px] font-black text-accent px-1 uppercase tracking-[0.2em] leading-none">Blueprint Templates</label>
                            {selectedDataset && (
-                              <button
-                                 onClick={() => setSelectedDataset(null)}
-                                 className="text-xs font-bold text-accent hover:text-white transition-colors"
-                              >
-                                 Deselect All
-                              </button>
+                              <button onClick={() => setSelectedDataset(null)} className="text-[10px] font-black text-text-muted hover:text-accent transition-colors uppercase tracking-widest">Deselect All</button>
                            )}
                         </div>
-
-                        {datasetsLoading ? (
-                           <div className="flex items-center justify-center py-12">
-                              <IconLoader2 className="h-8 w-8 text-accent animate-spin" />
-                           </div>
-                        ) : datasets.length === 0 ? (
-                           <div className="bg-bg-secondary/40 border border-dashed border-white/5 rounded-[2rem] p-10 text-center">
-                              <IconDatabaseImport className="h-10 w-10 text-white/5 mx-auto mb-3" />
-                              <p className="text-base text-text-muted font-medium">No blueprints available</p>
-                              <p className="text-sm text-text-muted/60 mt-1.5 font-light leading-relaxed">
-                                 The selected engine has no certified templates.
-                                 <br />Proceed with a clean instance.
-                              </p>
-                           </div>
-                        ) : (
-                           <div className="grid gap-3 max-h-[320px] overflow-y-auto custom-scrollbar pr-3">
-                              {datasets
-                                 .filter(ds => ds.dbTypes.includes(selectedDbType!))
-                                 .map(ds => (
-                                    <button
-                                       key={ds.id}
-                                       onClick={() =>
-                                          setSelectedDataset(
-                                             selectedDataset?.id === ds.id ? null : ds
-                                          )
-                                       }
-                                       className={cn(
-                                          "flex items-center gap-5 rounded-2xl p-5 text-left transition-all duration-300 border",
-                                          selectedDataset?.id === ds.id
-                                             ? "border-accent/40 bg-accent/5"
-                                             : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
-                                       )}
-                                    >
-                                       <div
-                                          className={cn(
-                                             "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-500 shadow-inner",
-                                             selectedDataset?.id === ds.id
-                                                ? "bg-accent/20 text-accent"
-                                                : "bg-bg-tertiary text-text-muted"
-                                          )}
-                                       >
-                                          <IconDatabaseImport className="h-6 w-6" />
-                                       </div>
-                                       <div className="flex-1 min-w-0">
-                                          <div className="flex items-center gap-2.5">
-                                             <span className="text-[15px] font-bold text-white">
-                                                {ds.name}
-                                             </span>
-                                             <Badge
-                                                variant="secondary"
-                                                className="text-[9px] font-black tracking-widest px-1.5 py-0 bg-white/5 border-white/5 uppercase"
-                                             >
-                                                {ds.category}
-                                             </Badge>
-                                          </div>
-                                          <p className="text-[12px] text-text-muted/70 mt-1 font-light truncate">
-                                             {ds.description}
-                                          </p>
-                                       </div>
-                                       <div className={cn(
-                                          "h-6 w-6 rounded-full border flex items-center justify-center transition-all",
-                                          selectedDataset?.id === ds.id ? "border-accent bg-accent text-bg-primary scale-100" : "border-white/10 scale-90 opacity-0"
-                                       )}>
-                                          <IconCheck className="h-4 w-4 stroke-[3]" />
-                                       </div>
-                                    </button>
-                                 ))}
-                           </div>
-                        )}
+                        <div className="grid gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar scrollbar-thin-subtle focus-within:ring-0">
+                           <style>{`
+                              .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                              .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                              .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; }
+                           `}</style>
+                           {datasetsLoading ? (
+                              <div className="py-20 flex justify-center"><IconLoader2 className="animate-spin h-8 w-8 text-accent" /></div>
+                           ) : datasets.length === 0 ? (
+                              <div className="p-12 text-center bg-bg-secondary/20 border border-dashed border-border rounded-3xl">
+                                 <IconDatabaseImport className="h-8 w-8 text-text-muted/20 mx-auto mb-4" />
+                                 <p className="text-text-muted text-sm italic font-light">No templates found for this engine. Proceeding with clean DB.</p>
+                              </div>
+                           ) : (
+                              datasets.filter(ds => ds.dbTypes.includes(selectedDbType!)).map(ds => (
+                                 <button
+                                    key={ds.id}
+                                    onClick={() => setSelectedDataset(selectedDataset?.id === ds.id ? null : ds)}
+                                    className={cn(
+                                       "flex items-center gap-5 p-5 rounded-[1.5rem] border transition-all text-left group relative overflow-hidden",
+                                       selectedDataset?.id === ds.id ? "bg-accent/10 border-accent/40" : "bg-bg-secondary/40 border-border hover:bg-bg-tertiary hover:border-accent/20"
+                                    )}
+                                 >
+                                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-border transition-all", selectedDataset?.id === ds.id ? "bg-accent shadow-[0_0_15px_rgba(var(--color-accent),0.3)] text-white" : "bg-bg-tertiary text-text-muted group-hover:text-text-primary")}>
+                                       <IconDatabaseImport className="h-6 w-6" />
+                                    </div>
+                                    <div className="flex-1">
+                                       <span className={cn("text-[15px] font-bold block transition-colors", selectedDataset?.id === ds.id ? "text-white" : "text-text-primary")}>{ds.name}</span>
+                                       <span className="text-[12px] text-text-muted font-medium truncate block mt-1 opacity-70">{ds.description}</span>
+                                    </div>
+                                    <div className={cn("h-6 w-6 rounded-lg border flex items-center justify-center transition-all", selectedDataset?.id === ds.id ? "bg-accent border-accent text-white scale-100" : "border-border bg-bg-tertiary opacity-0 group-hover:opacity-100 scale-90")}>
+                                       <IconCheck className="h-4 w-4 stroke-[4]" />
+                                    </div>
+                                 </button>
+                              ))
+                           )}
+                        </div>
                      </div>
-                  </motion.div>
-               )}
-            </div>
-
-            {/* Footer */}
-            <div className="px-8 py-6 border-t border-white/5 shrink-0 bg-[#080808]/50 backdrop-blur-md">
-               <div className="flex items-center justify-between">
-                  {step === "configure" ? (
-                     <button
-                        onClick={() => {
-                           setSelectedDataset(null)
-                           setStep("select-type")
-                        }}
-                        className="h-12 px-6 text-sm font-bold text-text-muted hover:text-white transition-all flex items-center gap-2 group"
-                     >
-                        <IconArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                        Previous Step
-                     </button>
-                  ) : (
-                     <div />
-                  )}
-
-                  <div className="flex gap-3">
-                     {step === "select-type" && (
-                         <Button variant="secondary" onClick={onClose} className="h-12 px-8 rounded-2xl bg-white/5 hover:bg-white/10 border-white/5 text-white font-bold">
-                           Cancel
-                        </Button>
-                     )}
-                     <Button
-                        onClick={step === "select-type" ? undefined : handleCreate}
-                        disabled={step === "select-type" || creating}
-                        className={cn(
-                           "h-12 px-10 rounded-2xl gap-3 font-bold text-[15px] transition-all shadow-xl shadow-accent/10 active:scale-95",
-                           step === "select-type" && "opacity-0 pointer-events-none"
-                        )}
-                     >
-                        {creating ? (
-                           <>
-                              <IconLoader2 className="h-5 w-5 animate-spin" />
-                              Warming Up...
-                           </>
-                        ) : (
-                           <>
-                              <IconPlus className="h-5 w-5" />
-                              Deploy Environment
-                           </>
-                        )}
-                     </Button>
                   </div>
-               </div>
-            </div>
-         </motion.div>
+               </motion.div>
+            )}
+         </AnimatePresence>
+
+         <div className="mt-20 flex items-center justify-end gap-6 border-t border-border/40 pt-10">
+            <button
+               onClick={onClose}
+               className="h-14 px-10 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] text-text-primary/70 hover:text-white hover:bg-white/5 transition-all outline-none"
+            >
+               Cancel
+            </button>
+            <Button
+               disabled={step === "select-type" || creating}
+               onClick={handleCreate}
+               className={cn(
+                  "h-14 px-14 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] gap-3 transition-all",
+                  step === "select-type" ? "opacity-0 pointer-events-none" : "bg-accent text-white shadow-[0_10px_30px_rgba(var(--color-accent),0.3)] hover:scale-[1.02] active:scale-[0.98]"
+               )}
+            >
+               {creating ? <><IconLoader2 className="h-5 w-5 animate-spin" /> Provisioning</> : <><IconPlus className="h-5 w-5" strokeWidth={3} /> Launch</>}
+            </Button>
+         </div>
       </div>
    )
 }
