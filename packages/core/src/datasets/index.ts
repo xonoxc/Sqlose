@@ -50,6 +50,34 @@ const DATASETS: Dataset[] = [
       category: "finance",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
+   {
+      id: "ds-movies",
+      name: "Movie Database",
+      description: "TMDB/MovieLens inspired catalog with movies, genres, ratings, cast and user reviews",
+      category: "entertainment",
+      dbTypes: ["postgres", "mysql", "sqlite"],
+   },
+   {
+      id: "ds-education",
+      name: "Student Records",
+      description: "University student performance with courses, enrollments, grades and professor assignments",
+      category: "education",
+      dbTypes: ["postgres", "mysql", "sqlite"],
+   },
+   {
+      id: "ds-crm",
+      name: "Sales CRM",
+      description: "Sales pipeline with leads, contacts, deal tracking and customer activities",
+      category: "business",
+      dbTypes: ["postgres", "mysql", "sqlite"],
+   },
+   {
+      id: "ds-weather",
+      name: "Global Weather",
+      description: "Weather station data with temperature, precipitation, wind readings and alerts",
+      category: "environment",
+      dbTypes: ["postgres", "mysql", "sqlite"],
+   },
 ]
 
 export const SAMPLE_DATASETS: Record<string, string> = {
@@ -881,6 +909,422 @@ INSERT INTO investments (id, account_id, name, type, amount_invested, current_va
 INSERT INTO investments (id, account_id, name, type, amount_invested, current_value, purchase_date, maturity_date) VALUES (8, 7, 'Bitcoin', 'Criptomoeda', 4000.00, 5600.00, '2024-01-15', NULL);
 INSERT INTO investments (id, account_id, name, type, amount_invested, current_value, purchase_date, maturity_date) VALUES (9, 7, 'Ethereum', 'Criptomoeda', 3000.00, 2900.00, '2024-02-20', NULL);
 INSERT INTO investments (id, account_id, name, type, amount_invested, current_value, purchase_date, maturity_date) VALUES (10, 7, 'Solana', 'Criptomoeda', 2000.00, 1800.00, '2024-03-01', NULL);`,
+   "ds-movies": `CREATE TABLE movies (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  release_year INTEGER NOT NULL,
+  budget REAL,
+  revenue REAL,
+  runtime INTEGER,
+  vote_average REAL DEFAULT 0,
+  overview TEXT
+);
+
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (1, 'The Matrix', 1999, 63000000, 467000000, 136, 8.7, 'A computer hacker learns about the true nature of reality and his role in the war against its controllers.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (2, 'Inception', 2010, 160000000, 829000000, 148, 8.8, 'A thief who steals corporate secrets through dream-sharing technology is given the task of planting an idea.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (3, 'Parasite', 2019, 11400000, 258000000, 132, 8.5, 'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (4, 'The Godfather', 1972, 6000000, 246000000, 175, 9.2, 'The aging patriarch of an organized crime dynasty transfers control to his reluctant son.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (5, 'Spirited Away', 2001, 19000000, 395000000, 125, 8.6, 'During her family move to the suburbs, a sullen 10-year-old girl wanders into a world ruled by gods, witches and spirits.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (6, 'Interstellar', 2014, 165000000, 773000000, 169, 8.6, 'When Earth becomes uninhabitable, a team of explorers travel through a wormhole in search of a new home for humanity.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (7, 'Pulp Fiction', 1994, 8000000, 213000000, 154, 8.9, 'The lives of two mob hitmen, a boxer, a gangster and his wife intertwine in four tales of violence and redemption.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (8, 'Everything Everywhere All at Once', 2022, 25000000, 141000000, 140, 8.1, 'An aging Chinese immigrant is swept up in an insane adventure where she alone can save the world by exploring other universes.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (9, 'The Dark Knight', 2008, 185000000, 1005000000, 152, 9.0, 'When the menace known as the Joker wreaks havoc on Gotham, Batman must accept one of the greatest psychological tests.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (10, 'Get Out', 2017, 4500000, 255000000, 104, 7.8, 'A young African-American visits his white girlfriend parents for the weekend, where his simmering uneasiness about their reception eventually reaches a boiling point.');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (11, 'Your Name', 2016, 17000000, 380000000, 106, 8.4, 'Two strangers find themselves linked in a bizarre way. When a connection forms, will distance be the only thing to keep them apart?');
+INSERT INTO movies (id, title, release_year, budget, revenue, runtime, vote_average, overview) VALUES (12, 'Mad Max Fury Road', 2015, 150000000, 380000000, 120, 8.1, 'In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search for her homeland with the aid of a group of female prisoners.');
+
+CREATE TABLE genres (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+INSERT INTO genres (id, name) VALUES (1, 'Science Fiction');
+INSERT INTO genres (id, name) VALUES (2, 'Action');
+INSERT INTO genres (id, name) VALUES (3, 'Thriller');
+INSERT INTO genres (id, name) VALUES (4, 'Drama');
+INSERT INTO genres (id, name) VALUES (5, 'Animation');
+INSERT INTO genres (id, name) VALUES (6, 'Adventure');
+INSERT INTO genres (id, name) VALUES (7, 'Comedy');
+INSERT INTO genres (id, name) VALUES (8, 'Crime');
+INSERT INTO genres (id, name) VALUES (9, 'Fantasy');
+INSERT INTO genres (id, name) VALUES (10, 'Horror');
+
+CREATE TABLE movie_genres (
+  id INTEGER PRIMARY KEY,
+  movie_id INTEGER NOT NULL,
+  genre_id INTEGER NOT NULL
+);
+
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (1, 1, 1);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (2, 1, 2);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (3, 2, 1);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (4, 2, 2);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (5, 2, 3);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (6, 3, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (7, 3, 7);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (8, 3, 3);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (9, 4, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (10, 4, 8);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (11, 5, 5);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (12, 5, 6);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (13, 5, 9);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (14, 6, 1);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (15, 6, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (16, 6, 6);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (17, 7, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (18, 7, 8);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (19, 8, 1);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (20, 8, 6);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (21, 8, 7);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (22, 9, 2);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (23, 9, 8);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (24, 9, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (25, 10, 10);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (26, 10, 3);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (27, 11, 5);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (28, 11, 4);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (29, 11, 9);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (30, 12, 2);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (31, 12, 6);
+INSERT INTO movie_genres (id, movie_id, genre_id) VALUES (32, 12, 1);
+
+CREATE TABLE ratings (
+  id INTEGER PRIMARY KEY,
+  movie_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  rating REAL NOT NULL,
+  rated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (1, 1, 100, 9.0, '2024-01-05');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (2, 1, 101, 8.5, '2024-01-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (3, 2, 100, 9.5, '2024-01-15');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (4, 2, 102, 8.0, '2024-02-01');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (5, 3, 103, 9.0, '2024-02-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (6, 3, 104, 8.0, '2024-02-15');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (7, 4, 101, 10.0, '2024-03-01');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (8, 4, 105, 9.5, '2024-03-05');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (9, 5, 100, 8.5, '2024-03-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (10, 6, 103, 9.0, '2024-03-20');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (11, 7, 102, 9.0, '2024-04-01');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (12, 8, 106, 8.5, '2024-04-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (13, 9, 100, 10.0, '2024-04-15');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (14, 9, 107, 9.5, '2024-04-20');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (15, 10, 104, 8.0, '2024-05-01');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (16, 11, 108, 9.0, '2024-05-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (17, 12, 105, 8.0, '2024-05-20');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (18, 2, 109, 7.5, '2024-06-01');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (19, 6, 102, 9.0, '2024-06-10');
+INSERT INTO ratings (id, movie_id, user_id, rating, rated_at) VALUES (20, 1, 110, 7.0, '2024-06-15');
+
+CREATE TABLE cast_members (
+  id INTEGER PRIMARY KEY,
+  movie_id INTEGER NOT NULL,
+  actor_name TEXT NOT NULL,
+  character_name TEXT NOT NULL,
+  cast_order INTEGER DEFAULT 0
+);
+
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (1, 1, 'Keanu Reeves', 'Neo', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (2, 1, 'Laurence Fishburne', 'Morpheus', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (3, 2, 'Leonardo DiCaprio', 'Cobb', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (4, 2, 'Joseph Gordon-Levitt', 'Arthur', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (5, 4, 'Marlon Brando', 'Don Vito Corleone', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (6, 4, 'Al Pacino', 'Michael Corleone', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (7, 7, 'John Travolta', 'Vincent Vega', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (8, 7, 'Samuel L. Jackson', 'Jules Winnfield', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (9, 9, 'Christian Bale', 'Bruce Wayne', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (10, 9, 'Heath Ledger', 'The Joker', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (11, 6, 'Matthew McConaughey', 'Cooper', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (12, 6, 'Anne Hathaway', 'Brand', 2);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (13, 8, 'Michelle Yeoh', 'Evelyn Quan Wang', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (14, 10, 'Daniel Kaluuya', 'Chris Washington', 1);
+INSERT INTO cast_members (id, movie_id, actor_name, character_name, cast_order) VALUES (15, 5, 'Rumi Hiiragi', 'Chihiro', 1);`,
+
+   "ds-education": `CREATE TABLE students (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  enrollment_year INTEGER NOT NULL,
+  major TEXT NOT NULL,
+  gpa REAL DEFAULT 0
+);
+
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (1, 'Lucas Martins', 'lucas.martins@uni.edu', 2022, 'Computer Science', 3.8);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (2, 'Sophia Chen', 'sophia.chen@uni.edu', 2023, 'Data Science', 3.9);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (3, 'Aiden Patel', 'aiden.patel@uni.edu', 2022, 'Engineering', 3.2);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (4, 'Isabella Kim', 'isabella.kim@uni.edu', 2021, 'Biology', 3.6);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (5, 'Noah Williams', 'noah.williams@uni.edu', 2023, 'Business', 3.4);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (6, 'Emma Johnson', 'emma.johnson@uni.edu', 2022, 'Psychology', 3.7);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (7, 'Oliver Garcia', 'oliver.garcia@uni.edu', 2021, 'Computer Science', 2.9);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (8, 'Mia Brown', 'mia.brown@uni.edu', 2022, 'Engineering', 3.5);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (9, 'Ethan Davis', 'ethan.davis@uni.edu', 2023, 'Mathematics', 4.0);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (10, 'Ava Miller', 'ava.miller@uni.edu', 2021, 'Chemistry', 3.1);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (11, 'James Wilson', 'james.wilson@uni.edu', 2024, 'Data Science', 3.3);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (12, 'Charlotte Taylor', 'charlotte.taylor@uni.edu', 2022, 'Business', 3.8);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (13, 'Benjamin Anderson', 'benjamin.anderson@uni.edu', 2023, 'Physics', 3.5);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (14, 'Amelia Thomas', 'amelia.thomas@uni.edu', 2021, 'Computer Science', 3.0);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (15, 'Lucas Martins', 'lucas.martins2@uni.edu', 2024, 'Engineering', 2.7);
+INSERT INTO students (id, name, email, enrollment_year, major, gpa) VALUES (16, 'Harper Jackson', 'harper.jackson@uni.edu', 2022, 'Psychology', 3.9);
+
+CREATE TABLE professors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  department TEXT NOT NULL,
+  hire_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  email TEXT NOT NULL
+);
+
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (1, 'Dr. Alan Turing', 'Computer Science', '2015-08-01', 'aturing@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (2, 'Dr. Marie Curie', 'Chemistry', '2010-03-15', 'mcurie@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (3, 'Dr. Richard Feynman', 'Physics', '2012-09-01', 'rfeynman@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (4, 'Dr. Grace Hopper', 'Data Science', '2018-01-10', 'ghopper@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (5, 'Dr. Rosalind Franklin', 'Biology', '2014-07-20', 'rfranklin@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (6, 'Prof. John Nash', 'Mathematics', '2016-11-05', 'jnash@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (7, 'Dr. Katherine Johnson', 'Engineering', '2013-04-22', 'kjohnson@uni.edu');
+INSERT INTO professors (id, name, department, hire_date, email) VALUES (8, 'Dr. Fei-Fei Li', 'Computer Science', '2019-08-15', 'fli@uni.edu');
+
+CREATE TABLE courses (
+  id INTEGER PRIMARY KEY,
+  code TEXT NOT NULL,
+  name TEXT NOT NULL,
+  credits INTEGER NOT NULL,
+  department TEXT NOT NULL,
+  professor_id INTEGER
+);
+
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (1, 'CS201', 'Data Structures', 4, 'Computer Science', 1);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (2, 'CS301', 'Machine Learning', 4, 'Computer Science', 8);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (3, 'DS101', 'Introduction to Data Science', 3, 'Data Science', 4);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (4, 'MATH201', 'Linear Algebra', 4, 'Mathematics', 6);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (5, 'PHY101', 'General Physics I', 3, 'Physics', 3);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (6, 'CHEM201', 'Organic Chemistry', 4, 'Chemistry', 2);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (7, 'ENG201', 'Thermodynamics', 3, 'Engineering', 7);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (8, 'BIO101', 'Cell Biology', 3, 'Biology', 5);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (9, 'PSY101', 'Introduction to Psychology', 3, 'Psychology', NULL);
+INSERT INTO courses (id, code, name, credits, department, professor_id) VALUES (10, 'BUS201', 'Marketing Fundamentals', 3, 'Business', NULL);
+
+CREATE TABLE enrollments (
+  id INTEGER PRIMARY KEY,
+  student_id INTEGER NOT NULL,
+  course_id INTEGER NOT NULL,
+  semester TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  grade TEXT
+);
+
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (1, 1, 1, 'Fall', 2022, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (2, 1, 4, 'Fall', 2022, 'B+');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (3, 2, 3, 'Spring', 2023, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (4, 2, 4, 'Spring', 2023, 'A-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (5, 3, 7, 'Fall', 2023, 'B');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (6, 4, 8, 'Fall', 2022, 'B+');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (7, 5, 10, 'Spring', 2024, 'A-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (8, 6, 9, 'Fall', 2023, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (9, 7, 1, 'Spring', 2023, 'C+');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (10, 8, 7, 'Fall', 2022, 'B');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (11, 9, 4, 'Fall', 2023, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (12, 10, 6, 'Spring', 2022, 'B-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (13, 11, 3, 'Fall', 2024, 'A-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (14, 12, 10, 'Spring', 2023, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (15, 13, 5, 'Fall', 2023, 'B+');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (16, 1, 2, 'Spring', 2023, 'A-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (17, 14, 1, 'Fall', 2023, 'C');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (18, 15, 7, 'Fall', 2024, 'B-');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (19, 16, 9, 'Spring', 2023, 'A');
+INSERT INTO enrollments (id, student_id, course_id, semester, year, grade) VALUES (20, 3, 1, 'Fall', 2022, 'B+');
+
+CREATE TABLE assignments (
+  id INTEGER PRIMARY KEY,
+  course_id INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  max_score REAL NOT NULL,
+  weight REAL NOT NULL,
+  due_date TIMESTAMP
+);
+
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (1, 1, 'Binary Search Tree Implementation', 100.0, 0.15, '2022-10-15');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (2, 1, 'Graph Algorithms Project', 100.0, 0.25, '2022-11-30');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (3, 2, 'Neural Network from Scratch', 100.0, 0.30, '2023-04-15');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (4, 3, 'Data Cleaning Report', 100.0, 0.20, '2023-03-01');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (5, 4, 'Matrix Decomposition Problems', 100.0, 0.20, '2022-11-01');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (6, 5, 'Projectile Motion Lab', 100.0, 0.25, '2023-10-20');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (7, 7, 'Heat Engine Analysis', 100.0, 0.20, '2023-11-15');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (8, 8, 'Mitosis Observation Lab', 100.0, 0.15, '2022-10-01');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (9, 9, 'Research Paper - Cognitive Bias', 100.0, 0.30, '2023-11-01');
+INSERT INTO assignments (id, course_id, title, max_score, weight, due_date) VALUES (10, 10, 'Marketing Plan Presentation', 100.0, 0.25, '2024-04-30');
+`,
+   "ds-crm": `CREATE TABLE leads (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  company TEXT,
+  source TEXT NOT NULL,
+  status TEXT NOT NULL,
+  score INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (1, 'Carlos Mendez', 'carlos@techcorp.com', '(11) 99999-0001', 'TechCorp Solutions', 'website', 'qualified', 85, '2024-01-05');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (2, 'Rebecca Torres', 'rebecca@inovaco.com', '(21) 99999-0002', 'InovaCo', 'referral', 'new', 60, '2024-01-10');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (3, 'James Wright', 'james@dataflow.io', '(31) 99999-0003', 'DataFlow Analytics', 'linkedin', 'qualified', 90, '2024-01-20');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (4, 'Anna Schmidt', 'anna@medtron.com', '(41) 99999-0004', 'MedTron Devices', 'conference', 'negotiation', 95, '2024-02-01');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (5, 'Takeshi Yamamoto', 'takeshi@nintech.jp', '(51) 99999-0005', 'NinTech Industries', 'website', 'qualified', 75, '2024-02-15');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (6, 'Sarah Mitchell', 'sarah@gogreen.eco', '(61) 99999-0006', 'GoGreen Energy', 'referral', 'new', 45, '2024-03-01');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (7, 'Olga Petrov', 'olga@neuralworks.ai', '(71) 99999-0007', 'NeuralWorks AI', 'cold_outreach', 'contacted', 55, '2024-03-10');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (8, 'David Kim', 'david@quantumfin.com', '(81) 99999-0008', 'Quantum Financial', 'website', 'negotiation', 92, '2024-03-20');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (9, 'Fatima Al-Rashid', 'fatima@altair.ae', '(91) 99999-0009', 'Altair Systems', 'conference', 'qualified', 80, '2024-04-01');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (10, 'Marcus Johnson', 'marcus@buildcore.com', '(71) 99999-0010', 'BuildCore Construction', 'referral', 'lost', 30, '2024-04-15');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (11, 'Elena Voss', 'elena@cloudsafe.de', '(11) 99999-0011', 'CloudSafe GmbH', 'linkedin', 'contacted', 65, '2024-05-01');
+INSERT INTO leads (id, name, email, phone, company, source, status, score, created_at) VALUES (12, 'Raj Patel', 'raj@innovate.in', '(22) 99999-0012', 'InnovateTech India', 'website', 'new', 50, '2024-05-20');
+
+CREATE TABLE contacts (
+  id INTEGER PRIMARY KEY,
+  lead_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  title TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  industry TEXT
+);
+
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (1, 1, 'Carlos Mendez', 'CTO', 'carlos@techcorp.com', '(11) 98888-0001', 'Technology');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (2, 1, 'Maria Silva', 'VP Engineering', 'maria@techcorp.com', '(11) 98888-0002', 'Technology');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (3, 2, 'Rebecca Torres', 'CEO', 'rebecca@inovaco.com', '(21) 98888-0003', 'Consulting');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (4, 3, 'James Wright', 'Head of Data', 'james@dataflow.io', '(31) 98888-0004', 'Analytics');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (5, 4, 'Anna Schmidt', 'Procurement Director', 'anna@medtron.com', '(41) 98888-0005', 'Healthcare');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (6, 5, 'Takeshi Yamamoto', 'Engineering Manager', 'takeshi@nintech.jp', '(51) 98888-0006', 'Manufacturing');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (7, 7, 'Olga Petrov', 'ML Engineer', 'olga@neuralworks.ai', '(71) 98888-0007', 'AI');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (8, 8, 'David Kim', 'CFO', 'david@quantumfin.com', '(81) 98888-0008', 'Finance');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (9, 9, 'Fatima Al-Rashid', 'IT Director', 'fatima@altair.ae', '(91) 98888-0009', 'Defense');
+INSERT INTO contacts (id, lead_id, name, title, email, phone, industry) VALUES (10, 11, 'Elena Voss', 'CISO', 'elena@cloudsafe.de', '(11) 98888-0010', 'Cybersecurity');
+
+CREATE TABLE deals (
+  id INTEGER PRIMARY KEY,
+  contact_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  amount REAL NOT NULL,
+  stage TEXT NOT NULL,
+  probability INTEGER NOT NULL,
+  expected_close TIMESTAMP,
+  closed_at TIMESTAMP
+);
+
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (1, 1, 'Enterprise Platform License', 120000.00, 'negotiation', 75, '2024-03-01');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (2, 3, 'Consulting Retainer Q2', 45000.00, 'proposal', 50, '2024-04-15');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (3, 4, 'Data Pipeline Implementation', 85000.00, 'discovery', 30, '2024-05-01');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (4, 5, 'Medical Device Software Suite', 250000.00, 'negotiation', 80, '2024-03-30');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (5, 6, 'Factory IoT Integration', 65000.00, 'proposal', 55, '2024-06-01');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (6, 8, 'Risk Analysis Platform', 180000.00, 'negotiation', 85, '2024-04-20');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (7, 9, 'Secure Communication Suite', 95000.00, 'discovery', 25, '2024-07-01');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (8, 2, 'Cloud Migration Support', 30000.00, 'closed_won', 100, '2024-02-15');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (9, 10, 'Security Audit Contract', 22000.00, 'closed_won', 100, '2024-06-10');
+INSERT INTO deals (id, contact_id, name, amount, stage, probability, expected_close) VALUES (10, 10, 'Incident Response Retainer', 15000.00, 'closed_lost', 0, NULL);
+
+CREATE TABLE activities (
+  id INTEGER PRIMARY KEY,
+  contact_id INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  due_date TIMESTAMP,
+  status TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (1, 1, 'call', 'Initial discovery call', '2024-01-10', 'completed', '2024-01-05');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (2, 1, 'demo', 'Platform demo with engineering team', '2024-01-25', 'completed', '2024-01-15');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (3, 3, 'email', 'Send proposal draft', '2024-03-20', 'completed', '2024-03-15');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (4, 4, 'meeting', 'Technical requirements gathering', '2024-04-05', 'pending', '2024-03-28');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (5, 5, 'call', 'Follow up on compliance questions', '2024-03-10', 'completed', '2024-03-01');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (6, 6, 'demo', 'IoT platform walkthrough', '2024-05-15', 'pending', '2024-05-01');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (7, 8, 'email', 'Send contract for signature', '2024-04-10', 'completed', '2024-04-01');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (8, 9, 'call', 'Initial outreach', '2024-04-15', 'completed', '2024-04-10');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (9, 2, 'email', 'Onboarding checklist', '2024-02-20', 'completed', '2024-02-16');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (10, 10, 'call', 'Contract renewal discussion', '2024-07-01', 'pending', '2024-06-15');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (11, 7, 'meeting', 'Architecture review', '2024-03-20', 'completed', '2024-03-10');
+INSERT INTO activities (id, contact_id, type, subject, due_date, status, created_at) VALUES (12, 4, 'demo', 'Dashboard walkthrough', '2024-04-20', 'pending', '2024-04-10');
+`,
+   "ds-weather": `CREATE TABLE stations (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  city TEXT NOT NULL,
+  country TEXT NOT NULL,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  elevation INTEGER NOT NULL
+);
+
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (1, 'Congonhas Airport', 'São Paulo', 'Brazil', -23.6262, -46.6562, 802);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (2, 'Heathrow Airport', 'London', 'United Kingdom', 51.4700, -0.4543, 25);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (3, 'Narita Airport', 'Tokyo', 'Japan', 35.7647, 140.3864, 41);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (4, 'JFK Airport', 'New York', 'United States', 40.6413, -73.7781, 4);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (5, 'Kingsford Smith Airport', 'Sydney', 'Australia', -33.9399, 151.1753, 6);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (6, 'Charles de Gaulle Airport', 'Paris', 'France', 49.0097, 2.5479, 119);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (7, 'Indira Gandhi Airport', 'Delhi', 'India', 28.5562, 77.1000, 237);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (8, 'Cape Town International', 'Cape Town', 'South Africa', -33.9715, 18.6021, 46);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (9, 'Sheremetyevo Airport', 'Moscow', 'Russia', 55.9720, 37.4146, 190);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (10, 'Guarulhos Airport', 'São Paulo', 'Brazil', -23.4356, -46.4731, 750);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (11, 'Mariscal Sucre Airport', 'Quito', 'Ecuador', -0.1358, -78.3575, 2413);
+INSERT INTO stations (id, name, city, country, latitude, longitude, elevation) VALUES (12, 'Helsinki-Vantaa Airport', 'Helsinki', 'Finland', 60.3172, 24.9633, 55);
+
+CREATE TABLE readings (
+  id INTEGER PRIMARY KEY,
+  station_id INTEGER NOT NULL,
+  reading_date TIMESTAMP NOT NULL,
+  temp_avg REAL NOT NULL,
+  temp_min REAL NOT NULL,
+  temp_max REAL NOT NULL,
+  humidity INTEGER,
+  precipitation REAL DEFAULT 0,
+  wind_speed REAL DEFAULT 0
+);
+
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (1, 1, '2024-01-15', 26.5, 21.0, 32.0, 78, 12.4, 14.2);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (2, 1, '2024-02-15', 27.8, 22.1, 33.5, 75, 8.2, 12.8);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (3, 2, '2024-01-15', 5.2, 1.0, 9.0, 82, 18.5, 25.6);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (4, 2, '2024-02-15', 6.8, 2.5, 11.2, 78, 15.0, 22.1);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (5, 3, '2024-01-15', 8.5, 3.0, 13.0, 55, 45.0, 18.3);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (6, 3, '2024-02-15', 9.2, 4.1, 14.5, 58, 38.0, 16.7);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (7, 4, '2024-01-15', 2.1, -3.5, 7.0, 68, 25.0, 30.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (8, 4, '2024-02-15', 3.5, -1.0, 8.0, 65, 20.0, 28.2);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (9, 5, '2024-01-15', 25.0, 19.0, 31.0, 65, 5.0, 20.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (10, 5, '2024-02-15', 24.5, 18.5, 30.0, 68, 6.5, 22.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (11, 6, '2024-01-15', 6.0, 2.0, 10.0, 80, 22.0, 20.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (12, 6, '2024-02-15', 7.0, 3.0, 11.0, 77, 18.0, 19.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (13, 7, '2024-01-15', 18.5, 12.0, 25.0, 45, 0.0, 8.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (14, 7, '2024-02-15', 20.0, 14.0, 27.0, 42, 0.0, 9.2);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (15, 8, '2024-01-15', 22.0, 16.0, 28.0, 72, 8.0, 25.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (16, 9, '2024-01-15', -8.0, -14.0, -2.0, 75, 12.0, 15.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (17, 9, '2024-02-15', -6.5, -12.0, -1.0, 72, 10.0, 14.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (18, 10, '2024-01-15', 25.8, 20.5, 31.0, 76, 10.0, 13.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (19, 11, '2024-01-15', 15.0, 10.0, 20.0, 80, 55.0, 10.2);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (20, 12, '2024-01-15', -5.0, -10.0, 0.0, 78, 15.0, 18.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (21, 12, '2024-02-15', -4.0, -9.0, 1.0, 75, 12.0, 17.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (22, 1, '2024-03-15', 26.0, 21.5, 31.0, 80, 15.0, 13.5);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (23, 2, '2024-03-15', 8.5, 4.0, 13.0, 75, 12.0, 20.0);
+INSERT INTO readings (id, station_id, reading_date, temp_avg, temp_min, temp_max, humidity, precipitation, wind_speed) VALUES (24, 3, '2024-03-15', 12.0, 7.0, 17.0, 60, 30.0, 15.0);
+
+CREATE TABLE alerts (
+  id INTEGER PRIMARY KEY,
+  station_id INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  severity TEXT NOT NULL,
+  message TEXT NOT NULL,
+  issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (1, 4, 'winter_storm', 'high', 'Winter storm warning: expected snowfall 30-40cm in New York metro area.', '2024-01-16');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (2, 1, 'extreme_heat', 'moderate', 'Heat advisory: temperatures expected to reach 35C in São Paulo.', '2024-02-10');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (3, 7, 'dust_storm', 'moderate', 'Dust storm warning: visibility reduced to 500m in Delhi region.', '2024-02-05');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (4, 9, 'extreme_cold', 'high', 'Extreme cold warning: wind chill values of -25C expected.', '2024-01-20');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (5, 5, 'bushfire', 'critical', 'Catastrophic bushfire danger: temperatures above 40C with strong winds.', '2024-01-22');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (6, 11, 'flood', 'high', 'Flash flood warning: 80mm of rain expected in 24 hours in Quito.', '2024-01-18');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (7, 3, 'typhoon', 'critical', 'Typhoon warning: wind speeds up to 180km/h approaching Tokyo.', '2024-02-25');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (8, 2, 'storm', 'moderate', 'Storm warning: wind gusts up to 80mph expected in London.', '2024-02-18');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (9, 10, 'extreme_heat', 'moderate', 'Heat advisory: temperatures reaching 36C in Guarulhos region.', '2024-03-10');
+INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (10, 12, 'extreme_cold', 'high', 'Extreme cold warning: temperatures dropping to -20C in Helsinki.', '2024-02-10');
+`
 }
 
 export function listDatasets(): AsyncAppResult<Dataset[]> {

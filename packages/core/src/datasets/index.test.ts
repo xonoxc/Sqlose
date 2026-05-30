@@ -9,7 +9,7 @@ describe("Sample Datasets", () => {
 
          expect(result.isOk()).toBe(true)
          if (result.isOk()) {
-            expect(result.value).toHaveLength(6)
+             expect(result.value).toHaveLength(10)
             const categories = result.value.map(d => d.category)
             expect(categories).toContain("ecommerce")
             expect(categories).toContain("analytics")
@@ -17,6 +17,10 @@ describe("Sample Datasets", () => {
             expect(categories).toContain("finance")
             expect(categories).toContain("retail")
             expect(categories).toContain("healthcare")
+            expect(categories).toContain("entertainment")
+            expect(categories).toContain("education")
+            expect(categories).toContain("business")
+            expect(categories).toContain("environment")
          }
       })
 
@@ -56,14 +60,18 @@ describe("Sample Datasets", () => {
          }
       })
 
-      it("should have six sample datasets defined", () => {
-         expect(Object.keys(SAMPLE_DATASETS)).toHaveLength(6)
+      it("should have ten sample datasets defined", () => {
+         expect(Object.keys(SAMPLE_DATASETS)).toHaveLength(10)
          expect(SAMPLE_DATASETS["ds-ecommerce"]).toBeTruthy()
          expect(SAMPLE_DATASETS["ds-analytics"]).toBeTruthy()
          expect(SAMPLE_DATASETS["ds-social"]).toBeTruthy()
          expect(SAMPLE_DATASETS["ds-finance"]).toBeTruthy()
          expect(SAMPLE_DATASETS["ds-retail"]).toBeTruthy()
          expect(SAMPLE_DATASETS["ds-healthcare"]).toBeTruthy()
+         expect(SAMPLE_DATASETS["ds-movies"]).toBeTruthy()
+         expect(SAMPLE_DATASETS["ds-education"]).toBeTruthy()
+         expect(SAMPLE_DATASETS["ds-crm"]).toBeTruthy()
+         expect(SAMPLE_DATASETS["ds-weather"]).toBeTruthy()
       })
    })
 
@@ -115,6 +123,51 @@ describe("Sample Datasets", () => {
             expect(result.value).toContain("CREATE TABLE page_views")
             expect(result.value).toContain("CREATE TABLE events")
             expect(result.value).toContain("CREATE TABLE conversions")
+         }
+      })
+
+      it("movies should have all 5 tables", async () => {
+         const result = await getDatasetSQL("ds-movies")
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toContain("CREATE TABLE movies")
+            expect(result.value).toContain("CREATE TABLE genres")
+            expect(result.value).toContain("CREATE TABLE movie_genres")
+            expect(result.value).toContain("CREATE TABLE ratings")
+            expect(result.value).toContain("CREATE TABLE cast_members")
+         }
+      })
+
+      it("education should have all 5 tables", async () => {
+         const result = await getDatasetSQL("ds-education")
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toContain("CREATE TABLE students")
+            expect(result.value).toContain("CREATE TABLE professors")
+            expect(result.value).toContain("CREATE TABLE courses")
+            expect(result.value).toContain("CREATE TABLE enrollments")
+            expect(result.value).toContain("CREATE TABLE assignments")
+         }
+      })
+
+      it("crm should have all 4 tables", async () => {
+         const result = await getDatasetSQL("ds-crm")
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toContain("CREATE TABLE leads")
+            expect(result.value).toContain("CREATE TABLE contacts")
+            expect(result.value).toContain("CREATE TABLE deals")
+            expect(result.value).toContain("CREATE TABLE activities")
+         }
+      })
+
+      it("weather should have all 3 tables", async () => {
+         const result = await getDatasetSQL("ds-weather")
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toContain("CREATE TABLE stations")
+            expect(result.value).toContain("CREATE TABLE readings")
+            expect(result.value).toContain("CREATE TABLE alerts")
          }
       })
    })

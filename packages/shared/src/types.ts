@@ -17,6 +17,10 @@ export const DATASET_CATEGORIES = [
    "finance",
    "retail",
    "healthcare",
+   "entertainment",
+   "education",
+   "business",
+   "environment",
 ] as const
 export type DatasetCategory = (typeof DATASET_CATEGORIES)[number]
 

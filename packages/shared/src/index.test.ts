@@ -46,7 +46,7 @@ describe("Error Hierarchy", () => {
    })
 
    it("ERROR_CATEGORIES should contain all categories", () => {
-      expect(ERROR_CATEGORIES).toEqual(["docker", "env", "query", "import", "ipc", "vim"])
+      expect(ERROR_CATEGORIES).toEqual(["docker", "env", "query", "import", "ipc", "db", "vim"])
    })
 
    it("should instantiate AppError with code and default message", () => {
@@ -151,7 +151,7 @@ describe("Shared Type Definitions", () => {
    })
 
    it("DATASET_CATEGORIES should contain all dataset categories", () => {
-      expect(DATASET_CATEGORIES).toEqual(["ecommerce", "analytics", "social", "finance"])
+      expect(DATASET_CATEGORIES).toEqual(["ecommerce", "analytics", "social", "finance", "retail", "healthcare", "entertainment", "education", "business", "environment"])
    })
 
    it("IMPORT_FORMATS should contain all import formats", () => {
