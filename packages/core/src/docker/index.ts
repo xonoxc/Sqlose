@@ -444,3 +444,5 @@ export async function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
       .then(() => ok(updated))
       .catch(() => ok(updated))
 }
+
+export const cleanupOrphans = stopOrphanedContainers

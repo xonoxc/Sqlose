@@ -224,9 +224,9 @@ describe("api", () => {
    })
 
    describe("error handling", () => {
-      it("should throw when sqlose API is not available", () => {
+      it("should throw when sqlose API is not available", async () => {
          delete (window as unknown as Record<string, unknown>).sqlose
-         expect(() => api.env.list()).rejects.toThrow("sqlose API not available")
+         await expect(api.env.list()).rejects.toThrow("sqlose API not available")
       })
 
       it("should deserialize errors with unknown error code", async () => {

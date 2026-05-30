@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import type { Environment } from "@sqlose/shared"
 
 const mockData: { environments: Record<string, Environment> } = { environments: {} }
 
 const mockStoreInstance = {
-   get: vi.fn((key: string) => mockData[key as keyof typeof mockData]),
-   set: vi.fn((key: string, value: unknown) => {
+   get: (key: string) => mockData[key as keyof typeof mockData],
+   set: (key: string, value: unknown) => {
       ;(mockData[key as keyof typeof mockData] as unknown) = value
-   }),
+   },
 }
 
 function MockStore() {
@@ -17,9 +17,8 @@ function MockStore() {
 vi.mock("electron-store", () => ({ default: MockStore }))
 
 describe("environment store", () => {
-   beforeEach(async () => {
+   beforeEach(() => {
       mockData.environments = {}
-      vi.clearAllMocks()
    })
 
    it("should save and load environments", async () => {

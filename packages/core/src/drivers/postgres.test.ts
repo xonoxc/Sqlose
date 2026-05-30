@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
-const mockClient = vi.hoisted(() => ({
+const mockClient = {
    connect: vi.fn(),
    query: vi.fn(),
    end: vi.fn(),
-}))
+}
 
 vi.mock("pg", () => ({
    default: {

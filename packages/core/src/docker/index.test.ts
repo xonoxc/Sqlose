@@ -464,7 +464,7 @@ describe("Docker Orchestration", () => {
          __setDocker(
             makeMockDocker({
                listContainers: vi.fn().mockResolvedValue([
-                  { Id: "abc", Names: ["/sqlose-postgres"], State: "exited" },
+                  { Id: "abc", Names: ["/sqlose-postgres"], State: "running" },
                   { Id: "def", Names: ["/other-container"], State: "exited" },
                   { Id: "ghi", Names: ["/sqlose-mysql"], State: "running" },
                ]),

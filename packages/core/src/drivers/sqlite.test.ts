@@ -1,36 +1,37 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { executeSQLiteQuery } from "./sqlite"
 
-interface MockDb {
-   all: ReturnType<typeof vi.fn>
-   close: ReturnType<typeof vi.fn>
-}
-
-const mockDb: MockDb = { all: vi.fn(), close: vi.fn() }
-let dbOpenError: Error | null = null
+const mockDb = { all: vi.fn(), close: vi.fn() }
 
 vi.mock("sqlite3", () => ({
    default: {
-      Database: function Database(_path: string, cb: (err: Error | null) => void) {
-         queueMicrotask(() => cb(dbOpenError))
-         return mockDb
-      },
+      Database: vi.fn(),
       OPEN_READWRITE: 2,
    },
 }))
 
-beforeEach(() => {
+beforeEach(async () => {
+   const sqlite3 = await import("sqlite3")
+   const Database = sqlite3.default.Database as unknown as ReturnType<typeof vi.fn>
    mockDb.all.mockReset()
    mockDb.close.mockReset()
-   dbOpenError = null
-   mockDb.all.mockImplementation(
-      (_sql: string, cb: (err: Error | null, rows: unknown[]) => void) => {
-         queueMicrotask(() => cb(null, [{ id: 1, name: "test" }]))
+   Database.mockReset()
+   Database.mockImplementation(
+      function (this: { all: typeof vi.fn; close: typeof vi.fn }, _path: string, cb: (err: Error | null) => void) {
+         queueMicrotask(() => cb(null))
+         return mockDb
       }
    )
-   mockDb.close.mockImplementation((cb: (err: Error | null) => void) => {
-      queueMicrotask(() => cb(null))
-   })
+   mockDb.all
+      .mockReset()
+      .mockImplementation((_sql: string, cb: (err: Error | null, rows: unknown[]) => void) => {
+         queueMicrotask(() => cb(null, [{ id: 1, name: "test" }]))
+      })
+   mockDb.close
+      .mockReset()
+      .mockImplementation((cb: (err: Error | null) => void) => {
+         queueMicrotask(() => cb(null))
+      })
 })
 
 describe("executeSQLiteQuery", () => {
@@ -44,11 +45,11 @@ describe("executeSQLiteQuery", () => {
    })
 
    it("should return syntax error for invalid SQL", async () => {
-      mockDb.all.mockImplementation(
-         (_sql: string, cb: (err: Error | null, _rows: unknown[]) => void) => {
+      mockDb.all
+         .mockReset()
+         .mockImplementation((_sql: string, cb: (err: Error | null, _rows: unknown[]) => void) => {
             queueMicrotask(() => cb(new Error('near "INVALID": syntax error'), []))
-         }
-      )
+         })
       const result = await executeSQLiteQuery("/tmp/test.db", "SELECT INVALID")
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
@@ -57,11 +58,11 @@ describe("executeSQLiteQuery", () => {
    })
 
    it("should return execution error for query failures", async () => {
-      mockDb.all.mockImplementation(
-         (_sql: string, cb: (err: Error | null, _rows: unknown[]) => void) => {
+      mockDb.all
+         .mockReset()
+         .mockImplementation((_sql: string, cb: (err: Error | null, _rows: unknown[]) => void) => {
             queueMicrotask(() => cb(new Error("no such table: users"), []))
-         }
-      )
+         })
       const result = await executeSQLiteQuery("/tmp/test.db", "SELECT * FROM nonexistent")
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
@@ -70,11 +71,11 @@ describe("executeSQLiteQuery", () => {
    })
 
    it("should handle empty results", async () => {
-      mockDb.all.mockImplementation(
-         (_sql: string, cb: (err: Error | null, rows: unknown[]) => void) => {
+      mockDb.all
+         .mockReset()
+         .mockImplementation((_sql: string, cb: (err: Error | null, rows: unknown[]) => void) => {
             queueMicrotask(() => cb(null, []))
-         }
-      )
+         })
       const result = await executeSQLiteQuery("/tmp/test.db", "SELECT * FROM empty")
       expect(result.isOk()).toBe(true)
       if (result.isOk()) {
@@ -84,15 +85,24 @@ describe("executeSQLiteQuery", () => {
    })
 
    it("should handle database open failure", async () => {
-      dbOpenError = new Error("Cannot open database")
+      const sqlite3 = await import("sqlite3")
+      const Database = sqlite3.default.Database as unknown as ReturnType<typeof vi.fn>
+      Database.mockImplementationOnce(
+         function (this: { all: typeof vi.fn; close: typeof vi.fn }, _path: string, cb: (err: Error | null) => void) {
+            queueMicrotask(() => cb(new Error("Cannot open database")))
+            return mockDb
+         }
+      )
       const result = await executeSQLiteQuery("/invalid/path.db", "SELECT 1")
       expect(result.isErr()).toBe(true)
    })
 
    it("should handle close error", async () => {
-      mockDb.close.mockImplementation((cb: (err: Error | null) => void) => {
-         queueMicrotask(() => cb(new Error("close failed")))
-      })
+      mockDb.close
+         .mockReset()
+         .mockImplementation((cb: (err: Error | null) => void) => {
+            queueMicrotask(() => cb(new Error("close failed")))
+         })
       const result = await executeSQLiteQuery("/tmp/test.db", "SELECT 1")
       expect(result.isErr()).toBe(true)
    })

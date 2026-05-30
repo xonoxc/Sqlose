@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest"
 import { vi } from "vitest"
 
 if (typeof window !== "undefined") {
+   Object.defineProperty(navigator, "platform", { value: "MacIntel", configurable: true })
    const mockSqloseAPI = {
       docker: {
          startEnv: vi.fn(),
@@ -30,6 +31,12 @@ if (typeof window !== "undefined") {
          list: vi.fn(),
          import: vi.fn(),
       },
+   }
+
+   ;(mockSqloseAPI as Record<string, unknown>).db = {
+      get: vi.fn().mockResolvedValue({ success: true, data: null }),
+      set: vi.fn().mockResolvedValue({ success: true }),
+      delete: vi.fn().mockResolvedValue({ success: true }),
    }
 
    Object.defineProperty(window, "sqlose", {

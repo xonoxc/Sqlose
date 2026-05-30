@@ -3,40 +3,34 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Environment, DBType } from "@sqlose/shared"
 import type { IPCSerializedResult } from "./ipc-handlers"
 
-const { mockHandle, mockCore } = vi.hoisted(() => ({
-   mockHandle: vi.fn(),
-   mockCore: {
-      createEnvironment: vi.fn(),
-      startEnvironment: vi.fn(),
-      stopEnvironment: vi.fn(),
-      restartEnvironment: vi.fn(),
-      healthCheck: vi.fn(),
-      destroyContainer: vi.fn(),
-      cleanupOrphans: vi.fn(),
-      createEnvironmentRecord: vi.fn(),
-      getEnvironment: vi.fn(),
-      listEnvironments: vi.fn(),
-      updateEnvironment: vi.fn(),
-      destroyEnvironmentRecord: vi.fn(),
-      duplicateEnvironmentRecord: vi.fn(),
-      resetEnvironmentRecord: vi.fn(),
-      loadEnvironment: vi.fn(),
-      releasePort: vi.fn(),
-      executeQuery: vi.fn(),
-      importCSV: vi.fn(),
-      previewCSV: vi.fn(),
-      parseSQLDump: vi.fn(),
-      extractTableNames: vi.fn(),
-      listDatasets: vi.fn(),
-      getDatasetSQL: vi.fn(),
-   },
-}))
+const mockCore: Record<string, ReturnType<typeof vi.fn>> = {}
+let mockHandle: ReturnType<typeof vi.fn>
 
 vi.mock("electron", () => ({
-   ipcMain: { handle: mockHandle },
+   ipcMain: { handle: vi.fn() },
+   app: { getPath: vi.fn().mockReturnValue("/tmp/sqlose-test") },
 }))
 
-vi.mock("@sqlose/core", () => mockCore)
+vi.mock("@sqlose/core", () => {
+   const f = () => vi.fn()
+   const stopOrphaned = f()
+   return {
+      createEnvironment: f(), startEnvironment: f(), stopEnvironment: f(), restartEnvironment: f(),
+      healthCheck: f(), destroyContainer: f(), stopOrphanedContainers: stopOrphaned, cleanupOrphans: stopOrphaned,
+      createEnvironmentRecord: f(), getEnvironment: f(), listEnvironments: f(), updateEnvironment: f(),
+      destroyEnvironmentRecord: f(), duplicateEnvironmentRecord: f(), resetEnvironmentRecord: f(),
+      loadEnvironment: f(), releasePort: f(), pullImage: f(),
+      executeQuery: f(),
+      importCSV: f(), previewCSV: f(), parseSQLDump: f(), extractTableNames: f(),
+      listDatasets: f(), getDatasetSQL: f(),
+   }
+})
+
+beforeEach(async () => {
+   const electron = await import("electron")
+   mockHandle = (electron as unknown as { ipcMain: { handle: ReturnType<typeof vi.fn> } }).ipcMain.handle
+   Object.assign(mockCore, await import("@sqlose/core"))
+})
 
 const { registerAllHandlers } = await import("./ipc-handlers")
 

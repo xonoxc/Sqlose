@@ -29,8 +29,8 @@ describe("SettingsPanel", () => {
    it("shows keybindings list", () => {
       render(<SettingsPanel isOpen={true} onClose={() => {}} />)
       expect(screen.getByText("Keybindings")).toBeInTheDocument()
-      expect(screen.getAllByText("Execute Query")).toHaveLength(2)
-      expect(screen.getAllByText("Open Command Palette")).toHaveLength(2)
+      expect(screen.getByText("Execute Query")).toBeInTheDocument()
+      expect(screen.getByText("Open Command Palette")).toBeInTheDocument()
    })
 
    it("resets keybindings", async () => {
