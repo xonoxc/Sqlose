@@ -9,7 +9,7 @@ import {
    IconDatabaseImport,
    IconPlus,
 } from "@tabler/icons-react"
-import { Button, Input, Badge, cn } from "@sqlose/ui"
+import { Button, Input, cn } from "@sqlose/ui"
 import type { DBType } from "@sqlose/shared"
 import { useCreateDatabaseFlowLogic } from "../hooks/useCreateDatabaseFlowLogic"
 import { motion, AnimatePresence } from "motion/react"
@@ -64,7 +64,6 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       allDone,
       handleSelectType,
       handleCreate,
-      setStep,
    } = useCreateDatabaseFlowLogic(onClose)
 
    const steps = ["Source", "Identity", "Review"]
@@ -182,7 +181,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                   </div>
 
                   <div className="grid gap-4">
-                     {DB_CARDS.map((card, i) => (
+                      {DB_CARDS.map(card => (
                         <button
                            key={card.type}
                            onClick={() => handleSelectType(card.type)}
