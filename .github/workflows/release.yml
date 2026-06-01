@@ -37,3 +37,83 @@ jobs:
           bun x tsc --noEmit
           bun x vite build
           bun x electron-builder --publish always
+
+  publish-aur:
+    needs: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          echo "PKGVER=$(echo "${GITHUB_REF_NAME#v}" | sed 's/[^a-zA-Z0-9.]/_/g')" >> $GITHUB_ENV
+
+      - name: Download AppImage from GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/aur-pkg
+          gh release download "$GITHUB_REF_NAME" \
+            --pattern "Sqlose-Linux-${VERSION}.AppImage" \
+            --dir /tmp/aur-pkg
+
+      - name: Validate AppImage exists
+        run: |
+          if [ ! -f "/tmp/aur-pkg/Sqlose-Linux-${VERSION}.AppImage" ]; then
+            echo "ERROR: AppImage not found!"
+            echo "Expected: Sqlose-Linux-${VERSION}.AppImage"
+            echo "Available files:"
+            ls -la /tmp/aur-pkg/
+            exit 1
+          fi
+
+      - name: Calculate SHA256 checksum
+        run: |
+          echo "SHA256SUM=$(sha256sum "/tmp/aur-pkg/Sqlose-Linux-${VERSION}.AppImage" | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Generate PKGBUILD from template
+        run: |
+          sed -e "s/{{PKGVER}}/${PKGVER}/g" \
+              -e "s/{{VERSION}}/${VERSION}/g" \
+              -e "s/{{SHA256SUM}}/${SHA256SUM}/g" \
+              apps/desktop/packaging/aur/PKGBUILD.template > /tmp/aur-pkg/PKGBUILD
+
+      - name: Generate .SRCINFO from template
+        run: |
+          sed -e "s/{{PKGVER}}/${PKGVER}/g" \
+              -e "s/{{VERSION}}/${VERSION}/g" \
+              -e "s/{{SHA256SUM}}/${SHA256SUM}/g" \
+              apps/desktop/packaging/aur/.SRCINFO.template > /tmp/aur-pkg/.SRCINFO
+
+      - name: Setup SSH for AUR
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_KEY }}" > ~/.ssh/aur_key
+          chmod 600 ~/.ssh/aur_key
+          ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
+          cat >> ~/.ssh/config << 'EOF'
+          Host aur.archlinux.org
+            IdentityFile ~/.ssh/aur_key
+            User aur
+          EOF
+
+      - name: Clone AUR repository
+        run: |
+          git clone ssh://aur@aur.archlinux.org/sqlose-bin.git /tmp/aur-repo
+
+      - name: Update AUR package files
+        working-directory: /tmp/aur-repo
+        run: |
+          cp /tmp/aur-pkg/PKGBUILD .
+          cp /tmp/aur-pkg/.SRCINFO .
+          git config user.name "xonoxc"
+          git config user.email "xonoxc@users.noreply.github.com"
+          git add PKGBUILD .SRCINFO
+          if git diff --cached --quiet; then
+            echo "No changes to commit. Skipping AUR push."
+          else
+            git commit -m "Release v${VERSION}"
+            git push
+          fi
