@@ -85,7 +85,7 @@ const mockOkBool = (value: boolean) =>
       _unsafeUnwrap: () => value,
    })
 
-const mockErrBool = (code: string) =>
+/* const _mockErrBool = (code: string) =>
    Promise.resolve({
       isOk: () => false,
       isErr: () => true,
@@ -93,7 +93,7 @@ const mockErrBool = (code: string) =>
       value: undefined,
       _unsafeUnwrapErr: () => ({ code, message: code }),
    })
-
+*/
 describe("Docker Orchestration", () => {
    beforeEach(async () => {
       vi.clearAllMocks()
@@ -109,7 +109,9 @@ describe("Docker Orchestration", () => {
          const mockPull = vi.fn()
          __setDocker(
             makeMockDocker({
-               listImages: vi.fn().mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["postgres:16-alpine"] }]),
+               listImages: vi
+                  .fn()
+                  .mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["postgres:16-alpine"] }]),
                pull: mockPull,
             }) as never
          )
@@ -136,7 +138,9 @@ describe("Docker Orchestration", () => {
          const mockPull = vi.fn()
          __setDocker(
             makeMockDocker({
-               listImages: vi.fn().mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["nouchka/sqlite3:latest"] }]),
+               listImages: vi
+                  .fn()
+                  .mockResolvedValue([{ Id: "sha256:abc", RepoTags: ["nouchka/sqlite3:latest"] }]),
                pull: mockPull,
             }) as never
          )

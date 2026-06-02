@@ -7,6 +7,7 @@ import {
    useNodesState,
    useEdgesState,
    MarkerType,
+   Position,
    type Node,
    type Edge,
 } from "@xyflow/react"
@@ -33,7 +34,7 @@ async function fetchForeignKeys(envId: string, tableName: string): Promise<Array
        const sql = `PRAGMA foreign_key_list('${tableName}')`
        const res = await api.query.execute(envId, sql)
        if (res.isOk()) {
-           return res.value.rows.map((r: any) => ({
+            return res.value.rows.map((r: Record<string, unknown>) => ({
                fromCol: String(r.from),
                toTable: String(r.table),
                toCol: String(r.to)
@@ -68,8 +69,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
 
    nodes.forEach(node => {
       const nodeWithPosition = dagreGraph.node(node.id)
-      node.targetPosition = direction === "LR" ? "left" : "top" as any
-      node.sourcePosition = direction === "LR" ? "right" : "bottom" as any
+       node.targetPosition = direction === "LR" ? Position.Left : Position.Top
+       node.sourcePosition = direction === "LR" ? Position.Right : Position.Bottom
 
       // Shift slightly to center
       node.position = {
@@ -104,7 +105,7 @@ export function SchemaDiagram() {
          }
          
          const dbTablesRes = await api.query.execute(envId, dbType === 'sqlite' ? "SELECT name FROM sqlite_master WHERE type='table'" : "SELECT table_name FROM information_schema.tables")
-         const myTables = dbTablesRes.isOk() ? dbTablesRes.value?.rows?.map((r:any) => r.name || r.table_name) || [] : []
+          const myTables = dbTablesRes.isOk() ? dbTablesRes.value?.rows?.map((r: Record<string, unknown>) => r.name || r.table_name) || [] : []
 
          const newNodes: Node[] = []
          const newEdges: Edge[] = []

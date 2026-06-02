@@ -71,7 +71,7 @@ async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean)
    ta.select()
 
    try {
-      ;(document as any).execCommand("copy")
+      ;(document as HTMLDocument & { execCommand(name: string): boolean }).execCommand("copy")
    } catch (err) {
       console.error("All clipboard copy methods failed:", err)
    } finally {
@@ -80,7 +80,7 @@ async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean)
 }
 
 function AppContent() {
-   const [sidebarOpen, _] = useState(true)
+   const [sidebarOpen] = useState(true)
    const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
    const [paletteOpen, setPaletteOpen] = useState(false)
    const [settingsOpen, setSettingsOpen] = useState(false)
@@ -219,16 +219,16 @@ function AppContent() {
             result: null,
             error: result.error.message,
          })
-         addHistoryEntry(
-            queryDraft,
-            selectedEnvironmentId,
-            selectedEnv?.dbType ?? "sql",
-            elapsed,
-            0,
-            "error",
-            result.error.message
-         )
-      }
+            addHistoryEntry(
+             queryDraft,
+             selectedEnvironmentId,
+             selectedEnv?.dbType ?? "sql",
+             elapsed,
+             0,
+             "error",
+             result.error.message
+          )
+       }
    }
 
    const isExecuting = executingTabId === activeTabId

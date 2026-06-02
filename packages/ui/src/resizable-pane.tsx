@@ -29,31 +29,31 @@ export function ResizablePane({
       setIsDragging(true)
    }
 
-   const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging || !containerRef.current) return
-      const rect = containerRef.current.getBoundingClientRect()
-      let newWidth = e.clientX - rect.left
-      newWidth = Math.max(minLeftWidth, Math.min(maxLeftWidth, newWidth))
-      setLeftWidth(newWidth)
-      onResize?.(newWidth)
-   }
-
-   const handleMouseUp = () => setIsDragging(false)
-
    useEffect(() => {
-      if (isDragging) {
-         document.addEventListener("mousemove", handleMouseMove)
-         document.addEventListener("mouseup", handleMouseUp)
-         document.body.style.cursor = "col-resize"
-         document.body.style.userSelect = "none"
-         return () => {
-            document.removeEventListener("mousemove", handleMouseMove)
-            document.removeEventListener("mouseup", handleMouseUp)
-            document.body.style.cursor = ""
-            document.body.style.userSelect = ""
-         }
+      if (!isDragging) return
+
+      const handleMouseMove = (e: MouseEvent) => {
+         if (!containerRef.current) return
+         const rect = containerRef.current.getBoundingClientRect()
+         let newWidth = e.clientX - rect.left
+         newWidth = Math.max(minLeftWidth, Math.min(maxLeftWidth, newWidth))
+         setLeftWidth(newWidth)
+         onResize?.(newWidth)
       }
-   }, [isDragging, handleMouseMove, handleMouseUp])
+
+      const handleMouseUp = () => setIsDragging(false)
+
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+      return () => {
+         document.removeEventListener("mousemove", handleMouseMove)
+         document.removeEventListener("mouseup", handleMouseUp)
+         document.body.style.cursor = ""
+         document.body.style.userSelect = ""
+      }
+   }, [isDragging, minLeftWidth, maxLeftWidth, onResize])
 
    return (
       <div ref={containerRef} className={cn("flex h-full w-full overflow-hidden", className)}>

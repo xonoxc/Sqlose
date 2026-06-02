@@ -3,15 +3,15 @@ import { ok, err } from "neverthrow"
 import { QueryError } from "@sqlose/shared"
 import type { QueryResult, AsyncAppResult } from "@sqlose/shared"
 
-export function executeMySQLQuery(
+export async function executeMySQLQuery(
    connectionString: string,
    sql: string
 ): AsyncAppResult<QueryResult> {
    return mysql
       .createConnection(connectionString)
-      .then(connection => {
+      .then(async connection => {
          const start = performance.now()
-         return connection.query(sql).then(([rows, fields]) => {
+         return connection.query(sql).then(async ([rows, fields]) => {
             const executionTimeMs = Math.round(performance.now() - start)
             const fieldDescriptors = fields as mysql.FieldPacket[]
             const columns = fieldDescriptors?.map((f: mysql.FieldPacket) => f.name) ?? []
@@ -35,7 +35,7 @@ export function executeMySQLQuery(
       })
 }
 
-export function testMySQLConnection(connectionString: string): AsyncAppResult<boolean> {
+export async function testMySQLConnection(connectionString: string): AsyncAppResult<boolean> {
    return mysql
       .createConnection(connectionString)
       .then(connection =>

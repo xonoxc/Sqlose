@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Database, MessageCircle } from "lucide-react"
 
 export default function SQLoseLandingPage() {
@@ -91,13 +92,15 @@ export default function SQLoseLandingPage() {
                <div className="rounded-2xl border border-white/10 bg-[#161616]/50 p-2 sm:p-3 shadow-2xl backdrop-blur-sm">
                   {/* Inner Container implementing the requested border overlay */}
                   <div className="flex flex-col w-full relative rounded-[12px] bg-[#0a0a0a]">
-                     <img
+                     <Image
                         src="/ss.png"
                         alt="SQLose Application Interface"
+                        width={1200}
+                        height={750}
                         className="w-full object-cover rounded-[12px] opacity-100 block"
                         onError={e => {
                            e.currentTarget.style.display = "none"
-                           const fallback = e.currentTarget.parentElement?.querySelector(
+                           const fallback = (e.currentTarget as HTMLElement).parentElement?.querySelector(
                               ".fallback-msg"
                            ) as HTMLElement
                            if (fallback) fallback.classList.remove("hidden")
