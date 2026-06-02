@@ -7,6 +7,7 @@ export const ERROR_CODES = [
    "docker:cleanup_failed",
    "docker:pull_failed",
    "docker:stop_failed",
+   "docker:not_available",
    "env:not_found",
    "env:already_running",
    "env:not_running",

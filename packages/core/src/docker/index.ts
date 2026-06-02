@@ -64,15 +64,19 @@ function getDocker(): Docker {
 }
 
 export async function initDocker(): AsyncAppResult<void> {
-   if (_docker) return Promise.resolve(okResult(undefined))
-   return import("dockerode")
-      .then(mod => {
-         _docker = new mod.default()
-         return okResult(undefined)
-      })
-      .catch((e: Error) =>
-         err(new DockerError("docker:container_failed", e.message ?? "Failed to initialize Docker"))
-      )
+    if (_docker) return Promise.resolve(okResult(undefined))
+    return import("dockerode")
+       .then(mod => {
+          const client = new mod.default()
+          return client.ping().then(() => {
+             _docker = client
+             return okResult(undefined)
+          })
+       })
+       .catch((e: Error) => {
+          _docker = null
+          return err(new DockerError("docker:not_available", e.message ?? "Docker is not running"))
+       })
 }
 
 export async function pullImage(dbType: DBType): AsyncAppResult<void> {

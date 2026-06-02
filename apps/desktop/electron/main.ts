@@ -1,7 +1,7 @@
 // CJS compat shims for bundled packages
 import { fileURLToPath } from "node:url"
 import path from "node:path"
-import { app, BrowserWindow } from "electron"
+import { app, BrowserWindow, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -35,6 +35,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
    : RENDERER_DIST
 
 let win: BrowserWindow | null
+let dockerAvailable = false
 
 function createWindow() {
    win = new BrowserWindow({
@@ -89,17 +90,34 @@ app.on("activate", () => {
 })
 
 app.on("will-quit", async () => {
-   await stopAllContainers()
+   if (dockerAvailable) await stopAllContainers()
    closeDatabase()
 })
 
 app.whenReady().then(async () => {
-   await Promise.all([initDatabase(), initDocker()])
-   await Promise.all([stopOrphanedContainers(), reconcileEnvironmentStatuses()])
+   await initDatabase()
+
+   const dockerResult = await initDocker()
+   dockerAvailable = dockerResult.isOk()
+
+   if (dockerAvailable) {
+      await Promise.all([stopOrphanedContainers(), reconcileEnvironmentStatuses()])
+   }
 
    registerAllHandlers()
    registerDbHandlers()
    createWindow()
+
+   if (!dockerAvailable) {
+      win?.webContents.send("docker:not-available")
+      dialog.showMessageBox(win!, {
+         type: "warning",
+         title: "Docker Not Found",
+         message: "Docker is not available on this system.",
+         detail:
+            "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
+      })
+   }
 
    if (!VITE_DEV_SERVER_URL) autoUpdater.checkForUpdatesAndNotify()
 })
