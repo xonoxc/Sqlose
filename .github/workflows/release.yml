@@ -116,6 +116,11 @@ jobs:
           chmod 600 ~/.ssh/config
           git config --global core.sshCommand "ssh -F ~/.ssh/config"
 
+      - name: Check key exists
+        run: |
+          ls -la ~/.ssh
+          ssh-keygen -y -f ~/.ssh/aur_key
+
       - name: Clone AUR repository
         run: |
           git clone aur@aur.archlinux.org:sqlose-bin.git /tmp/aur-repo
