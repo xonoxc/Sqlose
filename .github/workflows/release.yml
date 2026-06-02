@@ -87,17 +87,31 @@ jobs:
               -e "s/{{SHA256SUM}}/${SHA256SUM}/g" \
               apps/desktop/packaging/aur/.SRCINFO.template > /tmp/aur-pkg/.SRCINFO
 
+      - name: Check AUR secret availability
+        env:
+          AUR_KEY: ${{ secrets.AUR_KEY }}
+        run: |
+          if [ -n "$AUR_KEY" ]; then
+            echo "AUR_KEY secret is present and available."
+          else
+            echo "AUR_KEY secret is NOT set. AUR publishing will fail."
+          fi
+
       - name: Setup SSH for AUR
+        env:
+          AUR_KEY: ${{ secrets.AUR_KEY }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AUR_KEY }}" > ~/.ssh/aur_key
+          chmod 700 ~/.ssh
+          echo "$AUR_KEY" > ~/.ssh/aur_key
           chmod 600 ~/.ssh/aur_key
           ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
-          cat >> ~/.ssh/config << 'EOF'
+          cat > ~/.ssh/config << 'EOF'
           Host aur.archlinux.org
             IdentityFile ~/.ssh/aur_key
             User aur
           EOF
+          chmod 600 ~/.ssh/config
 
       - name: Clone AUR repository
         run: |
