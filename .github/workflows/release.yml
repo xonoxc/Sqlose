@@ -116,25 +116,6 @@ jobs:
           chmod 600 ~/.ssh/config
           git config --global core.sshCommand "ssh -F ~/.ssh/config"
 
-      - name: Check key exists
-        run: |
-          ls -la ~/.ssh
-          if [ ! -f ~/.ssh/aur_key ]; then
-            echo "ERROR: aur_key file not found!"
-            exit 1
-          fi
-          KEY_TYPE=$(head -1 ~/.ssh/aur_key)
-          case "$KEY_TYPE" in
-            "-----BEGIN OPENSSH PRIVATE KEY-----"|"-----BEGIN RSA PRIVATE KEY-----"|"-----BEGIN EC PRIVATE KEY-----")
-              echo "Key format: $KEY_TYPE"
-              echo "Key file is valid."
-              ;;
-            *)
-              echo "ERROR: Unknown key format: $KEY_TYPE"
-              exit 1
-              ;;
-          esac
-
       - name: Clone AUR repository
         run: |
           git clone aur@aur.archlinux.org:sqlose-bin.git /tmp/aur-repo
