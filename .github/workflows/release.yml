@@ -103,7 +103,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          echo "$AUR_KEY" > ~/.ssh/aur_key
+          printf "%s\n" "$AUR_KEY" > ~/.ssh/aur_key
           chmod 600 ~/.ssh/aur_key
           ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
           cat > ~/.ssh/config << 'EOF'
@@ -111,13 +111,14 @@ jobs:
             IdentityFile ~/.ssh/aur_key
             User aur
             StrictHostKeyChecking no
+            IdentitiesOnly yes
           EOF
           chmod 600 ~/.ssh/config
-          git config --global core.sshCommand "ssh -i ~/.ssh/aur_key -o StrictHostKeyChecking=no"
+          git config --global core.sshCommand "ssh -F ~/.ssh/config"
 
       - name: Clone AUR repository
         run: |
-          git clone ssh://aur@aur.archlinux.org/sqlose-bin.git /tmp/aur-repo
+          git clone aur@aur.archlinux.org:sqlose-bin.git /tmp/aur-repo
 
       - name: Update AUR package files
         working-directory: /tmp/aur-repo
@@ -125,7 +126,7 @@ jobs:
           cp /tmp/aur-pkg/PKGBUILD .
           cp /tmp/aur-pkg/.SRCINFO .
           git config user.name "xonoxc"
-          git config user.email "xonoxc@users.noreply.github.com"
+          git config user.email "xonoxc@://github.com"
           git add PKGBUILD .SRCINFO
           if git diff --cached --quiet; then
             echo "No changes to commit. Skipping AUR push."
