@@ -19,30 +19,30 @@
 [![Turborepo](https://img.shields.io/badge/Turborepo-2.9-EF4444?style=for-the-badge&logo=turborepo)](https://turbo.build/)
 [![Bun](https://img.shields.io/badge/Bun-1.3-FBF0DF?style=for-the-badge&logo=bun)](https://bun.sh/)
 
-[Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Project Structure](#-project-structure) • [Architecture](#-architecture) • [Contributing](#-contributing)
+[Features](#features) • [Tech Stack](#tech-stack) • [Getting Started](#getting-started) • [Project Structure](#project-structure) • [Architecture](#architecture) • [Contributing](#contributing)
 
 </div>
 
 ---
 
-## 📋 Overview
+## Overview
 
 **SQLose** is a developer-focused SQL IDE that makes it dead simple to spin up, query, and discard database environments. No config files. No infrastructure setup. Just pick your database type, and you're running queries in seconds.
 
-### 🎯 Key Benefits
+### Key Benefits
 
-- ⚡ **Ephemeral by design** — Spin up Postgres/MySQL containers, query them, then throw them away when done
-- 💻 **Local-first** — SQLite environments run in-process with zero setup
-- 🐳 **Docker-powered** — Automatic container lifecycle for Postgres and MySQL
-- 🎨 **Beautiful UI** — Monaco Editor, 11 dark themes, Vim bindings, frameless Electron window
-- 📊 **Rich results** — Virtualized tables, schema diagrams, CSV export, query history
-- 🧪 **10 bundled datasets** — Instant sample data for testing and experimentation
+- **Ephemeral by design** — Spin up Postgres/MySQL containers, query them, then throw them away when done
+- **Local-first** — SQLite environments run in-process with zero setup
+- **Docker-powered** — Automatic container lifecycle for Postgres and MySQL
+- **Beautiful UI** — Monaco Editor, 11 dark themes, Vim bindings, frameless Electron window
+- **Rich results** — Virtualized tables, schema diagrams, CSV export, query history
+- **10 bundled datasets** — Instant sample data for testing and experimentation
 
 ---
 
-## ✨ Features
+## Features
 
-### 🗄️ Multi-Engine Query Execution
+### Multi-Engine Query Execution
 
 | Engine     | Mode        | Connection                          |
 | ---------- | ----------- | ----------------------------------- |
@@ -52,15 +52,15 @@
 
 Choose your engine on the fly — no config files, no connection strings to remember.
 
-### 🐳 Docker Environment Management
+### Docker Environment Management
 
-- **Automatic lifecycle**: Pull → Create → Start → Health check → Wait for ready
+- **Automatic lifecycle**: Pull, Create, Start, Health check, Wait for ready
 - **Port allocation**: Dynamic port range (4000–6000), collision-free
 - **Orphan cleanup**: Stale containers detected and stopped on startup
 - **Health checks**: Waits for database to be accepting connections before use
 - **Destruction**: Nuke entire environments — container, volumes, and all
 
-### ✏️ SQL Editor
+### SQL Editor
 
 - **Monaco Editor** — The editor that powers VS Code, with full SQL syntax highlighting
 - **Vim Mode** — Optional `monaco-vim` bindings for Vim users
@@ -68,7 +68,7 @@ Choose your engine on the fly — no config files, no connection strings to reme
 - **Command Palette** — `Ctrl+K` / `Cmd+K` for quick actions, fuzzy search, theme switching
 - **Keyboard shortcuts** — Full shortcut system with customizable keybinds
 
-### 📊 Results & Visualization
+### Results & Visualization
 
 - **Virtualized table** — Fast rendering of large result sets with virtual scrolling
 - **Schema diagram** — Auto-generated ER diagrams powered by React Flow + dagre layout
@@ -77,25 +77,25 @@ Choose your engine on the fly — no config files, no connection strings to reme
 - **SQL dump import** — Import from SQL dump files
 - **Query history** — Full execution log with timestamps, duration, row counts
 
-### 🎨 11 Dark Themes
+### 11 Dark Themes
 
 | Theme | Style |
 |-------|-------|
-| Default · Tokyo Night · Catppuccin Mocha · Dracula | Popular dark palettes |
-| Gruvbox Dark · Nord · Rose Pine · Kanagawa | Warm & muted tones |
-| One Dark · GitHub Dark · Solarized Dark | Editor classics |
+| Default, Tokyo Night, Catppuccin Mocha, Dracula | Popular dark palettes |
+| Gruvbox Dark, Nord, Rose Pine, Kanagawa | Warm & muted tones |
+| One Dark, GitHub Dark, Solarized Dark | Editor classics |
 
 Each theme includes coordinated Monaco Editor colors, UI surfaces, and syntax highlighting.
 
-### 📦 10 Bundled Sample Datasets
+### 10 Bundled Sample Datasets
 
-Ecommerce · Retail · Healthcare · Analytics · Social · Finance · Entertainment · Education · Business · Environment
+Ecommerce, Retail, Healthcare, Analytics, Social, Finance, Entertainment, Education, Business, Environment
 
 Seed any environment with realistic sample data in one click.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Desktop App
 
@@ -111,10 +111,10 @@ Seed any environment with realistic sample data in one click.
 
 ### Core Logic
 
-- **Query drivers**: [`pg`](https://node-postgres.com/) · [`mysql2`](https://github.com/sidorares/node-mysql2) · [`sql.js`](https://github.com/sql-js/sql.js/) · [`sqlite3`](https://github.com/TryGhost/node-sqlite3)
+- **Query drivers**: [`pg`](https://node-postgres.com/), [`mysql2`](https://github.com/sidorares/node-mysql2), [`sql.js`](https://github.com/sql-js/sql.js/), [`sqlite3`](https://github.com/TryGhost/node-sqlite3)
 - **Docker**: [`dockerode`](https://github.com/apocas/dockerode) — full container lifecycle management
 - **Import**: CSV parser with schema inference, SQL dump parser
-- **Error handling**: [`neverthrow`](https://github.com/supermacro/neverthrow) — typed `Result` / `Option` patterns throughout
+- **Error handling**: [`neverthrow`](https://github.com/supermacro/neverthrow) — typed `Result` and `Option` patterns throughout
 
 ### Shared UI Components (`@sqlose/ui`)
 
@@ -132,7 +132,7 @@ Seed any environment with realistic sample data in one click.
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -176,7 +176,7 @@ Seed any environment with realistic sample data in one click.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 sqlose/
@@ -210,31 +210,31 @@ sqlose/
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Three-Layer Design
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                    Renderer (React)                  │
-│  Monaco Editor · Zustand Stores · TanStack Query    │
-│  Components · Hooks · Themes                        │
-└───────────────────────┬─────────────────────────────┘
-                        │ IPC (18 typed channels)
-┌───────────────────────▼─────────────────────────────┐
-│                 Main Process (Electron)               │
-│  IPC Handlers · Docker (dockerode) · sql.js DB       │
-│  Auto-updater · File system · Native dialogs         │
-└──────┬──────────────┬──────────────┬────────────────┘
-       │              │              │
-┌──────▼──────┐ ┌─────▼──────┐ ┌────▼──────────────┐
-│  @sqlose/   │ │ @sqlose/   │ │  @sqlose/shared   │
-│  core       │ │ ui         │ │  Types · Errors    │
-│  Drivers ·  │ │ Radix ·    │ │  IPC channels ·   │
-│  Docker ·   │ │ Table ·    │ │  Runtime guards   │
-│  Import ·   │ │ Virtual ·  │ │                    │
-│  Datasets   │ │ Motion     │ │                    │
-└─────────────┘ └────────────┘ └────────────────────┘
++-------------------------------------------------------+
+|                    Renderer (React)                    |
+|  Monaco Editor . Zustand Stores . TanStack Query      |
+|  Components . Hooks . Themes                          |
++-----------------------+-------------------------------+
+                        | IPC (18 typed channels)
++-----------------------v-------------------------------+
+|                 Main Process (Electron)                |
+|  IPC Handlers . Docker (dockerode) . sql.js DB        |
+|  Auto-updater . File system . Native dialogs          |
++------+--------------+--------------+-----------------+
+       |              |              |
++------v------+ +-----v------+ +----v--------------+
+|  @sqlose/   | | @sqlose/   | |  @sqlose/shared   |
+|  core       | | ui         | |  Types . Errors    |
+|  Drivers .  | | Radix .    | |  IPC channels .   |
+|  Docker .   | | Table .    | |  Runtime guards   |
+|  Import .   | | Virtual .  | |                    |
+|  Datasets   | | Motion     | |                    |
++-------------+ +------------+ +--------------------+
 ```
 
 ### Key Design Decisions
@@ -247,7 +247,7 @@ sqlose/
 
 ---
 
-## 🧪 Scripts
+## Scripts
 
 ```bash
 bun dev              # Start all apps in development mode
@@ -261,7 +261,7 @@ bun typecheck        # TypeScript type checking across all packages
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to help:
 
@@ -283,13 +283,13 @@ We welcome contributions! Here's how to help:
 ### Development Guidelines
 
 - Follow the existing code style (enforced by ESLint)
-- Use `neverthrow` `Result` types for all fallible operations — no `try/catch`
+- Use `neverthrow` `Result` types for all fallible operations, no `try/catch`
 - Ensure `bun lint` and `bun typecheck` pass before submitting
 - Write meaningful commit messages
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under a custom commercial license. See the [LICENSE](LICENSE) file for details.
 
