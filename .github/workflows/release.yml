@@ -110,8 +110,10 @@ jobs:
           Host aur.archlinux.org
             IdentityFile ~/.ssh/aur_key
             User aur
+            StrictHostKeyChecking no
           EOF
           chmod 600 ~/.ssh/config
+          git config --global core.sshCommand "ssh -i ~/.ssh/aur_key -o StrictHostKeyChecking=no"
 
       - name: Clone AUR repository
         run: |
