@@ -96,15 +96,6 @@
       }
    }
 
-   /* Drag region for custom title bar */
-   .app-drag-region {
-      -webkit-app-region: drag;
-   }
-
-   .app-no-drag {
-      -webkit-app-region: no-drag;
-   }
-
    /* Minimal custom scrollbar */
    ::-webkit-scrollbar {
       width: 8px;

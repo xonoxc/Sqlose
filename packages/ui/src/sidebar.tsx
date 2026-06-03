@@ -91,12 +91,12 @@ function SidebarItemRow({
 export function Sidebar({ items, selectedId, onSelect, className, header }: SidebarProps) {
    return (
       <div className={cn("flex h-full flex-col bg-bg-secondary text-text-secondary w-full", className)}>
-         {header && (
-            <div className="px-3 pt-6 pb-2 min-h-[64px] flex items-center shrink-0 app-drag-region">
-               {header}
-            </div>
-         )}
-         <div className="flex-1 overflow-y-auto px-2 py-0 custom-scrollbar app-no-drag relative">
+          {header && (
+             <div className="px-3 pt-6 pb-2 min-h-[64px] flex items-center shrink-0">
+                {header}
+             </div>
+          )}
+          <div className="flex-1 overflow-y-auto px-2 py-0 custom-scrollbar relative">
             {items.map(item => (
                <SidebarItemRow
                   key={item.id}

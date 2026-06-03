@@ -393,18 +393,9 @@ function AppContent() {
       : null
 
    return (
-      <div
-         className={cn("h-screen w-screen overflow-hidden bg-transparent", isMac() ? "p-2" : "p-0")}
-      >
+      <div className="h-screen w-screen overflow-hidden bg-bg-primary">
          {selectedEnvironmentId ? (
-            <div
-               className={cn(
-                  "flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative",
-                  isMac()
-                     ? "rounded-xl selection:bg-accent/30 border border-white/[0.07] shadow-2xl"
-                     : ""
-               )}
-            >
+            <div className="flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative">
                <div className="flex-1 min-w-0 flex">
                   {sidebarOpen && (
                      <div
@@ -431,10 +422,10 @@ function AppContent() {
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-border/30 bg-bg-secondary/90 shrink-0 app-drag-region shadow-sm z-20 relative py-7 flex items-center justify-between">
+                        <div className="h-10 flex items-center justify-between px-3 border-b border-border/30 bg-bg-secondary/90 shrink-0 shadow-sm z-20 relative">
                            <div />
                            {/* Command palette trigger */}
-                           <div className="flex-1 max-w-md mx-4 app-no-drag">
+                           <div className="flex-1 max-w-md mx-4">
                               <button
                                  onClick={() => setPaletteOpen(true)}
                                  className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-2 text-[13.5px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
@@ -476,7 +467,7 @@ function AppContent() {
                               </button>
                            </div>
 
-                           <div className="flex items-center gap-1 app-no-drag">
+                           <div className="flex items-center gap-1">
                               <button
                                  onClick={() => selectEnvironment(null)}
                                  className="h-9 w-9 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors border-2 rounded-md border-border/25"

@@ -42,10 +42,6 @@ function createWindow() {
       icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
       width: 1100,
       height: 750,
-      titleBarStyle: "hidden",
-      trafficLightPosition: { x: 16, y: 16 },
-      transparent: true,
-      backgroundColor: "#00000000",
       webPreferences: {
          preload: path.join(__dirname, "preload.mjs"),
          sandbox: true,

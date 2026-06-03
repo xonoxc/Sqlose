@@ -63,20 +63,53 @@ function getDocker(): Docker {
    return _docker as Docker
 }
 
+function parseDockerHost(host: string): Record<string, unknown> {
+   if (host.startsWith("unix://")) return { socketPath: host.slice(7) }
+   if (host.startsWith("npipe://")) return { socketPath: host.slice(8) }
+   if (host.startsWith("tcp://")) {
+      const rest = host.slice(6)
+      const i = rest.lastIndexOf(":")
+      return i >= 0
+         ? { host: rest.slice(0, i), port: parseInt(rest.slice(i + 1)) || 2375 }
+         : { host: rest, port: 2375 }
+   }
+   return { socketPath: host }
+}
+
 export async function initDocker(): AsyncAppResult<void> {
-    if (_docker) return Promise.resolve(okResult(undefined))
-    return import("dockerode")
-       .then(mod => {
-          const client = new mod.default()
-          return client.ping().then(() => {
-             _docker = client
-             return okResult(undefined)
-          })
-       })
-       .catch((e: Error) => {
-          _docker = null
-          return err(new DockerError("docker:not_available", e.message ?? "Docker is not running"))
-       })
+   if (_docker) return Promise.resolve(okResult(undefined))
+
+   try {
+      const mod = await import("dockerode")
+      const Docker = mod.default
+
+      const attempts: Record<string, unknown>[] = []
+
+      if (process.env.DOCKER_HOST) {
+         attempts.push(parseDockerHost(process.env.DOCKER_HOST))
+      }
+
+      if (process.platform === "win32") {
+         attempts.push({ socketPath: "//./pipe/docker_engine" })
+         attempts.push({ socketPath: "//./pipe/docker_engine_wsl" })
+      } else {
+         attempts.push({})
+      }
+
+      for (const opts of attempts) {
+         try {
+            const client = new Docker(opts)
+            await client.ping()
+            _docker = client
+            return okResult(undefined)
+         } catch {
+            continue
+         }
+      }
+   } catch {}
+
+   _docker = null
+   return err(new DockerError("docker:not_available", "Docker is not reachable"))
 }
 
 export async function pullImage(dbType: DBType): AsyncAppResult<void> {
