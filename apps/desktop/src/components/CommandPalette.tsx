@@ -32,13 +32,7 @@ export function CommandPalette({
       filteredThemes,
       handleThemeHover,
       handleThemeSelect,
-   } = useCommandPaletteLogic(
-      isOpen,
-      onClose,
-      onExecuteQuery,
-      onClearResults,
-      onOpenQuery
-   )
+   } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery)
 
    return (
       <AnimatePresence>
@@ -48,17 +42,17 @@ export function CommandPalette({
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
                transition={{ duration: 0.1 }}
-                className="fixed inset-0 z-50 flex items-start justify-center pt-[12vh] bg-black/40 backdrop-blur-[2px]"
-                onClick={() => {
-                    if (mode !== "themes") onClose()
-                 }}
+               className="fixed inset-0 z-50 flex items-start justify-center pt-[16vh] bg-black/40 backdrop-blur-[2px]"
+               onClick={() => {
+                  if (mode !== "themes") onClose()
+               }}
             >
                <motion.div
                   initial={{ opacity: 0, scale: 0.97, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97, y: -10 }}
                   transition={{ duration: 0.1 }}
-                  className="w-full max-w-xl bg-bg-primary/95 backdrop-blur-xl rounded-lg border border-border shadow-2xl overflow-hidden"
+                  className="w-full max-w-xl bg-bg-primary/95 backdrop-blur-xl rounded-lg border border-border shadow-2xl overflow-hidden py-12"
                   onClick={e => e.stopPropagation()}
                >
                   {/* Search / Header */}
@@ -94,7 +88,7 @@ export function CommandPalette({
                   </div>
 
                   {/* Body */}
-                  <div className="max-h-[55vh] overflow-y-auto py-1 custom-scrollbar">
+                  <div className="max-h-[55vh] overflow-y-auto py-4 custom-scrollbar">
                      {mode === "themes" ? (
                         <>
                            <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase flex items-center gap-2">
@@ -108,8 +102,8 @@ export function CommandPalette({
                                  </span>
                               </div>
                            )}
-                            {filteredThemes.map((theme, index) => {
-                               const isActive = index === selectedIndex
+                           {filteredThemes.map((theme, index) => {
+                              const isActive = index === selectedIndex
                               return (
                                  <button
                                     key={theme.id}
@@ -163,7 +157,7 @@ export function CommandPalette({
                                              {theme.id}
                                           </span>
                                        </div>
-                                     </div>
+                                    </div>
                                  </button>
                               )
                            })}
@@ -184,18 +178,16 @@ export function CommandPalette({
                                  <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase">
                                     Actions
                                  </div>
-                                  {groupedItems.actions.map(item => {
-                                     const globalIndex = flatFiltered.indexOf(item)
-                                     return (
-                                        <button
-                                           key={item.id}
-                                           onClick={() => {
-                                              item.onSelect()
-                                              if (item.id !== "switch-theme") onClose()
-                                           }}
-                                          onMouseEnter={() =>
-                                             setSelectedIndex(globalIndex)
-                                          }
+                                 {groupedItems.actions.map(item => {
+                                    const globalIndex = flatFiltered.indexOf(item)
+                                    return (
+                                       <button
+                                          key={item.id}
+                                          onClick={() => {
+                                             item.onSelect()
+                                             if (item.id !== "switch-theme") onClose()
+                                          }}
+                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
                                           className={cn(
                                              "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
                                              globalIndex === selectedIndex
@@ -254,9 +246,7 @@ export function CommandPalette({
                                              item.onSelect()
                                              onClose()
                                           }}
-                                          onMouseEnter={() =>
-                                             setSelectedIndex(globalIndex)
-                                          }
+                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
                                           className={cn(
                                              "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
                                              globalIndex === selectedIndex
@@ -308,9 +298,7 @@ export function CommandPalette({
                                              item.onSelect()
                                              onClose()
                                           }}
-                                          onMouseEnter={() =>
-                                             setSelectedIndex(globalIndex)
-                                          }
+                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
                                           className={cn(
                                              "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
                                              globalIndex === selectedIndex
@@ -362,9 +350,7 @@ export function CommandPalette({
                                              item.onSelect()
                                              onClose()
                                           }}
-                                          onMouseEnter={() =>
-                                             setSelectedIndex(globalIndex)
-                                          }
+                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
                                           className={cn(
                                              "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
                                              globalIndex === selectedIndex
@@ -416,9 +402,7 @@ export function CommandPalette({
                                              item.onSelect()
                                              onClose()
                                           }}
-                                          onMouseEnter={() =>
-                                             setSelectedIndex(globalIndex)
-                                          }
+                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
                                           className={cn(
                                              "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
                                              globalIndex === selectedIndex

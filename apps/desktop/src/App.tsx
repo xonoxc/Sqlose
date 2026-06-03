@@ -422,13 +422,13 @@ function AppContent() {
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         {/* Top bar */}
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-border/30 bg-bg-secondary/90 shrink-0 shadow-sm z-20 relative">
+                        <div className="h-14 flex items-center justify-between px-4 border-b border-border/30 bg-bg-secondary/90 shrink-0 shadow-sm z-20 relative">
                            <div />
                            {/* Command palette trigger */}
                            <div className="flex-1 max-w-md mx-4">
                               <button
                                  onClick={() => setPaletteOpen(true)}
-                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-2 text-[13.5px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+                                 className="w-full flex items-center gap-2.5 bg-bg-tertiary hover:bg-bg-quaternary border border-border shadow-inner rounded-md px-3 py-2.5 text-[13.5px] text-text-muted transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
                               >
                                  <svg
                                     xmlns="http://www.w3.org/2000/svg"

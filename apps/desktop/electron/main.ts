@@ -48,6 +48,7 @@ function createWindow() {
          contextIsolation: true,
          nodeIntegration: false,
       },
+      autoHideMenuBar: true,
    })
 
    if (VITE_DEV_SERVER_URL) {
@@ -110,8 +111,7 @@ app.whenReady().then(async () => {
          type: "warning",
          title: "Docker Not Found",
          message: "Docker is not available on this system.",
-         detail:
-            "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
+         detail: "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
       })
    }
 
