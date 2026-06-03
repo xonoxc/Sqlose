@@ -3,35 +3,10 @@ import path from "node:path"
 import electron from "vite-plugin-electron/simple"
 import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
-import fs from "node:fs"
 
 const DESKTOP_DIR = __dirname
-const CORE_NM = path.resolve(DESKTOP_DIR, "../../packages/core/node_modules")
-const dest = path.resolve(DESKTOP_DIR, "node_modules")
-if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true })
-for (const dep of [
-   "pg",
-   "mysql2",
-   "sqlite3",
-   "dockerode",
-   "electron-store",
-   "bindings",
-   "node-gyp-build",
-]) {
-   const src = path.resolve(CORE_NM, dep)
-   const dst = path.resolve(dest, dep)
-   if (fs.existsSync(src) && !fs.existsSync(dst)) {
-      try {
-         fs.symlinkSync(src, dst, "dir")
-      } catch {
-         /* ok */
-      }
-   }
-}
 
 // Native Node.js packages that must NOT be bundled by Rollup.
-// These use native .node addons or dynamic require() via `bindings`,
-// which Rollup/Vite cannot handle. They'll be resolved from node_modules at runtime.
 const NATIVE_EXTERNALS = [
    "sqlite3",
    "pg",
@@ -39,8 +14,6 @@ const NATIVE_EXTERNALS = [
    "mysql2",
    "dockerode",
    "electron-store",
-   "bindings",
-   "node-gyp-build",
    "sql.js",
 ]
 
