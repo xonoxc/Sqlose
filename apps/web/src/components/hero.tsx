@@ -13,29 +13,20 @@ export function HeroSection() {
             <DecorIcon className="size-4" position="bottom-right" />
             <FullWidthDivider position="bottom" />
 
-            {/* X Faded Borders & Shades */}
-            <div aria-hidden="true" className="absolute inset-0 -z-1 size-full overflow-hidden">
-               <div className="absolute inset-y-0 left-4 w-px bg-linear-to-b from-transparent via-border to-border md:left-8" />
-               <div className="absolute inset-y-0 right-4 w-px bg-linear-to-b from-transparent via-border to-border md:right-8" />
-               <div className="absolute inset-y-0 left-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:left-12" />
-               <div className="absolute inset-y-0 right-8 w-px bg-linear-to-b from-transparent via-border/50 to-border/50 md:right-12" />
-            </div>
             <a
                className={cn(
-                  "group mx-auto flex w-fit items-center gap-3 rounded-sm border bg-card p-1 shadow",
+                  "group mx-auto flex w-fit items-center gap-3 rounded-sm border border-neutral-50/10 bg-card p-1 shadow",
                   "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out"
                )}
                href="#link"
             >
-               <div className="rounded-xs border bg-card px-1.5 py-0.5 shadow-sm">
-                  <p className="font-mono text-xs">NOW</p>
-               </div>
+               <span className="block h-5" />
 
-               <span className="text-xs flex items-center gap-1">
-                  <GitHub className="w-3.5 h-3.5" />
-                  v1.0.0 · Latest
+               <GitHub className="w-3.5 h-3.5" />
+               <span className="text-xs flex items-center gap-2 text-shadow-accent">
+                  v0.1.2 · Latest
                </span>
-               <span className="block h-5 border-l" />
+               <span className="block h-5 border-l border-neutral-500/40" />
 
                <div className="pr-1">
                   <ArrowRightIcon className="size-3 -translate-x-0.5 duration-150 ease-out group-hover:translate-x-0.5" />
@@ -50,7 +41,7 @@ export function HeroSection() {
             >
                Ephemeral SQL Environments <br className="hidden md:block" />
                Now{" "}
-               <span className="bg-linear-to-r from-[oklch(62.3%_0.214_259.815)] to-[oklch(62.3%_0.214_259.815/.6)] bg-clip-text text-transparent">
+               <span className="bg-linear-to-r from-blue-500 to-[oklch(62.3%_0.214_259.815/.6)] bg-clip-text text-transparent">
                   Open Source
                </span>
             </h1>

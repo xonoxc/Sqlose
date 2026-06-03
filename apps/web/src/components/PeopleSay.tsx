@@ -5,7 +5,6 @@ import { GitHub } from "@/components/ui/githubsvg"
 import { Discord } from "@/components/ui/discord"
 import { Database } from "lucide-react"
 import {
-   Testimonial,
    TestimonialAuthor,
    TestimonialAuthorName,
    TestimonialAuthorTagline,

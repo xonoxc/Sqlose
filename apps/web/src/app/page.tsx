@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils"
-import { Header } from "@/components/header" // @efferd/header-2
+import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero"
-import { LogosSection } from "@/components/logos-section"
 import { FeaturesSection } from "@/components/features-section"
 import Peoplesay from "@/components/PeopleSay"
 
@@ -11,14 +10,13 @@ export default function page() {
          <Header />
          <main
             className={cn(
-               "relative mx-auto max-w-4xl grow",
+               "relative mx-auto max-w-6xl grow",
                "before:absolute before:-inset-y-14 before:-left-px before:w-px before:bg-border",
                "after:absolute after:-inset-y-14 after:-right-px after:w-px after:bg-border"
             )}
          >
             <HeroSection />
             <FeaturesSection />
-            <LogosSection />
             <Peoplesay />
          </main>
       </div>
