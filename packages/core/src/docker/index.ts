@@ -5,6 +5,7 @@ import type { DBType, AsyncAppResult, AppResult } from "@sqlose/shared"
 import { findAvailablePort, reservePort, releasePort } from "./port"
 import { loadEnvironments, saveEnvironment } from "../environment/store"
 
+const PING_TIMEOUT_MS = 10 * 1000
 const PULL_TIMEOUT_MS = 5 * 60 * 1000
 const OP_TIMEOUT_MS = 60 * 1000
 const DB_READY_RETRIES = 30
@@ -99,7 +100,7 @@ export async function initDocker(): AsyncAppResult<void> {
       for (const opts of attempts) {
          try {
             const client = new Docker(opts)
-            await client.ping()
+            await withTimeout(client.ping(), PING_TIMEOUT_MS, "Docker ping")
             _docker = client
             return okResult(undefined)
          } catch {
@@ -118,8 +119,11 @@ export async function pullImage(dbType: DBType): AsyncAppResult<void> {
 
    const docker = getDocker()
 
-   return docker
-      .listImages({ filters: { reference: [config.image] } })
+   return withTimeout(
+      docker.listImages({ filters: { reference: [config.image] } }),
+      OP_TIMEOUT_MS,
+      "Listing Docker images"
+   )
       .then(images => {
          if (images.length > 0) return okResult(undefined)
 

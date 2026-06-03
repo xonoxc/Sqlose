@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { toast } from "sonner"
 import { api } from "../lib/api"
 import { useEnvironmentStore } from "../stores/environmentStore"
 import { useWorkspaceStore } from "../stores/workspaceStore"
@@ -77,6 +78,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
       if (envResult.isErr()) {
          updateStepStatus("create", "error", envResult.error.message)
          setProvisioningError(envResult.error.message)
+         toast.error(envResult.error.message)
          return
       }
       const env = envResult.value
@@ -90,6 +92,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
          if (pullResult.isErr()) {
             updateStepStatus("pull", "error", pullResult.error.message)
             setProvisioningError(pullResult.error.message)
+            toast.error(pullResult.error.message)
             return
          }
          updateStepStatus("pull", "done")
@@ -99,6 +102,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
          if (containerResult.isErr()) {
             updateStepStatus("start", "error", containerResult.error.message)
             setProvisioningError(containerResult.error.message)
+            toast.error(containerResult.error.message)
             return
          }
          updateStepStatus("start", "done")
@@ -110,6 +114,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
          if (importResult.isErr()) {
             updateStepStatus("seed", "error", importResult.error.message)
             setProvisioningError(importResult.error.message)
+            toast.error(importResult.error.message)
             return
          }
          updateStepStatus("seed", "done")
