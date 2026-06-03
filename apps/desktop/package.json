@@ -1,7 +1,7 @@
 {
    "name": "desktop",
    "private": true,
-   "version": "0.1.0",
+   "version": "0.1.8",
    "description": "Sqlose - SQL development environment",
    "author": {
       "name": "xonoxc",
