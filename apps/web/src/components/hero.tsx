@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArrowRightIcon } from "lucide-react"
@@ -9,10 +10,6 @@ export function HeroSection() {
    return (
       <section className="relative">
          <div className="relative flex flex-col items-center justify-center gap-5 px-4 py-12 md:px-4 md:py-24 lg:py-28">
-            <DecorIcon className="size-4" position="bottom-left" />
-            <DecorIcon className="size-4" position="bottom-right" />
-            <FullWidthDivider position="bottom" />
-
             <a
                className={cn(
                   "group mx-auto flex w-fit items-center gap-3 rounded-sm border border-neutral-50/10 bg-card p-1 shadow",
@@ -40,8 +37,8 @@ export function HeroSection() {
                )}
             >
                Ephemeral SQL Environments <br className="hidden md:block" />
-               Now{" "}
-               <span className="bg-linear-to-r from-blue-500 to-[oklch(62.3%_0.214_259.815/.6)] bg-clip-text text-transparent">
+               Now
+               <span className="bg-linear-to-r from-blue-500 to- bg-clip-text text-transparent">
                   Open Source
                </span>
             </h1>
@@ -67,6 +64,25 @@ export function HeroSection() {
                   Get app <ArrowRightIcon data-icon="inline-end" />
                </Button>
             </div>
+
+            <FullWidthDivider position="top" />
+            {/* Dashboard Preview Container */}
+            <div className="relative">
+               <div className="overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex">
+                  <Image
+                     src="/ss.png"
+                     height={400}
+                     width={1200}
+                     alt="Sqlose Dashboard Preview"
+                     className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.01]"
+                  />
+               </div>
+            </div>
+
+            {/* Bottom Dividers moved below screenshot */}
+            <DecorIcon className="size-4" position="bottom-left" />
+            <DecorIcon className="size-4" position="bottom-right" />
+            <FullWidthDivider position="bottom" />
          </div>
       </section>
    )
