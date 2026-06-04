@@ -11,9 +11,10 @@ describe("ResultsPanel", () => {
             isExecuting={true}
             executionTimeMs={null}
             rowCount={null}
+            activeTab="results"
          />
       )
-      expect(screen.getByText("Executing query...")).toBeInTheDocument()
+      expect(screen.getByText("Processing your query...")).toBeInTheDocument()
    })
 
    it("shows error state", () => {
@@ -24,9 +25,10 @@ describe("ResultsPanel", () => {
             isExecuting={false}
             executionTimeMs={null}
             rowCount={null}
+            activeTab="results"
          />
       )
-      expect(screen.getByText("Query Execution Failed")).toBeInTheDocument()
+      expect(screen.getByText("Execution Error")).toBeInTheDocument()
       expect(screen.getByText("Syntax error near SELECT")).toBeInTheDocument()
    })
 
@@ -38,12 +40,13 @@ describe("ResultsPanel", () => {
             isExecuting={false}
             executionTimeMs={null}
             rowCount={null}
+            activeTab="results"
          />
       )
-      expect(screen.getByText("Ready to run query")).toBeInTheDocument()
+      expect(screen.getByText("Ready to Execute")).toBeInTheDocument()
    })
 
-   it("renders result tabs", () => {
+   it("renders result data when provided", () => {
       const result = {
          columns: ["id", "name"],
          rows: [
@@ -60,10 +63,10 @@ describe("ResultsPanel", () => {
             isExecuting={false}
             executionTimeMs={42}
             rowCount={2}
+            activeTab="results"
          />
       )
-      expect(screen.getByText("Results")).toBeInTheDocument()
-      expect(screen.getByText("Messages")).toBeInTheDocument()
-      expect(screen.getByText("Stats")).toBeInTheDocument()
+      expect(screen.getByText("id")).toBeInTheDocument()
+      expect(screen.getByText("name")).toBeInTheDocument()
    })
 })

@@ -45,7 +45,6 @@ describe("SQLEditor", () => {
    beforeEach(() => {
       useEditorStore.setState({
          vimMode: "normal",
-         vimEnabled: false,
          queryDraft: "SELECT * FROM users;",
          selectedEnvironmentId: null,
       })

@@ -109,15 +109,20 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
    fetchTableData: async (envId: string, tableName: string, page = 1, pageSize = 100) => {
       set({ tableDataLoading: true, tableDataError: null })
       const offset = (page - 1) * pageSize
+      const safeName = tableName.replace(/[^a-zA-Z0-9_.]/g, "")
+      if (safeName !== tableName) {
+         set({ tableDataError: "Invalid table name", tableDataLoading: false })
+         return
+      }
       try {
-         const countSql = `SELECT COUNT(*) as total FROM ${tableName}`
+         const countSql = `SELECT COUNT(*) as total FROM ${safeName}`
          const countResult = await api.query.execute(envId, countSql)
          let totalCount = 0
          if (countResult.isOk()) {
             totalCount = Number(countResult.value.rows[0]?.total ?? 0)
          }
 
-         const dataSql = `SELECT * FROM ${tableName} LIMIT ${pageSize} OFFSET ${offset}`
+         const dataSql = `SELECT * FROM ${safeName} LIMIT ${pageSize} OFFSET ${offset}`
          const dataResult = await api.query.execute(envId, dataSql)
          if (dataResult.isErr()) throw dataResult.error
 

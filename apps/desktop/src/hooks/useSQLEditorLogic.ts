@@ -174,8 +174,9 @@ export function useSQLEditorLogic(
 
       monacoEditor.onKeyDown(e => {
          if (e.browserEvent.key !== ":") return
-         const state = useEditorStore.getState()
-         if (state.vimEnabled && state.vimMode === "normal") {
+         const editorState = useEditorStore.getState()
+         const vimEnabled = useSettingsStore.getState().vimModeEnabled
+         if (vimEnabled && editorState.vimMode === "normal") {
             e.preventDefault()
             e.stopPropagation()
             onCommandMode?.()

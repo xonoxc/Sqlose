@@ -7,13 +7,10 @@ import { sqliteStorage } from "../lib/sqlite-storage"
 
 interface EditorStore {
    vimMode: VimMode
-   vimEnabled: boolean
    queryDraft: string
    selectedEnvironmentId: string | null
 
    setVimMode: (mode: VimMode) => Result<VimMode, AppError>
-   toggleVimEnabled: () => Result<boolean, AppError>
-   setVimEnabled: (enabled: boolean) => Result<boolean, AppError>
    setQueryDraft: (content: string) => Result<string, AppError>
    setSelectedEnvironment: (environmentId: string | null) => Result<string | null, AppError>
 }
@@ -32,9 +29,8 @@ function isValidVimMode(mode: unknown): mode is VimMode {
 
 export const useEditorStore = create<EditorStore>()(
    persist(
-      (set, get) => ({
+      (set) => ({
          vimMode: "normal",
-         vimEnabled: false,
          queryDraft: "",
          selectedEnvironmentId: null,
 
@@ -44,18 +40,6 @@ export const useEditorStore = create<EditorStore>()(
             }
             set({ vimMode: mode })
             return ok(mode)
-         },
-
-         toggleVimEnabled: () => {
-            const current = get().vimEnabled
-            const newValue = !current
-            set({ vimEnabled: newValue, vimMode: newValue ? "normal" : get().vimMode })
-            return ok(newValue)
-         },
-
-         setVimEnabled: (enabled: boolean) => {
-            set({ vimEnabled: enabled })
-            return ok(enabled)
          },
 
          setQueryDraft: (content: string) => {
@@ -73,7 +57,6 @@ export const useEditorStore = create<EditorStore>()(
           storage: sqliteStorage,
           partialize: state => ({
              vimMode: state.vimMode,
-             vimEnabled: state.vimEnabled,
              queryDraft: state.queryDraft,
              selectedEnvironmentId: state.selectedEnvironmentId,
           }),

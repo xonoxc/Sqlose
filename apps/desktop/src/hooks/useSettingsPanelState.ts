@@ -1,5 +1,4 @@
 import { useSettingsStore } from "../stores/settingsStore"
-import { useEditorStore } from "../stores/editorStore"
 
 export function useSettingsPanelState() {
    const vimModeEnabled = useSettingsStore(s => s.vimModeEnabled)
@@ -20,12 +19,9 @@ export function useSettingsPanelState() {
    const setEditorFontSize = useSettingsStore(s => s.setEditorFontSize)
    const executionMode = useSettingsStore(s => s.executionMode)
    const setExecutionMode = useSettingsStore(s => s.setExecutionMode)
-   const setVimEnabled = useEditorStore(s => s.setVimEnabled)
 
    const handleToggleVim = () => {
-      const next = !vimModeEnabled
       toggleVimMode()
-      setVimEnabled(next)
    }
 
    const handleToggleAutoSave = () => {

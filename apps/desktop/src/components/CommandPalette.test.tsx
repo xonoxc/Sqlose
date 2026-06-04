@@ -39,7 +39,7 @@ describe("CommandPalette", () => {
       expect(screen.getByText("New Query")).toBeInTheDocument()
    })
 
-   it("shows environments in the list", () => {
+   it("shows environments when searched", async () => {
       useEnvironmentStore.setState({
          environments: [
             {
@@ -56,7 +56,10 @@ describe("CommandPalette", () => {
          ],
       })
 
+      const user = userEvent.setup()
       renderWithQuery(<CommandPalette isOpen={true} onClose={() => {}} />)
+      const input = screen.getByPlaceholderText("Search tables, queries, commands...")
+      await user.type(input, "Test")
       expect(screen.getByText("Test PG")).toBeInTheDocument()
    })
 

@@ -82,7 +82,6 @@ beforeEach(() => {
    })
    useEditorStore.setState({
       vimMode: "normal",
-      vimEnabled: false,
       queryDraft: "",
       selectedEnvironmentId: null,
    })
@@ -195,10 +194,11 @@ describe("Workflow: Query Execution", () => {
                isExecuting={true}
                executionTimeMs={null}
                rowCount={null}
+               activeTab="results"
             />
          </Wrapper>
       )
-      expect(screen.getByText("Executing query...")).toBeInTheDocument()
+      expect(screen.getByText("Processing your query...")).toBeInTheDocument()
    })
 
    it("2c. renders query results in ResultsPanel", () => {
@@ -217,12 +217,11 @@ describe("Workflow: Query Execution", () => {
                isExecuting={false}
                executionTimeMs={10}
                rowCount={1}
+               activeTab="results"
             />
          </Wrapper>
       )
-      expect(screen.getByText("Results")).toBeInTheDocument()
-      expect(screen.getByText("Messages")).toBeInTheDocument()
-      expect(screen.getByText("Stats")).toBeInTheDocument()
+      expect(screen.getByText("col1")).toBeInTheDocument()
    })
 
    it("2d. shows empty state when no result", () => {
@@ -234,10 +233,11 @@ describe("Workflow: Query Execution", () => {
                isExecuting={false}
                executionTimeMs={null}
                rowCount={null}
+               activeTab="results"
             />
          </Wrapper>
       )
-      expect(screen.getByText("Ready to run query")).toBeInTheDocument()
+      expect(screen.getByText("Ready to Execute")).toBeInTheDocument()
    })
 })
 
@@ -266,10 +266,11 @@ describe("Workflow: Error Propagation", () => {
                isExecuting={false}
                executionTimeMs={null}
                rowCount={null}
+               activeTab="results"
             />
          </Wrapper>
       )
-      expect(screen.getByText("Query Execution Failed")).toBeInTheDocument()
+      expect(screen.getByText("Execution Error")).toBeInTheDocument()
       expect(screen.getByText("syntax error at line 1")).toBeInTheDocument()
    })
 
@@ -339,7 +340,7 @@ describe("Workflow: Vim Mode Toggle", () => {
       }
    })
 
-   it("4d. syncs vim toggle between settings and editor", () => {
+   it("4d. toggles vim mode in settings", () => {
       useSettingsStore.setState({ vimModeEnabled: false })
 
       act(() => {
@@ -350,7 +351,7 @@ describe("Workflow: Vim Mode Toggle", () => {
    })
 
    it("4e. SettingsPanel renders vim toggle", () => {
-      useEditorStore.setState({ vimEnabled: false })
+      useSettingsStore.setState({ vimModeEnabled: false })
 
       render(
          <Wrapper>
