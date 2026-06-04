@@ -192,7 +192,9 @@ export function registerAllHandlers(): void {
       if (typeof dbType !== "string" || !["postgres", "mysql", "sqlite"].includes(dbType)) {
          return invalidPayload("dbType must be postgres, mysql, or sqlite")
       }
-      const result = await dockerPullImage(dbType as DBType)
+      const result = await dockerPullImage(dbType as DBType, (percentage) => {
+         _event.sender.send("docker:pull-progress", { dbType, percentage })
+      })
       if (result.isErr()) return serializeErr(result.error)
       return serializeOk({ image: dbType })
    })

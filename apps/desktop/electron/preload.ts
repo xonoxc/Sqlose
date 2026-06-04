@@ -25,6 +25,14 @@ const api = {
       cleanup: createInvoke("docker:cleanup"),
       pullImage: createInvoke("docker:pull-image"),
       createContainer: createInvoke("docker:create-container"),
+      checkAvailable: createInvoke("docker:check-available"),
+      onPullProgress: (callback: (dbType: string, percentage: number) => void) => {
+         const handler = (_event: Electron.IpcRendererEvent, data: { dbType: string; percentage: number }) => {
+            callback(data.dbType, data.percentage)
+         }
+         ipcRenderer.on("docker:pull-progress", handler)
+         return () => ipcRenderer.removeListener("docker:pull-progress", handler)
+      },
    },
    env: {
       create: createInvoke("env:create"),

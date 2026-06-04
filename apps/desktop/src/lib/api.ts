@@ -71,6 +71,17 @@ export const api = {
          const result = await api.docker.createContainer({ environmentId })
          return deserializeResult(result)
       },
+
+      async checkAvailable() {
+         const api = getSqloseAPI()
+         const result = await api.docker.checkAvailable({} as Record<string, never>)
+         return deserializeResult(result)
+      },
+
+      onPullProgress(callback: (dbType: string, percentage: number) => void) {
+         const api = getSqloseAPI()
+         return api.docker.onPullProgress(callback)
+      },
    },
 
    env: {

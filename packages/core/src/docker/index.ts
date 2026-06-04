@@ -93,6 +93,9 @@ export async function initDocker(): AsyncAppResult<void> {
       if (process.platform === "win32") {
          attempts.push({ socketPath: "//./pipe/docker_engine" })
          attempts.push({ socketPath: "//./pipe/docker_engine_wsl" })
+         // Fallback: let dockerode auto-detect via TCP or default config
+         // Many Docker Desktop installations expose Docker on tcp://localhost:2375
+         attempts.push({})
       } else {
          attempts.push({})
       }
@@ -113,7 +116,20 @@ export async function initDocker(): AsyncAppResult<void> {
    return err(new DockerError("docker:not_available", "Docker is not reachable"))
 }
 
-export async function pullImage(dbType: DBType): AsyncAppResult<void> {
+export interface PullProgressEvent {
+   status?: string
+   id?: string
+   progressDetail?: {
+      current?: number
+      total?: number
+      [key: string]: unknown
+   }
+}
+
+export async function pullImage(
+   dbType: DBType,
+   onProgress?: (percentage: number) => void
+): AsyncAppResult<void> {
    const config = DB_IMAGE_MAP[dbType]
    if (!config.image) return Promise.resolve(okResult(undefined))
 
@@ -131,11 +147,33 @@ export async function pullImage(dbType: DBType): AsyncAppResult<void> {
             new Promise<void>((resolve, reject) => {
                docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
                   if (err) return reject(err)
+                  
+                  const layers: Record<string, { current: number; total: number }> = {}
+                  
                   docker.modem.followProgress(
                      stream as NodeJS.ReadableStream,
                      (progressErr: Error | null) => {
                         if (progressErr) reject(progressErr)
                         else resolve()
+                     },
+                     (event: PullProgressEvent) => {
+                        if (onProgress && event.id && event.status && event.progressDetail?.total) {
+                           if (event.status === "Downloading" || event.status === "Extracting") {
+                              layers[event.id] = {
+                                 current: event.progressDetail.current || 0,
+                                 total: event.progressDetail.total,
+                              }
+                              let current = 0
+                              let total = 0
+                              for (const layer of Object.values(layers)) {
+                                 current += layer.current
+                                 total += layer.total
+                              }
+                              if (total > 0) {
+                                 onProgress(Math.round((current / total) * 100))
+                              }
+                           }
+                        }
                      }
                   )
                })
@@ -391,7 +429,11 @@ export async function stopAllContainers(): AsyncAppResult<number> {
             const envs = loadEnvironments()
             for (const env of envs) {
                if (env.containerId && containers.some(c => c.Id === env.containerId)) {
-                  saveEnvironment({ ...env, status: "stopped", uptime: 0 })
+                  saveEnvironment({
+                     ...env,
+                     status: "stopped",
+                     uptime: 0,
+                  })
                }
             }
             return ok(acted)

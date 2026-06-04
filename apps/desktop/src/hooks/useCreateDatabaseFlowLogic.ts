@@ -128,6 +128,15 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
    }
 
    useEffect(() => {
+      const unsub = api.docker.onPullProgress((_dbType, percentage) => {
+         updateStepStatus("pull", "in-progress", `Pulling database container... ${percentage}%`)
+      })
+      return () => {
+         unsub()
+      }
+   }, [])
+
+   useEffect(() => {
       if (step === "provisioning" && !provisionStarted.current) {
          provisionStarted.current = true
          runProvision()

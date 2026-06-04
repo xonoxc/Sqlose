@@ -8,10 +8,12 @@ import {
    IconArrowRight,
    IconDatabaseImport,
    IconPlus,
+   IconAlertTriangle,
 } from "@tabler/icons-react"
 import { Button, Input, cn } from "@sqlose/ui"
 import type { DBType } from "@sqlose/shared"
 import { useCreateDatabaseFlowLogic } from "~/hooks/useCreateDatabaseFlowLogic"
+import { useDockerStatus } from "~/hooks/useDockerStatus"
 import { motion, AnimatePresence } from "motion/react"
 
 const DB_CARDS: {
@@ -21,6 +23,7 @@ const DB_CARDS: {
    icon: typeof IconDatabase | typeof IconServer
    accent: string
    color: string
+   requiresDocker: boolean
 }[] = [
    {
       type: "sqlite",
@@ -29,6 +32,7 @@ const DB_CARDS: {
       icon: IconDatabase,
       accent: "from-teal-500/20 to-teal-400/5",
       color: "text-teal-400",
+      requiresDocker: false,
    },
    {
       type: "postgres",
@@ -37,6 +41,7 @@ const DB_CARDS: {
       icon: IconServer,
       accent: "from-blue-500/20 to-blue-400/5",
       color: "text-blue-400",
+      requiresDocker: true,
    },
    {
       type: "mysql",
@@ -45,6 +50,7 @@ const DB_CARDS: {
       icon: IconServer,
       accent: "from-orange-500/20 to-orange-400/5",
       color: "text-orange-400",
+      requiresDocker: true,
    },
 ]
 
@@ -65,6 +71,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       handleSelectType,
       handleCreate,
    } = useCreateDatabaseFlowLogic(onClose)
+   const { dockerAvailable } = useDockerStatus()
 
    const steps = ["Source", "Identity", "Review"]
    const currentStepIndex = step === "select-type" ? 0 : step === "configure" ? 1 : 2
@@ -126,7 +133,9 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                            ) : (
                               <div className="h-4 w-4 rounded-full border border-border" />
                            )}
-                           <span className="flex-1 uppercase tracking-widest leading-none">{ps.label}</span>
+                           <span className="flex-1 uppercase tracking-widest leading-none">
+                              {ps.message ? ps.message : ps.label}
+                           </span>
                         </div>
                      ))}
                   </div>
@@ -181,28 +190,51 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                   </div>
 
                   <div className="grid gap-4">
-                      {DB_CARDS.map(card => (
-                        <button
-                           key={card.type}
-                           onClick={() => handleSelectType(card.type)}
-                           className="group flex items-center justify-between p-6 rounded-[1.5rem] bg-bg-secondary/40 border border-border hover:border-accent/60 hover:bg-bg-tertiary transition-all text-left overflow-hidden relative"
-                        >
-                           <div className="absolute inset-0 bg-accent/0 group-hover:bg-accent/5 transition-colors" />
-                           <div className="flex items-center gap-6 relative z-10">
-                              <div className={cn("h-14 w-14 rounded-2xl bg-bg-tertiary border border-border flex items-center justify-center transition-all group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(var(--color-accent),0.1)]", card.color)}>
-                                 <card.icon className="h-7 w-7" />
-                              </div>
-                              <div>
-                                 <h3 className="text-lg font-bold text-white group-hover:text-accent transition-colors uppercase tracking-tight">{card.label}</h3>
-                                 <p className="text-[13px] text-text-muted max-w-[320px] font-medium mt-1 leading-snug opacity-70">{card.description}</p>
-                              </div>
-                           </div>
-                           <div className="h-10 w-10 rounded-xl border border-border flex items-center justify-center relative z-10 group-hover:bg-accent group-hover:border-accent group-hover:text-white transition-all shadow-lg active:scale-95">
-                              <IconArrowRight className="h-5 w-5" />
-                           </div>
-                        </button>
-                     ))}
-                  </div>
+                      {DB_CARDS.map(card => {
+                         const isDisabled = card.requiresDocker && dockerAvailable === false
+                         return (
+                         <div key={card.type} className="relative">
+                         <button
+                            disabled={isDisabled}
+                            onClick={() => !isDisabled && handleSelectType(card.type)}
+                            className={cn(
+                               "group w-full flex items-center justify-between p-6 rounded-[1.5rem] bg-bg-secondary/40 border border-border transition-all text-left overflow-hidden relative",
+                               isDisabled
+                                  ? "opacity-40 cursor-not-allowed"
+                                  : "hover:border-accent/60 hover:bg-bg-tertiary"
+                            )}
+                         >
+                            <div className={cn("absolute inset-0 transition-colors", isDisabled ? "bg-transparent" : "bg-accent/0 group-hover:bg-accent/5")} />
+                            <div className="flex items-center gap-6 relative z-10">
+                               <div className={cn("h-14 w-14 rounded-2xl bg-bg-tertiary border border-border flex items-center justify-center transition-all", isDisabled ? "" : "group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(var(--color-accent),0.1)]", card.color)}>
+                                  <card.icon className="h-7 w-7" />
+                               </div>
+                               <div>
+                                  <h3 className={cn("text-lg font-bold transition-colors uppercase tracking-tight", isDisabled ? "text-text-muted" : "text-white group-hover:text-accent")}>{card.label}</h3>
+                                  <p className="text-[13px] text-text-muted max-w-[320px] font-medium mt-1 leading-snug opacity-70">{card.description}</p>
+                               </div>
+                            </div>
+                            <div className={cn(
+                               "h-10 w-10 rounded-xl border border-border flex items-center justify-center relative z-10 shadow-lg transition-all",
+                               isDisabled
+                                  ? "opacity-30"
+                                  : "group-hover:bg-accent group-hover:border-accent group-hover:text-white active:scale-95"
+                            )}>
+                               <IconArrowRight className="h-5 w-5" />
+                            </div>
+                         </button>
+                         {isDisabled && (
+                            <div className="flex items-center gap-2 mt-2 ml-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                               <IconAlertTriangle className="h-3.5 w-3.5 text-amber-400/80 shrink-0" />
+                               <span className="text-[11px] font-semibold text-amber-400/80 leading-tight">
+                                  Requires Docker to be installed and running on your system
+                               </span>
+                            </div>
+                         )}
+                         </div>
+                         )
+                      })}
+                   </div>
                </motion.div>
             )}
 

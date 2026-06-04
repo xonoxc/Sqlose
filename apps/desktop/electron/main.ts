@@ -1,7 +1,7 @@
 // CJS compat shims for bundled packages
 import { fileURLToPath } from "node:url"
 import path from "node:path"
-import { app, BrowserWindow, dialog } from "electron"
+import { app, BrowserWindow, dialog, ipcMain } from "electron"
 import { autoUpdater } from "electron-updater"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -100,6 +100,11 @@ app.whenReady().then(async () => {
    if (dockerAvailable) {
       await Promise.all([stopOrphanedContainers(), reconcileEnvironmentStatuses()])
    }
+
+   ipcMain.handle("docker:check-available", () => ({
+      success: true,
+      data: { available: dockerAvailable },
+   }))
 
    registerAllHandlers()
    registerDbHandlers()
