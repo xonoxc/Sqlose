@@ -1,6 +1,12 @@
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@sqlose/ui"
-import { IconSearch, IconArrowLeft, IconPalette } from "@tabler/icons-react"
+import {
+   IconSearch,
+   IconArrowLeft,
+   IconSettings,
+   IconCornerDownLeft,
+   IconArrowLeftRight,
+} from "@tabler/icons-react"
 import { useCommandPaletteLogic } from "../hooks/useCommandPaletteLogic"
 
 interface CommandPaletteProps {
@@ -19,20 +25,42 @@ export function CommandPalette({
    onClearResults,
    onOpenQuery,
 }: CommandPaletteProps) {
-   const {
-      query,
-      setQuery,
-      selectedIndex,
-      setSelectedIndex,
-      inputRef,
-      groupedItems,
-      flatFiltered,
-      mode,
-      exitThemeMode,
-      filteredThemes,
-      handleThemeHover,
-      handleThemeSelect,
-   } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery)
+    const {
+       query,
+       setQuery,
+       selectedIndex,
+       setSelectedIndex,
+       inputRef,
+       flatFiltered,
+       mode,
+       exitThemeMode,
+       filteredThemes,
+       handleThemeHover,
+       handleThemeSelect,
+       groupedItems,
+    } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery)
+
+   const getIconStyles = (id: string) => {
+      if (id === "new-query") return "bg-indigo-500/10 text-indigo-400"
+      if (id === "run-query") return "bg-emerald-500/10 text-emerald-400"
+      if (id === "save-query") return "bg-blue-500/10 text-blue-400"
+      if (id === "clear-results") return "bg-red-500/10 text-red-400"
+      if (id === "open-saved") return "bg-purple-500/10 text-purple-400"
+      if (id === "open-history") return "bg-purple-500/10 text-purple-400"
+      if (id === "view-diagram") return "bg-blue-500/10 text-blue-400"
+      if (id === "switch-db") return "bg-teal-500/10 text-teal-400"
+      if (id === "toggle-vim") return "bg-violet-500/10 text-violet-400"
+      if (id === "switch-theme") return "bg-pink-500/10 text-pink-400"
+      if (id === "nuke-env") return "bg-orange-500/10 text-orange-400"
+      if (id.startsWith("env-")) return "bg-zinc-500/10 text-zinc-400"
+      if (id.startsWith("tab-")) return "bg-indigo-500/10 text-indigo-400"
+      if (id.startsWith("sq-")) return "bg-amber-500/10 text-amber-400"
+      if (id.startsWith("hist-")) return "bg-zinc-500/10 text-zinc-400"
+      return "bg-bg-secondary text-text-muted"
+   }
+
+   // Limit the total number of items shown to 7
+   const limitedItems = flatFiltered.slice(0, 7)
 
    return (
       <AnimatePresence>
@@ -41,31 +69,31 @@ export function CommandPalette({
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                exit={{ opacity: 0 }}
-               transition={{ duration: 0.1 }}
-               className="fixed inset-0 z-50 flex items-start justify-center pt-[16vh] bg-black/40 backdrop-blur-[2px]"
+               transition={{ duration: 0.15 }}
+               className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-[2px]"
                onClick={() => {
                   if (mode !== "themes") onClose()
                }}
             >
                <motion.div
-                  initial={{ opacity: 0, scale: 0.97, y: -10 }}
+                  initial={{ opacity: 0, scale: 0.98, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97, y: -10 }}
-                  transition={{ duration: 0.1 }}
-                  className="w-full max-w-xl bg-bg-primary/95 backdrop-blur-xl rounded-lg border border-border shadow-2xl overflow-hidden py-12"
+                  exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="w-full max-w-2xl bg-bg-primary border border-border shadow-2xl rounded-xl overflow-hidden flex flex-col"
                   onClick={e => e.stopPropagation()}
                >
-                  {/* Search / Header */}
-                  <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50">
+                  {/* Search Header */}
+                  <div className="flex items-center gap-3 px-5 py-3.5 border-b border-border/50">
                      {mode === "themes" ? (
                         <button
                            onClick={exitThemeMode}
-                           className="flex items-center justify-center h-6 w-6 rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                           className="flex items-center justify-center h-8 w-8 rounded bg-bg-secondary text-text-muted hover:text-text-primary transition-colors focus:outline-none"
                         >
                            <IconArrowLeft className="h-4 w-4" />
                         </button>
                      ) : (
-                        <IconSearch className="h-4 w-4 text-text-muted shrink-0" />
+                        <IconSearch className="h-4.5 w-4.5 text-text-muted shrink-0" />
                      )}
                      <input
                         ref={inputRef}
@@ -80,29 +108,21 @@ export function CommandPalette({
                               ? "Search themes..."
                               : "Search tables, queries, commands..."
                         }
-                        className="flex-1 bg-transparent text-[15px] font-medium text-text-primary outline-none placeholder:text-text-muted/60"
+                        className="flex-1 bg-transparent text-[14.5px] font-medium text-text-primary outline-none placeholder:text-text-muted/50"
                      />
-                     <kbd className="text-[11px] text-text-muted font-mono border border-border/50 bg-bg-secondary rounded px-1.5 py-0.5">
+                     <kbd className="hidden sm:inline-flex items-center justify-center rounded px-2 py-1 border border-border bg-bg-secondary text-[10px] font-mono text-text-muted">
                         ESC
                      </kbd>
                   </div>
 
-                  {/* Body */}
-                  <div className="max-h-[55vh] overflow-y-auto py-4 custom-scrollbar">
+                  {/* Body Content */}
+                  <div className="flex-1 overflow-y-auto py-2.5 custom-scrollbar">
                      {mode === "themes" ? (
-                        <>
-                           <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase flex items-center gap-2">
-                              <IconPalette className="h-3 w-3" />
-                              Themes
-                           </div>
-                           {filteredThemes.length === 0 && (
-                              <div className="px-4 py-8 text-center">
-                                 <span className="text-sm text-text-muted">
-                                    No themes match &ldquo;{query}&rdquo;
-                                 </span>
-                              </div>
-                           )}
-                           {filteredThemes.map((theme, index) => {
+                        <div className="flex flex-col">
+                            <div className="px-5 py-2 text-[10.5px] font-bold uppercase tracking-widest text-text-muted/70">
+                                Themes
+                            </div>
+                           {filteredThemes.slice(0, 10).map((theme, index) => {
                               const isActive = index === selectedIndex
                               return (
                                  <button
@@ -117,330 +137,161 @@ export function CommandPalette({
                                     }}
                                     onMouseLeave={() => handleThemeHover(null)}
                                     className={cn(
-                                       "flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all outline-none",
+                                       "flex w-full items-center gap-4 px-5 py-2.5 transition-all outline-none",
                                        isActive
-                                          ? "bg-bg-quaternary/60 text-text-primary"
-                                          : "text-text-secondary"
+                                          ? "bg-accent text-white"
+                                          : "text-text-secondary hover:bg-bg-secondary/50"
                                     )}
                                  >
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                       <span
-                                          className="h-5 w-5 rounded-full border border-border/60 block"
-                                          style={{
-                                             background: theme.colors.accent,
-                                          }}
-                                       />
-                                       <span
-                                          className="h-5 w-5 rounded-full border border-border/60 block"
-                                          style={{
-                                             background: theme.colors.background,
-                                          }}
-                                       />
-                                       <span
-                                          className="h-5 w-5 rounded-full border border-border/60 block"
-                                          style={{
-                                             background: theme.colors.surface,
-                                          }}
-                                       />
+                                    <div className="flex -space-x-1.5 shrink-0">
+                                       <div className="h-5 w-5 rounded-full border border-bg-primary shadow-xs" style={{ background: theme.colors.accent }} />
+                                       <div className="h-5 w-5 rounded-full border border-bg-primary shadow-xs" style={{ background: theme.colors.background }} />
                                     </div>
-                                    <div className="flex-1 min-w-0 flex items-center justify-between">
-                                       <div className="flex flex-col">
-                                          <span
-                                             className={cn(
-                                                "text-[14px] font-medium truncate",
-                                                isActive && "text-text-primary"
-                                             )}
-                                          >
-                                             {theme.name}
-                                          </span>
-                                          <span className="text-[12px] text-text-muted truncate">
-                                             {theme.id}
-                                          </span>
-                                       </div>
+                                    <div className="flex-1 flex items-center justify-between min-w-0 font-medium">
+                                       <span className="text-[14.5px] truncate">
+                                          {theme.name}
+                                       </span>
+                                       <span className={cn(
+                                          "text-[11px] ml-2",
+                                          isActive ? "text-white/70" : "text-text-muted/60"
+                                       )}>
+                                          {theme.id}
+                                       </span>
                                     </div>
                                  </button>
                               )
                            })}
-                        </>
+                        </div>
                      ) : (
-                        <>
-                           {flatFiltered.length === 0 && (
-                              <div className="px-4 py-10 text-center flex flex-col items-center">
-                                 <IconSearch className="h-7 w-7 text-text-muted/40 mb-2" />
-                                 <span className="text-sm text-text-muted">
+                        <div className="flex flex-col">
+                           {limitedItems.length === 0 && (
+                              <div className="py-16 text-center flex flex-col items-center">
+                                 <IconSearch className="h-10 w-10 text-text-muted/10 mb-3" />
+                                 <p className="text-text-muted text-[14.5px] px-8 font-medium">
                                     No results for &ldquo;{query}&rdquo;
-                                 </span>
+                                 </p>
                               </div>
                            )}
 
-                           {groupedItems.actions.length > 0 && (
-                              <>
-                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase">
-                                    Actions
-                                 </div>
-                                 {groupedItems.actions.map(item => {
-                                    const globalIndex = flatFiltered.indexOf(item)
-                                    return (
-                                       <button
-                                          key={item.id}
-                                          onClick={() => {
-                                             item.onSelect()
-                                             if (item.id !== "switch-theme") onClose()
-                                          }}
-                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                          className={cn(
-                                             "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
-                                             globalIndex === selectedIndex
-                                                ? "bg-bg-quaternary/60 text-text-primary"
-                                                : "text-text-secondary"
-                                          )}
-                                       >
-                                          <div
+                           {/* Grouped rendering with headers */}
+                           {Object.entries(groupedItems).map(([category, items]) => {
+                              if (items.length === 0) return null
+                              // Only show if the items in this category are within the first 7 items overall
+                              const visibleInGroup = items.filter(item => limitedItems.some(li => li.id === item.id))
+                              if (visibleInGroup.length === 0) return null
+
+                              return (
+                                 <div key={category} className="flex flex-col">
+                                    <div className="px-5 py-2 text-[10.5px] font-bold uppercase tracking-widest text-text-muted/70">
+                                       {category}
+                                    </div>
+                                    {visibleInGroup.map((item) => {
+                                       const indexInFlat = flatFiltered.findIndex(fi => fi.id === item.id)
+                                       const isActive = indexInFlat === selectedIndex
+                                       const style = getIconStyles(item.id)
+                                       return (
+                                          <button
+                                             key={item.id}
+                                             onClick={() => {
+                                                item.onSelect()
+                                                if (item.id !== "switch-theme") onClose()
+                                             }}
+                                             onMouseEnter={() => setSelectedIndex(indexInFlat)}
                                              className={cn(
-                                                "flex items-center justify-center h-7 w-7 rounded shrink-0",
-                                                globalIndex === selectedIndex
-                                                   ? "bg-bg-primary text-accent"
-                                                   : "bg-bg-quaternary text-text-muted"
+                                                "group flex w-full items-center gap-4 px-5 py-2.5 transition-all outline-none",
+                                                isActive
+                                                   ? "bg-accent text-white"
+                                                   : "text-text-secondary hover:bg-bg-secondary/40"
                                              )}
                                           >
-                                             {item.icon}
-                                          </div>
-                                          <div className="flex-1 min-w-0 flex items-center justify-between">
-                                             <div className="flex flex-col">
-                                                <span
-                                                   className={cn(
-                                                      "text-[14px] font-medium truncate",
-                                                      globalIndex === selectedIndex &&
-                                                         "text-text-primary"
-                                                   )}
-                                                >
-                                                   {item.label}
-                                                </span>
-                                                <span className="text-[12px] text-text-muted truncate">
-                                                   {item.description}
-                                                </span>
+                                             <div
+                                                className={cn(
+                                                   "flex items-center justify-center h-7 w-7 rounded-lg shrink-0 transition-all border border-transparent shadow-sm",
+                                                   isActive ? "bg-white/20 text-white" : style
+                                                )}
+                                             >
+                                                <div className="scale-[0.85]">
+                                                   {item.icon}
+                                                </div>
                                              </div>
-                                             {item.shortcut && (
-                                                <kbd className="text-[11px] font-mono text-text-muted ml-3 border border-border/40 bg-bg-quaternary px-1.5 py-0.5 rounded shrink-0">
-                                                   {item.shortcut}
-                                                </kbd>
-                                             )}
-                                          </div>
-                                       </button>
-                                    )
-                                 })}
-                              </>
-                           )}
 
-                           {groupedItems.saved.length > 0 && (
-                              <>
-                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
-                                    Saved Queries
-                                 </div>
-                                 {groupedItems.saved.map(item => {
-                                    const globalIndex = flatFiltered.indexOf(item)
-                                    return (
-                                       <button
-                                          key={item.id}
-                                          onClick={() => {
-                                             item.onSelect()
-                                             onClose()
-                                          }}
-                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                          className={cn(
-                                             "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
-                                             globalIndex === selectedIndex
-                                                ? "bg-bg-quaternary/60 text-text-primary"
-                                                : "text-text-secondary"
-                                          )}
-                                       >
-                                          <div
-                                             className={cn(
-                                                "flex items-center justify-center h-7 w-7 rounded shrink-0",
-                                                globalIndex === selectedIndex
-                                                   ? "bg-bg-primary text-accent"
-                                                   : "bg-bg-quaternary text-text-muted"
-                                             )}
-                                          >
-                                             {item.icon}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                             <span
-                                                className={cn(
-                                                   "text-[14px] font-medium truncate block",
-                                                   globalIndex === selectedIndex &&
-                                                      "text-text-primary"
-                                                )}
-                                             >
-                                                {item.label}
-                                             </span>
-                                             <span className="text-[12px] text-text-muted truncate block">
-                                                {item.description}
-                                             </span>
-                                          </div>
-                                       </button>
-                                    )
-                                 })}
-                              </>
-                           )}
+                                             <div className="flex-1 min-w-0 flex items-center justify-between gap-6">
+                                                <div className="flex flex-col text-left truncate">
+                                                   <div className="flex items-baseline gap-2.5 min-w-0 overflow-hidden">
+                                                      <span
+                                                         className={cn(
+                                                            "text-[14px] font-semibold truncate transition-colors",
+                                                            isActive ? "text-text-primary" : "text-text-secondary font-medium"
+                                                         )}
+                                                      >
+                                                         {item.label}
+                                                      </span>
+                                                      <span className={cn(
+                                                         "text-[11.5px] truncate transition-colors font-medium",
+                                                         isActive ? "text-white/70" : "text-text-muted/70"
+                                                      )}>
+                                                         {item.description}
+                                                      </span>
+                                                   </div>
+                                                </div>
 
-                           {groupedItems.history.length > 0 && (
-                              <>
-                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
-                                    History
+                                                <div className="flex items-center gap-4 shrink-0">
+                                                   {item.shortcut && (
+                                                      <div className="flex items-center gap-1.5">
+                                                         {item.shortcut.split("+").map((key, ki) => (
+                                                            <kbd
+                                                               key={ki}
+                                                               className={cn(
+                                                                  "min-w-[20px] h-5.5 flex items-center justify-center px-1.5 rounded-md border text-[10px] font-mono shadow-xs transition-colors",
+                                                                  isActive 
+                                                                     ? "bg-white/20 border-white/20 text-white" 
+                                                                     : "bg-bg-secondary border-border text-text-muted"
+                                                               )}
+                                                            >
+                                                               {key}
+                                                            </kbd>
+                                                         ))}
+                                                      </div>
+                                                   )}
+                                                </div>
+                                             </div>
+                                          </button>
+                                       )
+                                    })}
                                  </div>
-                                 {groupedItems.history.map(item => {
-                                    const globalIndex = flatFiltered.indexOf(item)
-                                    return (
-                                       <button
-                                          key={item.id}
-                                          onClick={() => {
-                                             item.onSelect()
-                                             onClose()
-                                          }}
-                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                          className={cn(
-                                             "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
-                                             globalIndex === selectedIndex
-                                                ? "bg-bg-quaternary/60 text-text-primary"
-                                                : "text-text-secondary"
-                                          )}
-                                       >
-                                          <div
-                                             className={cn(
-                                                "flex items-center justify-center h-7 w-7 rounded shrink-0",
-                                                globalIndex === selectedIndex
-                                                   ? "bg-bg-primary text-accent"
-                                                   : "bg-bg-quaternary text-text-muted"
-                                             )}
-                                          >
-                                             {item.icon}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                             <span
-                                                className={cn(
-                                                   "text-[14px] font-medium truncate block font-mono text-[13px]",
-                                                   globalIndex === selectedIndex &&
-                                                      "text-text-primary"
-                                                )}
-                                             >
-                                                {item.label}
-                                             </span>
-                                             <span className="text-[12px] text-text-muted truncate block">
-                                                {item.description}
-                                             </span>
-                                          </div>
-                                       </button>
-                                    )
-                                 })}
-                              </>
-                           )}
-
-                           {groupedItems.databases.length > 0 && (
-                              <>
-                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
-                                    Databases
-                                 </div>
-                                 {groupedItems.databases.map(item => {
-                                    const globalIndex = flatFiltered.indexOf(item)
-                                    return (
-                                       <button
-                                          key={item.id}
-                                          onClick={() => {
-                                             item.onSelect()
-                                             onClose()
-                                          }}
-                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                          className={cn(
-                                             "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
-                                             globalIndex === selectedIndex
-                                                ? "bg-bg-quaternary/60 text-text-primary"
-                                                : "text-text-secondary"
-                                          )}
-                                       >
-                                          <div
-                                             className={cn(
-                                                "flex items-center justify-center h-7 w-7 rounded shrink-0",
-                                                globalIndex === selectedIndex
-                                                   ? "bg-bg-primary text-accent"
-                                                   : "bg-bg-quaternary text-text-muted"
-                                             )}
-                                          >
-                                             {item.icon}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                             <span
-                                                className={cn(
-                                                   "text-[14px] font-medium truncate block",
-                                                   globalIndex === selectedIndex &&
-                                                      "text-text-primary"
-                                                )}
-                                             >
-                                                {item.label}
-                                             </span>
-                                             <span className="text-[12px] text-text-muted truncate block">
-                                                {item.description}
-                                             </span>
-                                          </div>
-                                       </button>
-                                    )
-                                 })}
-                              </>
-                           )}
-
-                           {groupedItems.tabs.length > 0 && (
-                              <>
-                                 <div className="px-4 py-1.5 text-[11px] font-semibold tracking-wider text-text-muted uppercase border-t border-border/20 mt-1">
-                                    Open Tabs
-                                 </div>
-                                 {groupedItems.tabs.map(item => {
-                                    const globalIndex = flatFiltered.indexOf(item)
-                                    return (
-                                       <button
-                                          key={item.id}
-                                          onClick={() => {
-                                             item.onSelect()
-                                             onClose()
-                                          }}
-                                          onMouseEnter={() => setSelectedIndex(globalIndex)}
-                                          className={cn(
-                                             "flex w-full items-center gap-3 px-4 py-2 text-left transition-all outline-none",
-                                             globalIndex === selectedIndex
-                                                ? "bg-bg-quaternary/60 text-text-primary"
-                                                : "text-text-secondary"
-                                          )}
-                                       >
-                                          <div
-                                             className={cn(
-                                                "flex items-center justify-center h-7 w-7 rounded shrink-0",
-                                                globalIndex === selectedIndex
-                                                   ? "bg-bg-primary text-accent"
-                                                   : "bg-bg-quaternary text-text-muted"
-                                             )}
-                                          >
-                                             {item.icon}
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                             <span
-                                                className={cn(
-                                                   "text-[14px] font-medium truncate block",
-                                                   globalIndex === selectedIndex &&
-                                                      "text-text-primary"
-                                                )}
-                                             >
-                                                {item.label}
-                                             </span>
-                                             <span className="text-[12px] text-text-muted truncate block">
-                                                {item.description}
-                                             </span>
-                                          </div>
-                                       </button>
-                                    )
-                                 })}
-                              </>
-                           )}
-                        </>
+                              )
+                           })}
+                        </div>
                      )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-5 py-3 flex items-center gap-6 border-t border-border/40 bg-bg-secondary/20 font-medium whitespace-nowrap overflow-hidden">
+                     <div className="flex items-center gap-5 text-[10.5px] text-text-muted/60">
+                        <div className="flex items-center gap-2">
+                           <div className="flex items-center justify-center h-4.5 w-4.5 rounded-sm bg-bg-tertiary border border-border p-0.5 opacity-70">
+                              <IconArrowLeftRight className="h-full w-full rotate-90" />
+                           </div>
+                           <span>Select</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <div className="flex items-center justify-center h-4.5 w-4.5 rounded-sm bg-bg-tertiary border border-border p-0.5 opacity-70">
+                              <IconCornerDownLeft className="h-full w-full" />
+                           </div>
+                           <span>Open</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <div className="flex items-center justify-center h-4.5 w-4.5 rounded-sm bg-bg-tertiary border border-border p-0.5 text-[8.5px] font-mono leading-none opacity-70 uppercase">
+                              ESC
+                           </div>
+                           <span>Close</span>
+                        </div>
+                     </div>
+                     <div className="ml-auto shrink-0">
+                        <button className="h-7.5 w-7.5 rounded-md hover:bg-bg-quaternary flex items-center justify-center text-text-muted/40 hover:text-text-primary transition-all">
+                           <IconSettings className="h-4 w-4" />
+                        </button>
+                     </div>
                   </div>
                </motion.div>
             </motion.div>
