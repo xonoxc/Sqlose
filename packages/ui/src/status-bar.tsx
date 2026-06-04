@@ -1,5 +1,5 @@
 import { type ReactNode } from "react"
-import { IconKeyboard, IconLanguage, IconDatabase, IconLineHeight } from "@tabler/icons-react"
+import { IconLanguage, IconDatabase, IconLineHeight } from "@tabler/icons-react"
 import { cn } from "./cn"
 import { VimIndicator, type VimMode } from "./vim-indicator"
 import type { DBType } from "@sqlose/shared"
