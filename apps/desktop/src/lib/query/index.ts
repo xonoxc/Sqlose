@@ -1,6 +1,6 @@
-export { queryClient, isQueryEnabled } from "./queryClient"
-export { queryKeys } from "./keys"
-export { unwrapResult, unwrapAsyncResult, QueryError } from "./adapters"
+export { queryClient, isQueryEnabled } from "~/lib/query/queryClient"
+export { queryKeys } from "~/lib/query/keys"
+export { unwrapResult, unwrapAsyncResult, QueryError } from "~/lib/query/adapters"
 export {
    useEnvironments,
    useEnvironmentDetail,
@@ -16,4 +16,4 @@ export {
    useImportSQL,
    useImportDataset,
    usePreviewCSV,
-} from "./hooks"
+} from "~/lib/query/hooks"

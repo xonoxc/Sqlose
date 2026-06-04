@@ -1,9 +1,9 @@
 import { useRef, useCallback } from "react"
-import { api } from "../lib/api"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useEditorStore } from "../stores/editorStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useHistoryStore } from "../stores/historyStore"
+import { api } from "~/lib/api"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useEditorStore } from "~/stores/editorStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useHistoryStore } from "~/stores/historyStore"
 import type { QueryResult } from "@sqlose/shared"
 
 export async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean): Promise<void> {

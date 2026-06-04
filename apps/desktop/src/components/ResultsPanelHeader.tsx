@@ -6,10 +6,10 @@ import {
    IconMaximize,
    IconMinimize,
 } from "@tabler/icons-react"
-import { CopyDropdown } from "./CopyDropdown"
-import { ExportDropdown } from "./ExportDropdown"
-import { copyResultsToClipboard } from "../hooks/useQueryExecution"
-import type { Tab } from "../lib/types"
+import { CopyDropdown } from "~/components/CopyDropdown"
+import { ExportDropdown } from "~/components/ExportDropdown"
+import { copyResultsToClipboard } from "~/hooks/useQueryExecution"
+import type { Tab } from "~/lib/types"
 
 interface ResultsPanelHeaderProps {
    activeTab: Tab | undefined

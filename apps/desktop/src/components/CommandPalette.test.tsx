@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, act } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { CommandPalette } from "./CommandPalette"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { CommandPalette } from "~/components/CommandPalette"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 function renderWithQuery(ui: React.ReactElement) {

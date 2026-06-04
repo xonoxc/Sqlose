@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import type { Environment, DBType } from "@sqlose/shared"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useEditorStore } from "../stores/editorStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useHistoryStore } from "../stores/historyStore"
-import { useSavedQueriesStore } from "../stores/savedQueriesStore"
-import { useDatabaseStore } from "../stores/databaseStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useEditorStore } from "~/stores/editorStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useHistoryStore } from "~/stores/historyStore"
+import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
+import { useDatabaseStore } from "~/stores/databaseStore"
 
 type NavTab = "playground" | "saved" | "history" | null
 

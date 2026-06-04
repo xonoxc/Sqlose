@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { SettingsPanel } from "./SettingsPanel"
-import { useSettingsStore } from "../stores/settingsStore"
+import { SettingsPanel } from "~/components/SettingsPanel"
+import { useSettingsStore } from "~/stores/settingsStore"
 
 describe("SettingsPanel", () => {
    it("renders settings when open", () => {

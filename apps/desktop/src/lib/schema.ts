@@ -1,4 +1,4 @@
-import { api } from "./api"
+import { api } from "~/lib/api"
 import type { DBType } from "@sqlose/shared"
 
 export interface ColumnInfo {

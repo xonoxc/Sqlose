@@ -1,4 +1,4 @@
-import { useSettingsStore } from "../stores/settingsStore"
+import { useSettingsStore } from "~/stores/settingsStore"
 
 export function useSettingsPanelState() {
    const vimModeEnabled = useSettingsStore(s => s.vimModeEnabled)

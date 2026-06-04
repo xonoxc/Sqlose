@@ -7,7 +7,7 @@ import {
    IconCornerDownLeft,
    IconArrowLeftRight,
 } from "@tabler/icons-react"
-import { useCommandPaletteLogic } from "../hooks/useCommandPaletteLogic"
+import { useCommandPaletteLogic } from "~/hooks/useCommandPaletteLogic"
 
 interface CommandPaletteProps {
    isOpen: boolean

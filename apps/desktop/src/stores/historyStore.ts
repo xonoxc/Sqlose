@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { ok, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import type { HistoryEntry } from "../lib/types"
+import type { HistoryEntry } from "~/lib/types"
 
 interface HistoryStore {
    entries: HistoryEntry[]

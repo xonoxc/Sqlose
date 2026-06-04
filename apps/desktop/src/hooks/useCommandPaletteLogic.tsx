@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useSettingsStore } from "../stores/settingsStore"
-import { useSavedQueriesStore } from "../stores/savedQueriesStore"
-import { useHistoryStore } from "../stores/historyStore"
-import { useThemeStore, applyTheme } from "../stores/theme-store"
-import { themes } from "../themes"
-import { isMac } from "../lib/types"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useSettingsStore } from "~/stores/settingsStore"
+import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
+import { useHistoryStore } from "~/stores/historyStore"
+import { useThemeStore, applyTheme } from "~/stores/theme-store"
+import { themes } from "~/themes"
+import { isMac } from "~/lib/types"
 import {
    IconDatabase,
    IconFileCode,

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 import type { Environment } from "@sqlose/shared"
 
 export function useEnvironmentActionsLogic(environment: Environment | null) {

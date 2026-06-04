@@ -19,7 +19,7 @@ import {
    IconLoader2,
 } from "@tabler/icons-react"
 import type { Environment } from "@sqlose/shared"
-import { useEnvironmentActionsLogic } from "../hooks/useEnvironmentActionsLogic"
+import { useEnvironmentActionsLogic } from "~/hooks/useEnvironmentActionsLogic"
 
 interface EnvironmentActionsProps {
    environment: Environment | null

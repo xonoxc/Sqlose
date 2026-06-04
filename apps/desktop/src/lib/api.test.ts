@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { api } from "./api"
+import { api } from "~/lib/api"
 
 function mockSqlose() {
    const mock = {

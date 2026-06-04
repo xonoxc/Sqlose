@@ -1,4 +1,4 @@
-import type { Theme } from "../types/theme"
+import type { Theme } from "~/types/theme"
 
 export const gruvboxDark: Theme = {
    id: "gruvbox-dark",

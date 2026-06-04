@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import { isMac } from "../lib/types"
+import { isMac } from "~/lib/types"
 
 interface Shortcut {
    label: string

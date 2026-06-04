@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@sqlose/ui"
 import { SQLEditor, ResultsPanelHeader, ResultsPanel, EmptyWorkspace, SchemaDiagram, TableBrowser } from "."
-import type { Tab } from "../lib/types"
-import type { ResultsTab } from "../hooks/useAppUIState"
+import type { Tab } from "~/lib/types"
+import type { ResultsTab } from "~/hooks/useAppUIState"
 
 interface EditorWorkspaceProps {
    activeTabId: string | null

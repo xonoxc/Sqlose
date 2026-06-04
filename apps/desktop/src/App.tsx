@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { Toaster } from "sonner"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { StatusBar } from "@sqlose/ui"
-import { queryClient } from "./lib/query/queryClient"
+import { queryClient } from "~/lib/query/queryClient"
 import {
    TabBar,
    AppSidebar,
@@ -14,7 +14,7 @@ import {
    ContainerHaltedDialog,
    ErrorBoundary,
    EditorWorkspace,
-} from "./components"
+} from "~/components"
 import {
    useEditorStore,
    useWorkspaceStore,
@@ -24,12 +24,12 @@ import {
    useHistoryStore,
    useSavedQueriesStore,
    useThemeStore,
-} from "./stores"
-import { useAppUIState } from "./hooks/useAppUIState"
-import { useResizeHandler } from "./hooks/useResizeHandler"
-import { useContainerHalted } from "./hooks/useContainerHalted"
-import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts"
-import { useWorkspaceActions } from "./hooks/useWorkspaceActions"
+} from "~/stores"
+import { useAppUIState } from "~/hooks/useAppUIState"
+import { useResizeHandler } from "~/hooks/useResizeHandler"
+import { useContainerHalted } from "~/hooks/useContainerHalted"
+import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts"
+import { useWorkspaceActions } from "~/hooks/useWorkspaceActions"
 
 const RESULTS_MIN_HEIGHT = 80
 const RESULTS_MAX_HEIGHT = 800

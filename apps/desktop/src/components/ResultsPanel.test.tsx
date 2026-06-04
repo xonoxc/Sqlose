@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { ResultsPanel } from "./ResultsPanel"
+import { ResultsPanel } from "~/components/ResultsPanel"
 
 describe("ResultsPanel", () => {
    it("shows executing state", () => {

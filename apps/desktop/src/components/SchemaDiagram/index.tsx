@@ -13,12 +13,12 @@ import {
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
 import dagre from "dagre"
-import { TableNode } from "./TableNode"
-import { useDatabaseStore } from "../../stores/databaseStore"
-import { useEnvironmentStore } from "../../stores/environmentStore"
-import { useThemeStore } from "../../stores/theme-store"
-import { api } from "../../lib/api"
-import type { ColumnInfo } from "../../lib/schema"
+import { TableNode } from "~/components/SchemaDiagram/TableNode"
+import { useDatabaseStore } from "~/stores/databaseStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useThemeStore } from "~/stores/theme-store"
+import { api } from "~/lib/api"
+import type { ColumnInfo } from "~/lib/schema"
 
 const nodeTypes = {
    tableNode: TableNode,

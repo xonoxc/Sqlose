@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { useWorkspaceStore } from "../stores/workspaceStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
 
 export function useTabBarLogic() {
    const tabs = useWorkspaceStore(s => s.tabs)

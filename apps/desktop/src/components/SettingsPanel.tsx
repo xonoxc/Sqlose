@@ -21,10 +21,10 @@ import {
    IconMinus,
    IconPlus,
 } from "@tabler/icons-react"
-import { useSettingsPanelState } from "../hooks/useSettingsPanelState"
-import { useThemeStore } from "../stores/theme-store"
-import { themes } from "../themes"
-import { isMac, formatShortcut } from "../lib/types"
+import { useSettingsPanelState } from "~/hooks/useSettingsPanelState"
+import { useThemeStore } from "~/stores/theme-store"
+import { themes } from "~/themes"
+import { isMac, formatShortcut } from "~/lib/types"
 
 interface SettingsPanelProps {
    isOpen: boolean

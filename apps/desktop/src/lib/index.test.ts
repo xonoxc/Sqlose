@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest"
-import { createTab, createDefaultPaneSizes, createDefaultKeybindings } from "../lib/types"
-import { unwrapResult, unwrapAsyncResult, QueryError } from "../lib/query/adapters"
+import { createTab, createDefaultPaneSizes, createDefaultKeybindings } from "~/lib/types"
+import { unwrapResult, unwrapAsyncResult, QueryError } from "~/lib/query/adapters"
 import { ok, err } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import { queryKeys } from "../lib/query/keys"
+import { queryKeys } from "~/lib/query/keys"
 
 describe("types utilities", () => {
    describe("createTab", () => {

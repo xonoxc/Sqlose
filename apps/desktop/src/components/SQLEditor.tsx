@@ -1,10 +1,10 @@
 import { lazy, Suspense } from "react"
 import { cn } from "@sqlose/ui"
 import { IconPlayerPlay, IconSettings, IconDeviceFloppy } from "@tabler/icons-react"
-import { isMac } from "../lib/types"
-import { useSQLEditorLogic, defineMonacoTheme } from "../hooks/useSQLEditorLogic"
-import { useThemeStore } from "../stores/theme-store"
-import { useSettingsStore } from "../stores/settingsStore"
+import { isMac } from "~/lib/types"
+import { useSQLEditorLogic, defineMonacoTheme } from "~/hooks/useSQLEditorLogic"
+import { useThemeStore } from "~/stores/theme-store"
+import { useSettingsStore } from "~/stores/settingsStore"
 
 const Editor = lazy(() => import("@monaco-editor/react"))
 

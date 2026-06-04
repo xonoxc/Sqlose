@@ -16,8 +16,8 @@ import {
    IconStar,
    IconCircleDot,
 } from "@tabler/icons-react"
-import { useSidebarState } from "../hooks/useSidebarState"
-import { useSettingsStore } from "../stores/settingsStore"
+import { useSidebarState } from "~/hooks/useSidebarState"
+import { useSettingsStore } from "~/stores/settingsStore"
 import type { Environment } from "@sqlose/shared"
 
 interface AppSidebarProps {

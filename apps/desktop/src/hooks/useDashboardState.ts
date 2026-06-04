@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 
 export function useDashboardState() {
    const [showCreateFlow, setShowCreateFlow] = useState(false)

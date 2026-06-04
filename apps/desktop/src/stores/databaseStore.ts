@@ -1,6 +1,6 @@
 import { create } from "zustand"
-import { listTables, getTableColumns, type ColumnInfo } from "../lib/schema"
-import { api } from "../lib/api"
+import { listTables, getTableColumns, type ColumnInfo } from "~/lib/schema"
+import { api } from "~/lib/api"
 import type { DBType } from "@sqlose/shared"
 
 export interface TableDataState {

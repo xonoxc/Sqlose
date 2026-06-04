@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 
 export function useContainerHalted() {
    const [stuckEnvId, setStuckEnvId] = useState<string | null>(null)

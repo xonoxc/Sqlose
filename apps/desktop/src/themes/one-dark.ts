@@ -1,4 +1,4 @@
-import type { Theme } from "../types/theme"
+import type { Theme } from "~/types/theme"
 
 export const oneDark: Theme = {
    id: "one-dark",

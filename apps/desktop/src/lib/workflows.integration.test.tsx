@@ -5,16 +5,16 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import type { Environment, QueryResult } from "@sqlose/shared"
 import type { Mock } from "vitest"
 
-import { queryClient } from "./query/queryClient"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useEditorStore } from "../stores/editorStore"
-import { useSettingsStore } from "../stores/settingsStore"
+import { queryClient } from "~/lib/query/queryClient"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useEditorStore } from "~/stores/editorStore"
+import { useSettingsStore } from "~/stores/settingsStore"
 
-import { TabBar } from "../components/TabBar"
-import { EnvironmentActions } from "../components/EnvironmentActions"
-import { ResultsPanel } from "../components/ResultsPanel"
-import { SettingsPanel } from "../components/SettingsPanel"
+import { TabBar } from "~/components/TabBar"
+import { EnvironmentActions } from "~/components/EnvironmentActions"
+import { ResultsPanel } from "~/components/ResultsPanel"
+import { SettingsPanel } from "~/components/SettingsPanel"
 
 function makeEnv(overrides: Partial<Environment> = {}): Environment {
    return {

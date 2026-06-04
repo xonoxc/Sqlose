@@ -10,7 +10,7 @@ import {
    IconAlertCircle,
 } from "@tabler/icons-react"
 import { motion, AnimatePresence } from "motion/react"
-import { useTableBrowserState } from "../hooks/useTableBrowserState"
+import { useTableBrowserState } from "~/hooks/useTableBrowserState"
 
 export function TableBrowser() {
    const {

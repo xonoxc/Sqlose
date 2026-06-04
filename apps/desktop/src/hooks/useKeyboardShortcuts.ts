@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useEditorStore } from "../stores/editorStore"
-import { isMac } from "../lib/types"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useEditorStore } from "~/stores/editorStore"
+import { isMac } from "~/lib/types"
 
 interface ShortcutActions {
    onShortcuts: () => void

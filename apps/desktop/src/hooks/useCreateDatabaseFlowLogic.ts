@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
-import { api } from "../lib/api"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
+import { api } from "~/lib/api"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
 import type { DBType, Dataset } from "@sqlose/shared"
 
 type FlowStep = "select-type" | "configure" | "provisioning"

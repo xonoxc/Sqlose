@@ -2,9 +2,9 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import type { Tab, PaneSizes } from "../lib/types"
-import { createTab, createDefaultPaneSizes, generateTabTitle } from "../lib/types"
-import { sqliteStorage } from "../lib/sqlite-storage"
+import type { Tab, PaneSizes } from "~/lib/types"
+import { createTab, createDefaultPaneSizes, generateTabTitle } from "~/lib/types"
+import { sqliteStorage } from "~/lib/sqlite-storage"
 
 interface WorkspaceStore {
    tabs: Tab[]

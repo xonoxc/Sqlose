@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { SQLEditor } from "./SQLEditor"
-import { useEditorStore } from "../stores/editorStore"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useSettingsStore } from "../stores/settingsStore"
+import { SQLEditor } from "~/components/SQLEditor"
+import { useEditorStore } from "~/stores/editorStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useSettingsStore } from "~/stores/settingsStore"
 
 vi.mock("@monaco-editor/react", () => ({
    default: function MockEditor({

@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react"
 import { Button, Input, cn } from "@sqlose/ui"
 import type { DBType } from "@sqlose/shared"
-import { useCreateDatabaseFlowLogic } from "../hooks/useCreateDatabaseFlowLogic"
+import { useCreateDatabaseFlowLogic } from "~/hooks/useCreateDatabaseFlowLogic"
 import { motion, AnimatePresence } from "motion/react"
 
 const DB_CARDS: {

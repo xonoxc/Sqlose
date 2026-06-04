@@ -1,7 +1,7 @@
 import { Handle, Position } from "@xyflow/react"
 import { IconKey, IconTable, IconLink } from "@tabler/icons-react"
-import type { ColumnInfo } from "../../lib/schema"
-import { useThemeStore } from "../../stores/theme-store"
+import type { ColumnInfo } from "~/lib/schema"
+import { useThemeStore } from "~/stores/theme-store"
 
 interface TableNodeData {
    label: string

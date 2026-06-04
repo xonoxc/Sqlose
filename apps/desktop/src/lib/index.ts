@@ -1,3 +1,3 @@
-export { api, type Api } from "./api"
-export * from "./types"
-export * from "./query"
+export { api, type Api } from "~/lib/api"
+export * from "~/lib/types"
+export * from "~/lib/query"

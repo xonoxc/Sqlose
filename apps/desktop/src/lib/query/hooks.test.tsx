@@ -16,7 +16,7 @@ import {
    useRestartEnvironment,
    useImportSQL,
    useImportDataset,
-} from "./hooks"
+} from "~/lib/query/hooks"
 
 const queryClient = new QueryClient({
    defaultOptions: { queries: { retry: false } },

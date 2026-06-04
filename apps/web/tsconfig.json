@@ -19,6 +19,7 @@
          }
       ],
       "paths": {
+         "~/*": ["./src/*"],
          "@/*": ["./src/*"],
          "@sqlose/shared": ["../../packages/shared/src"],
          "@sqlose/core": ["../../packages/core/src"],

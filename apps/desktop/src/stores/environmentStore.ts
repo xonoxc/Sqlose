@@ -2,8 +2,8 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import { api } from "../lib/api"
-import { sqliteStorage } from "../lib/sqlite-storage"
+import { api } from "~/lib/api"
+import { sqliteStorage } from "~/lib/sqlite-storage"
 
 import type { Environment, DBType } from "@sqlose/shared"
 

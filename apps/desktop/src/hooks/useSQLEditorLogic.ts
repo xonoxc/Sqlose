@@ -1,11 +1,11 @@
 import { useRef, useEffect, useState, useCallback } from "react"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useSettingsStore } from "../stores/settingsStore"
-import { useEditorStore } from "../stores/editorStore"
-import { useThemeStore } from "../stores/theme-store"
-import { themes } from "../themes"
-import { useSavedQueriesStore } from "../stores/savedQueriesStore"
-import type { VimMode } from "../lib/types"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useSettingsStore } from "~/stores/settingsStore"
+import { useEditorStore } from "~/stores/editorStore"
+import { useThemeStore } from "~/stores/theme-store"
+import { themes } from "~/themes"
+import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
+import type { VimMode } from "~/lib/types"
 import type { editor, IDisposable } from "monaco-editor"
 
 export function defineMonacoTheme(monaco: typeof import("monaco-editor"), themeId: string) {

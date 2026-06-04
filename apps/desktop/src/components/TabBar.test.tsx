@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TabBar } from "./TabBar"
-import { useWorkspaceStore } from "../stores/workspaceStore"
+import { TabBar } from "~/components/TabBar"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
 
 describe("TabBar", () => {
    beforeEach(() => {

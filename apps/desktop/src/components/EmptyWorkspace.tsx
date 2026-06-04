@@ -1,4 +1,4 @@
-import { isMac } from "../lib/types"
+import { isMac } from "~/lib/types"
 
 interface EmptyWorkspaceProps {
    onNewQuery: () => void

@@ -6,8 +6,8 @@ import {
    IconFileCode,
 } from "@tabler/icons-react"
 import type { QueryResult } from "@sqlose/shared"
-import { isMac } from "../lib/types"
-import { useSettingsStore } from "../stores/settingsStore"
+import { isMac } from "~/lib/types"
+import { useSettingsStore } from "~/stores/settingsStore"
 
 interface ResultsPanelProps {
    result: QueryResult | null

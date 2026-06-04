@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useDatabaseStore } from "../stores/databaseStore"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useDatabaseStore } from "~/stores/databaseStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 
 export function useTableBrowserState() {
    const activeTab = useWorkspaceStore(s => {

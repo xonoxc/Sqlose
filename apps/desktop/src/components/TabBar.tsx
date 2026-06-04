@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@sqlose/ui"
 import { IconX, IconPlus, IconLoader2, IconTable } from "@tabler/icons-react"
-import type { Tab } from "../lib/types"
-import { useTabBarLogic } from "../hooks/useTabBarLogic"
+import type { Tab } from "~/lib/types"
+import { useTabBarLogic } from "~/hooks/useTabBarLogic"
 
 export function TabBar() {
    const {

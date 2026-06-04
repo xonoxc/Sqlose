@@ -2,8 +2,8 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import type { VimMode } from "../lib/types"
-import { sqliteStorage } from "../lib/sqlite-storage"
+import type { VimMode } from "~/lib/types"
+import { sqliteStorage } from "~/lib/sqlite-storage"
 
 interface EditorStore {
    vimMode: VimMode

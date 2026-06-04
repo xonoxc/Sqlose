@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { EnvironmentActions } from "./EnvironmentActions"
-import { useEnvironmentStore } from "../stores/environmentStore"
+import { EnvironmentActions } from "~/components/EnvironmentActions"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 
 describe("EnvironmentActions", () => {
    const mockEnv = {

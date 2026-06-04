@@ -1,8 +1,8 @@
 import { useCallback } from "react"
-import { useEditorStore } from "../stores/editorStore"
-import { useWorkspaceStore } from "../stores/workspaceStore"
-import { useEnvironmentStore } from "../stores/environmentStore"
-import { useQueryExecution } from "./useQueryExecution"
+import { useEditorStore } from "~/stores/editorStore"
+import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
+import { useQueryExecution } from "~/hooks/useQueryExecution"
 
 export function useWorkspaceActions() {
    const queryDraft = useEditorStore(s => s.queryDraft)

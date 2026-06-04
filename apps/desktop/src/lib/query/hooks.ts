@@ -5,9 +5,9 @@ import {
    type UseQueryOptions,
    type UseMutationOptions,
 } from "@tanstack/react-query"
-import { api } from "../api"
-import { queryKeys } from "./keys"
-import { unwrapAsyncResult } from "./adapters"
+import { api } from "~/lib/api"
+import { queryKeys } from "~/lib/query/keys"
+import { unwrapAsyncResult } from "~/lib/query/adapters"
 import type {
    DBType,
    Environment,

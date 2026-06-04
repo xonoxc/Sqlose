@@ -1,5 +1,5 @@
 import { IconLogout } from "@tabler/icons-react"
-import { isMac } from "../lib/types"
+import { isMac } from "~/lib/types"
 
 interface TopBarProps {
    onOpenPalette: () => void

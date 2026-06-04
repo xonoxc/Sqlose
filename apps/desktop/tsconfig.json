@@ -16,6 +16,7 @@
 
       /* Path aliases */
       "paths": {
+         "~/*": ["./src/*"],
          "@sqlose/shared": ["../../packages/shared/src"],
          "@sqlose/core": ["../../packages/core/src"],
          "@sqlose/ui": ["../../packages/ui/src"]

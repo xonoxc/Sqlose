@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { ok, err, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
-import type { SavedQuery } from "../lib/types"
+import type { SavedQuery } from "~/lib/types"
 
 interface SavedQueriesStore {
    queries: SavedQuery[]
