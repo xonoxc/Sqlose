@@ -1,4 +1,3 @@
-import { Badge, type BadgeProps } from "./badge"
 import { cn } from "./cn"
 
 export type VimMode = "normal" | "insert" | "visual" | "visual-line" | "visual-block"
@@ -8,19 +7,19 @@ interface VimIndicatorProps {
    className?: string
 }
 
-const modeConfig: Record<VimMode, { label: string; variant: BadgeProps["variant"] }> = {
-   normal: { label: "-- NORMAL --", variant: "default" },
-   insert: { label: "-- INSERT --", variant: "success" },
-   visual: { label: "-- VISUAL --", variant: "warning" },
-   "visual-line": { label: "-- VISUAL LINE --", variant: "warning" },
-   "visual-block": { label: "-- VISUAL BLOCK --", variant: "warning" },
+const modeConfig: Record<VimMode, { label: string }> = {
+   normal: { label: "NORMAL" },
+   insert: { label: "INSERT" },
+   visual: { label: "VISUAL" },
+   "visual-line": { label: "V-LINE" },
+   "visual-block": { label: "V-BLOCK" },
 }
 
 export function VimIndicator({ mode, className }: VimIndicatorProps) {
    const config = modeConfig[mode]
    return (
-      <Badge variant={config.variant} className={cn("font-mono tracking-wider", className)}>
+      <span className={cn("font-mono font-semibold", className)}>
          {config.label}
-      </Badge>
+      </span>
    )
 }

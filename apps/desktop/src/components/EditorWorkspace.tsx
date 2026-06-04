@@ -1,6 +1,13 @@
 import { motion, AnimatePresence } from "motion/react"
 import { cn } from "@sqlose/ui"
-import { SQLEditor, ResultsPanelHeader, ResultsPanel, EmptyWorkspace, SchemaDiagram, TableBrowser } from "."
+import {
+   SQLEditor,
+   ResultsPanelHeader,
+   ResultsPanel,
+   EmptyWorkspace,
+   SchemaDiagram,
+   TableBrowser,
+} from "."
 import type { Tab } from "~/lib/types"
 import type { ResultsTab } from "~/hooks/useAppUIState"
 
@@ -102,9 +109,7 @@ export function EditorWorkspace({
                      <div
                         className={cn(
                            "absolute inset-x-0 top-0 h-[1px] w-full transition-colors",
-                           isExecuting
-                              ? "bg-accent/40"
-                              : "bg-transparent group-hover:bg-accent/25"
+                           isExecuting ? "bg-accent/40" : "bg-transparent group-hover:bg-accent/25"
                         )}
                      />
                      <div
@@ -121,16 +126,20 @@ export function EditorWorkspace({
                      "flex flex-col relative z-20 transition-all duration-200",
                      isResultsMaximized
                         ? "flex-1 h-full border-t-0"
-                        : "shrink-0 bg-bg-primary shadow-[0_-4px_20px_rgba(0,0,0,0.35)] border-t border-border/60",
+                        : "shrink-0 bg-bg-primary shadow-[0_-4px_10px_rgba(0,0,0,0.35)] border-t border-border/60",
                      resultsCollapsed && !isResultsMaximized && "overflow-hidden"
                   )}
                   style={{
                      height: isResultsMaximized
                         ? "100%"
-                        : (resultsCollapsed ? "34px" : `${resultsHeight}px`),
+                        : resultsCollapsed
+                          ? "34px"
+                          : `${resultsHeight}px`,
                      minHeight: isResultsMaximized
                         ? "100%"
-                        : (resultsCollapsed ? "34px" : `${resultsMinHeight}px`),
+                        : resultsCollapsed
+                          ? "34px"
+                          : `${resultsMinHeight}px`,
                   }}
                >
                   <ResultsPanelHeader
@@ -159,10 +168,7 @@ export function EditorWorkspace({
                </div>
             </motion.div>
          ) : (
-            <EmptyWorkspace
-               onNewQuery={onNewQuery}
-               onOpenPalette={onPaletteOpen}
-            />
+            <EmptyWorkspace onNewQuery={onNewQuery} onOpenPalette={onPaletteOpen} />
          )}
       </AnimatePresence>
    )
