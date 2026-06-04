@@ -28,12 +28,16 @@ import { useSavedQueriesStore } from "./stores/savedQueriesStore"
 import { useThemeStore } from "./stores/theme-store"
 import { isMac } from "./lib/types"
 import {
-   IconChevronRight,
-   IconChevronDown,
+   IconDotsVertical,
    IconCopy,
    IconDownload,
-   IconTrash,
    IconPlayerPlay,
+   IconLoader2,
+   IconSquareRoundedX,
+   IconChevronDown,
+   IconMaximize,
+   IconMinimize,
+   IconTrash,
    IconBomb,
    IconLogout,
 } from "@tabler/icons-react"
@@ -88,6 +92,10 @@ function AppContent() {
    const [executingTabId, setExecutingTabId] = useState<string | null>(null)
    const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null)
    const [resultsCollapsed, setResultsCollapsed] = useState(false)
+   const [resultsActiveTab, setResultsActiveTab] = useState<"results" | "messages" | "stats" | "plan">("results")
+   const [isResultsMaximized, setIsResultsMaximized] = useState(false)
+   const [copyDropdownOpen, setCopyDropdownOpen] = useState(false)
+   const [exportDropdownOpen, setExportDropdownOpen] = useState(false)
    const [stuckEnvId, setStuckEnvId] = useState<string | null>(null)
    const prevExecutionRef = useRef<number>(0)
 
@@ -191,9 +199,7 @@ function AppContent() {
 
       if (prevExecutionRef.current !== executionId) return
 
-      setExecutionTimeMs(elapsed)
       setExecutingTabId(null)
-
       const selectedEnv = environments.find(e => e.id === selectedEnvironmentId)
 
       if (result.isOk()) {
@@ -203,6 +209,7 @@ function AppContent() {
             result: qr,
             error: null,
             isDirty: false,
+            executionTimeMs: elapsed,
          })
          addHistoryEntry(
             queryDraft,
@@ -218,17 +225,18 @@ function AppContent() {
             isExecuting: false,
             result: null,
             error: result.error.message,
+            executionTimeMs: elapsed,
          })
-            addHistoryEntry(
-             queryDraft,
-             selectedEnvironmentId,
-             selectedEnv?.dbType ?? "sql",
-             elapsed,
-             0,
-             "error",
-             result.error.message
-          )
-       }
+         addHistoryEntry(
+            queryDraft,
+            selectedEnvironmentId,
+            selectedEnv?.dbType ?? "sql",
+            elapsed,
+            0,
+            "error",
+            result.error.message
+         )
+      }
    }
 
    const isExecuting = executingTabId === activeTabId
@@ -518,138 +526,267 @@ function AppContent() {
                                     className="flex flex-col h-full"
                                  >
                                     {/* Editor */}
-                                    <div className="flex-1 flex flex-col min-h-0">
-                                       <SQLEditor
-                                          value={queryDraft}
-                                          onChange={handleQueryChange}
-                                          onExecute={handleExecuteQuery}
-                                          onSettingsOpen={() => setSettingsOpen(true)}
-                                          onCommandMode={() => setPaletteOpen(true)}
-                                          isExecuting={isExecuting}
-                                          executionTimeMs={executionTimeMs}
-                                       />
-                                    </div>
+                                    {!isResultsMaximized && (
+                                       <div className="flex-1 flex flex-col min-h-0">
+                                          <SQLEditor
+                                             value={queryDraft}
+                                             onChange={handleQueryChange}
+                                             onExecute={handleExecuteQuery}
+                                             onSettingsOpen={() => setSettingsOpen(true)}
+                                             onCommandMode={() => setPaletteOpen(true)}
+                                             isExecuting={isExecuting}
+                                             executionTimeMs={activeTab?.executionTimeMs || null}
+                                          />
+                                       </div>
+                                    )}
 
                                     {/* Boundary Resize Layer */}
-                                    <div
-                                       className="h-[3px] -mb-[3px] cursor-row-resize shrink-0 relative z-30 group transition-colors flex items-center justify-center select-none"
-                                       onMouseDown={handleResultsDividerMouseDown}
-                                    >
+                                    {!isResultsMaximized && (
                                        <div
-                                          className={cn(
-                                             "absolute inset-x-0 top-0 h-[1px] w-full transition-colors",
-                                             isExecuting
-                                                ? "bg-accent/40"
-                                                : "bg-transparent group-hover:bg-accent/25"
-                                          )}
-                                       />
-                                       <div
-                                          className={cn(
-                                             "h-[2px] w-10 rounded-full absolute transition-opacity opacity-0 group-hover:opacity-100",
-                                             isExecuting ? "bg-accent" : "bg-accent/50"
-                                          )}
-                                       />
-                                    </div>
+                                          className="h-[3px] -mb-[3px] cursor-row-resize shrink-0 relative z-30 group transition-colors flex items-center justify-center select-none"
+                                          onMouseDown={handleResultsDividerMouseDown}
+                                       >
+                                          <div
+                                             className={cn(
+                                                "absolute inset-x-0 top-0 h-[1px] w-full transition-colors",
+                                                isExecuting
+                                                   ? "bg-accent/40"
+                                                   : "bg-transparent group-hover:bg-accent/25"
+                                             )}
+                                          />
+                                          <div
+                                             className={cn(
+                                                "h-[2px] w-10 rounded-full absolute transition-opacity opacity-0 group-hover:opacity-100",
+                                                isExecuting ? "bg-accent" : "bg-accent/50"
+                                             )}
+                                          />
+                                       </div>
+                                    )}
 
                                     {/* Results Panel */}
                                     <div
                                        className={cn(
-                                          "flex flex-col shrink-0 bg-bg-primary shadow-[0_-4px_20px_rgba(0,0,0,0.35)] relative z-20 border-t border-border/60",
-                                          resultsCollapsed && "overflow-hidden"
+                                          "flex flex-col relative z-20 transition-all duration-200",
+                                          isResultsMaximized ? "flex-1 h-full border-t-0" : "shrink-0 bg-bg-primary shadow-[0_-4px_20px_rgba(0,0,0,0.35)] border-t border-border/60",
+                                          resultsCollapsed && !isResultsMaximized && "overflow-hidden"
                                        )}
                                        style={{
-                                          height: resultsCollapsed
-                                             ? "34px"
-                                             : `${paneSizes.resultsHeight}px`,
-                                          minHeight: resultsCollapsed
-                                             ? "34px"
-                                             : `${RESULTS_MIN_HEIGHT}px`,
+                                          height: isResultsMaximized 
+                                             ? "100%" 
+                                             : (resultsCollapsed ? "34px" : `${paneSizes.resultsHeight}px`),
+                                          minHeight: isResultsMaximized
+                                             ? "100%"
+                                             : (resultsCollapsed ? "34px" : `${RESULTS_MIN_HEIGHT}px`),
                                        }}
                                     >
-                                       {/* Results Header */}
-                                       <div className="flex items-center justify-between px-3 py-1.5 bg-bg-tertiary/80 shrink-0 border-b border-border/30">
-                                          <div className="flex items-center gap-3">
+                                       {/* Unified Bottom Panel Header */}
+                                       <div className="flex items-center justify-between px-3 h-9 bg-bg-secondary/40 shrink-0 border-b border-border/20 z-30">
+                                          <div className="flex items-center gap-0.5 h-full">
                                              <button
                                                 onClick={() =>
                                                    setResultsCollapsed(!resultsCollapsed)
                                                 }
-                                                className="flex items-center gap-1.5 rounded text-text-muted hover:text-text-primary transition-colors pr-1"
+                                                className="flex items-center justify-center -ml-1 h-7 w-7 rounded-md hover:bg-white/5 text-text-muted/60 transition-colors"
+                                                title={resultsCollapsed ? "Expand" : "Collapse"}
                                              >
-                                                <div className="h-5 w-5 bg-bg-secondary border border-border/40 rounded flex items-center justify-center shadow-sm">
-                                                   {resultsCollapsed ? (
-                                                      <IconChevronRight className="h-3.5 w-3.5" />
-                                                   ) : (
-                                                      <IconChevronDown className="h-3.5 w-3.5" />
+                                                <IconChevronDown
+                                                   className={cn(
+                                                      "h-4 w-4 transition-transform duration-200",
+                                                      resultsCollapsed && "-rotate-90"
                                                    )}
-                                                </div>
-                                                <span className="text-[13px] font-semibold tracking-wide text-text-primary">
-                                                   Results
-                                                </span>
+                                                />
                                              </button>
 
-                                             {activeTab?.result && (
-                                                <div className="flex items-center gap-2 text-[12px] text-text-muted/80 font-sans tracking-wide border-l border-border/60 pl-3">
-                                                   <span>
-                                                      {activeTab.result.rowCount} row
-                                                      {activeTab.result.rowCount !== 1 ? "s" : ""}
-                                                   </span>
-                                                   {executionTimeMs !== null && (
-                                                      <>
-                                                         <span className="opacity-40">•</span>
-                                                         <span className="font-mono text-[11px]">
-                                                            {executionTimeMs}ms
-                                                         </span>
-                                                      </>
-                                                   )}
-                                                </div>
-                                             )}
-                                             {isExecuting && (
-                                                <div className="flex items-center gap-1.5 text-accent border-l border-border/60 pl-3">
-                                                   <div className="h-3 w-3 rounded-full border-[2px] border-accent/30 border-t-accent animate-spin" />
-                                                   <span className="text-[12px] font-medium tracking-wide">
-                                                      Executing
-                                                   </span>
-                                                </div>
-                                             )}
+                                             <div className="flex items-center ml-2 h-full gap-4">
+                                                {[
+                                                   { id: "results", label: "Results" },
+                                                   { id: "messages", label: "Messages" },
+                                                   { id: "stats", label: "Stats" },
+                                                   { id: "plan", label: "Query Plan" },
+                                                ].map(tab => {
+                                                   const isActive = resultsActiveTab === tab.id
+                                                   return (
+                                                      <button
+                                                         key={tab.id}
+                                                         onClick={() =>
+                                                            setResultsActiveTab(tab.id as any)
+                                                         }
+                                                         className={cn(
+                                                            "relative flex items-center h-[26px] px-3 text-[13px] font-medium transition-all duration-150 rounded-md focus:outline-none select-none",
+                                                            isActive
+                                                               ? "text-white bg-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+                                                               : "text-text-muted/30 hover:text-text-muted/60 hover:bg-white/[0.03]"
+                                                         )}
+                                                      >
+                                                         {tab.label}
+                                                      </button>
+                                                   )
+                                                })}
+                                             </div>
                                           </div>
-                                          <div className="flex items-center gap-1">
-                                             {activeTab?.result && (
-                                                <>
-                                                   <button
-                                                      onClick={() => handleCopyResults(true)}
-                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[12px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                                      title="Copy results with headers"
-                                                   >
-                                                      <IconCopy className="h-3.5 w-3.5 opacity-70" />
-                                                      Copy
-                                                   </button>
-                                                   <button
-                                                      className="h-6 px-2 flex items-center gap-1.5 rounded text-[12px] font-medium text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                                      title="Export results"
-                                                   >
-                                                      <IconDownload className="h-3.5 w-3.5 opacity-70" />
-                                                      Export
-                                                   </button>
-                                                   <div className="w-[1px] h-3.5 bg-border/80 mx-1" />
-                                                   <button
-                                                      onClick={handleClearResults}
-                                                      className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-error hover:bg-error/10 transition-colors"
-                                                      title="Clear results"
-                                                   >
-                                                      <IconTrash className="h-3.5 w-3.5 opacity-70" />
-                                                   </button>
-                                                </>
-                                             )}
+
+                                          <div className="flex items-center gap-4">
+                                             {/* Panel Metadata */}
+                                             <div className="flex items-center gap-3">
+                                                {activeTab?.result && (
+                                                   <div className="flex items-center gap-1.5 text-[12.5px] font-medium select-none">
+                                                      <span className="text-text-primary">{activeTab.result.rowCount} rows</span>
+                                                      {activeTab.executionTimeMs !== undefined && (
+                                                         <>
+                                                            <span className="text-text-muted/30 pb-0.5">•</span>
+                                                            <span className="text-text-secondary font-mono tracking-tight flex items-center gap-0.5">
+                                                               {activeTab.executionTimeMs}
+                                                               <span className="text-[10px] opacity-70">ms</span>
+                                                            </span>
+                                                         </>
+                                                      )}
+                                                   </div>
+                                                )}
+                                                {isExecuting && (
+                                                   <div className="flex items-center gap-2 text-accent/80">
+                                                      <div className="h-3 w-3 rounded-full border-[2px] border-accent/20 border-t-accent animate-spin" />
+                                                      <span className="text-[12px] font-medium">
+                                                         Running...
+                                                      </span>
+                                                   </div>
+                                                )}
+                                             </div>
+
+                                             <div className="flex items-center gap-0.5">
+                                                {activeTab?.result && (
+                                                   <>
+                                                      <div className="relative">
+                                                         <button
+                                                            onClick={() => setCopyDropdownOpen(!copyDropdownOpen)}
+                                                            className={cn(
+                                                               "h-7 flex items-center gap-1 px-1.5 rounded-md text-text-muted/60 hover:text-text-primary hover:bg-white/5 transition-all text-sm",
+                                                               copyDropdownOpen && "bg-white/5 text-text-primary"
+                                                            )}
+                                                            title="Copy results"
+                                                         >
+                                                            <IconCopy className="h-4 w-4" />
+                                                            <IconChevronDown className="h-3 w-3 opacity-60" />
+                                                         </button>
+                                                         
+                                                         <AnimatePresence>
+                                                            {copyDropdownOpen && (
+                                                               <>
+                                                                  <div 
+                                                                     className="fixed inset-0 z-40" 
+                                                                     onClick={() => setCopyDropdownOpen(false)} 
+                                                                  />
+                                                                  <motion.div
+                                                                     initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                     exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                                                                     className="absolute right-0 bottom-full mb-2 w-48 py-1 rounded-lg bg-bg-secondary border border-border shadow-2xl z-50 overflow-hidden"
+                                                                  >
+                                                                     {["JSON", "CSV", "SQL", "TSV", "Markdown"].map(type => (
+                                                                        <button
+                                                                           key={type}
+                                                                           onClick={() => {
+                                                                              handleCopyResults(type === "CSV") // Temporary
+                                                                              setCopyDropdownOpen(false)
+                                                                           }}
+                                                                           className="w-full text-left px-3 py-1.5 text-[13px] text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                                                                        >
+                                                                           Copy as {type}
+                                                                        </button>
+                                                                     ))}
+                                                                  </motion.div>
+                                                               </>
+                                                            )}
+                                                         </AnimatePresence>
+                                                      </div>
+
+                                                      <div className="relative">
+                                                         <button
+                                                            onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                                                            className={cn(
+                                                               "h-7 flex items-center gap-1 px-1.5 rounded-md text-text-muted/60 hover:text-text-primary hover:bg-white/5 transition-all text-sm",
+                                                               exportDropdownOpen && "bg-white/5 text-text-primary"
+                                                            )}
+                                                            title="Export results"
+                                                         >
+                                                            <IconDownload className="h-4 w-4" />
+                                                            <IconChevronDown className="h-3 w-3 opacity-60" />
+                                                         </button>
+
+                                                         <AnimatePresence>
+                                                            {exportDropdownOpen && (
+                                                               <>
+                                                                  <div 
+                                                                     className="fixed inset-0 z-40" 
+                                                                     onClick={() => setExportDropdownOpen(false)} 
+                                                                  />
+                                                                  <motion.div
+                                                                     initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                                     exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                                                                     className="absolute right-0 bottom-full mb-2 w-48 py-1 rounded-lg bg-bg-secondary border border-border shadow-2xl z-50 overflow-hidden"
+                                                                  >
+                                                                     {["JSON", "CSV", "SQL", "TSV", "Markdown"].map(type => (
+                                                                        <button
+                                                                           key={type}
+                                                                           onClick={() => setExportDropdownOpen(false)}
+                                                                           className="w-full text-left px-3 py-1.5 text-[13px] text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                                                                        >
+                                                                           Export as {type}
+                                                                        </button>
+                                                                     ))}
+                                                                  </motion.div>
+                                                               </>
+                                                            )}
+                                                         </AnimatePresence>
+                                                      </div>
+                                                   </>
+                                                )}
+                                                
+                                                <button
+                                                   onClick={handleClearResults}
+                                                   className="h-7 w-7 flex items-center justify-center rounded-md text-text-muted/60 hover:text-error hover:bg-error/5 transition-all"
+                                                   title="Clear results"
+                                                >
+                                                   <IconTrash className="h-3.5 w-3.5" />
+                                                </button>
+                                                
+                                                <div className="w-px h-3.5 bg-border/20 mx-1" />
+                                                
+                                                <button
+                                                   className="h-7 w-7 flex items-center justify-center rounded-md text-text-muted/60 hover:text-text-primary hover:bg-white/5 transition-all"
+                                                   title="More options"
+                                                >
+                                                   <IconDotsVertical className="h-3.5 w-3.5" />
+                                                </button>
+                                                
+                                                <button
+                                                   onClick={() => setIsResultsMaximized(!isResultsMaximized)}
+                                                   className={cn(
+                                                      "h-7 w-7 flex items-center justify-center rounded-md transition-all",
+                                                      isResultsMaximized 
+                                                         ? "text-accent bg-accent/10" 
+                                                         : "text-text-muted/60 hover:text-text-primary hover:bg-white/5"
+                                                   )}
+                                                   title={isResultsMaximized ? "Restore panel" : "Maximize panel"}
+                                                >
+                                                   {isResultsMaximized ? (
+                                                      <IconMinimize className="h-4 w-4" />
+                                                   ) : (
+                                                      <IconMaximize className="h-4 w-4" />
+                                                   )}
+                                                </button>
+                                             </div>
                                           </div>
                                        </div>
                                        {!resultsCollapsed && (
                                           <div className="flex-1 overflow-hidden z-0 relative">
                                              <ResultsPanel
-                                                result={activeTab?.result ?? null}
-                                                error={activeTab?.error ?? null}
+                                                result={activeTab?.result || null}
+                                                error={activeTab?.error || null}
                                                 isExecuting={isExecuting}
                                                 executionTimeMs={executionTimeMs}
-                                                rowCount={activeTab?.result?.rowCount ?? null}
+                                                rowCount={activeTab?.result?.rowCount || null}
+                                                activeTab={resultsActiveTab}
                                              />
                                           </div>
                                        )}

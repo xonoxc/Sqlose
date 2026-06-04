@@ -12,6 +12,7 @@ export interface Tab {
    query: string
    result: QueryResult | null
    error: string | null
+   executionTimeMs?: number
    createdAt: string
    tableName?: string
 }
