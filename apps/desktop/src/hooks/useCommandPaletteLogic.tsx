@@ -349,10 +349,12 @@ export function useCommandPaletteLogic(
             }
             return
          }
-         const next = () => {
-            const max = mode === "themes" ? filteredThemes.length - 1 : flatFiltered.length - 1
-            setSelectedIndex(p => Math.min(p + 1, Math.max(0, max)))
-         }
+          const next = () => {
+             const visible = mode === "themes"
+                ? Math.min(filteredThemes.length, 10)
+                : Math.min(flatFiltered.length, 7)
+             setSelectedIndex(p => Math.min(p + 1, visible - 1))
+          }
          const prev = () => {
             setSelectedIndex(p => Math.max(p - 1, 0))
          }
