@@ -15,35 +15,34 @@ export function ContainerHaltedDialog({ envName, onRestore, onNuke }: ContainerH
       >
          <div className="w-full max-w-md rounded-xl border border-border bg-bg-secondary p-8 shadow-2xl">
             <div className="flex flex-col items-center text-center">
-               <div className="mb-5 h-14 w-14 rounded-full bg-warning/15 border border-warning/25 flex items-center justify-center">
+               <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border-2 border-warning/25 bg-warning/15">
                   <IconBomb className="h-6 w-6 text-warning" />
                </div>
-               <h2 className="text-lg font-semibold text-text-primary mb-2">
-                  Container Halted
-               </h2>
-               <p className="text-sm text-text-muted mb-1">
-                  The database container for{" "}
-                  <strong className="text-text-primary">{envName}</strong>{" "}
-                  is available but halted.
+
+               <h2 className="mb-2 text-lg font-semibold text-warning">Container Halted</h2>
+               <p className="mb-1 text-sm text-text-muted">
+                  The database container for <strong className="text-warning">{envName}</strong> is
+                  available but halted.
                </p>
-               <p className="text-sm text-text-muted mb-6">
+               <p className="mb-6 text-sm text-text-muted">
                   Would you like to restore it or nuke the environment?
                </p>
-               <div className="flex gap-3 w-full">
+
+               <div className="flex w-full gap-3">
                   <Button
                      variant="destructive"
                      size="default"
                      onClick={onNuke}
-                     className="flex-1 gap-2"
+                     className="flex flex-1 items-center justify-center gap-2"
                   >
                      <IconBomb className="h-4 w-4" />
-                     Exit &amp; Nuke
+                     Exit & Nuke
                   </Button>
                   <Button
-                     variant="default"
+                     variant="secondary"
                      size="default"
                      onClick={onRestore}
-                     className="flex-1 gap-2"
+                     className="flex flex-1 items-center justify-center gap-2 text-warning border border-warning/25 bg-warning/15 hover:bg-warning/20"
                   >
                      <IconPlayerPlay className="h-4 w-4" />
                      Restore
