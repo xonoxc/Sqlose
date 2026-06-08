@@ -67,7 +67,7 @@ export interface IPCResponseMap {
    "docker:cleanup": { cleaned: number }
    "docker:pull-image": { image: string }
    "docker:create-container": Environment
-   "docker:check-available": { available: boolean }
+   "docker:check-available": DockerAvailability
    "env:create": Environment
    "env:destroy": { environmentId: string }
    "env:list": Environment[]
@@ -81,6 +81,16 @@ export interface IPCResponseMap {
    "import:preview-csv": { columns: string[]; preview: Record<string, string>[] }
    "dataset:list": Dataset[]
    "dataset:import": { tablesCreated: string[] }
+}
+
+export type DockerAvailabilityReason = "available" | "not-running" | "not-installed"
+
+export interface DockerAvailability {
+   available: boolean
+   reason: DockerAvailabilityReason
+   title: string
+   message: string
+   detail: string
 }
 
 export type IPCRequest<C extends IPCChannel> = C extends keyof IPCRequestMap

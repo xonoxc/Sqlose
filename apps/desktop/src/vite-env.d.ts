@@ -3,6 +3,7 @@
 import type { editor } from "monaco-editor"
 import type {
    DBType,
+   DockerAvailability,
    Environment,
    QueryResult,
    Dataset,
@@ -38,6 +39,12 @@ interface SqloseAPI {
          environmentId: string
       }) => Promise<IPCSerializedResult<{ healthy: boolean; uptime: number }>>
       cleanup: (request: Record<string, never>) => Promise<IPCSerializedResult<{ cleaned: number }>>
+      pullImage: (request: { dbType: DBType }) => Promise<IPCSerializedResult<{ image: string }>>
+      createContainer: (request: { environmentId: string }) => Promise<IPCSerializedResult<Environment>>
+      checkAvailable: (
+         request: Record<string, never>
+      ) => Promise<IPCSerializedResult<DockerAvailability>>
+      onPullProgress: (callback: (dbType: string, percentage: number) => void) => () => void
    }
    env: {
       create: (request: {

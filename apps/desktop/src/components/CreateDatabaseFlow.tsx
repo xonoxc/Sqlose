@@ -71,7 +71,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       handleSelectType,
       handleCreate,
    } = useCreateDatabaseFlowLogic(onClose)
-   const { dockerAvailable } = useDockerStatus()
+   const { dockerAvailable, dockerStatus } = useDockerStatus()
 
    const steps = ["Source", "Identity", "Review"]
    const currentStepIndex = step === "select-type" ? 0 : step === "configure" ? 1 : 2
@@ -224,11 +224,22 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                             </div>
                          </button>
                          {isDisabled && (
-                            <div className="flex items-center gap-2 mt-2 ml-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                               <IconAlertTriangle className="h-3.5 w-3.5 text-amber-400/80 shrink-0" />
-                               <span className="text-[11px] font-semibold text-amber-400/80 leading-tight">
-                                  Requires Docker to be installed and running on your system
-                               </span>
+                            <div className="flex items-start gap-2 mt-2 ml-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                               <IconAlertTriangle className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" />
+                               <div className="space-y-1">
+                                  <p className="text-[11px] font-semibold text-amber-400/90 leading-tight">
+                                     {dockerStatus?.title ?? "Docker is not available"}
+                                  </p>
+                                  <p className="text-[11px] font-medium text-amber-400/70 leading-snug max-w-[520px]">
+                                     {dockerStatus?.message ??
+                                        "PostgreSQL and MySQL environments require Docker."}
+                                  </p>
+                                  {dockerStatus?.detail && (
+                                     <p className="text-[10px] font-medium text-amber-300/60 leading-snug max-w-[520px]">
+                                        {dockerStatus.detail}
+                                     </p>
+                                  )}
+                               </div>
                             </div>
                          )}
                          </div>

@@ -36,6 +36,8 @@ export type {
    IPCResponse,
    IPCHandler,
    IPCChannelGroup,
+   DockerAvailability,
+   DockerAvailabilityReason,
 } from "./ipc"
 
 export { isErrorCode, isAppError, isDBType } from "./guards"

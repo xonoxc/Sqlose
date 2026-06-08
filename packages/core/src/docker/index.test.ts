@@ -54,6 +54,7 @@ function makeMockDocker(
       })
 
    return {
+      ping: vi.fn().mockResolvedValue(undefined),
       createContainer: overrides.createContainer ?? vi.fn().mockResolvedValue(mockContainer),
       getContainer: overrides.getContainer ?? vi.fn().mockReturnValue(mockContainer),
       listContainers: overrides.listContainers ?? vi.fn().mockResolvedValue([]),
@@ -281,6 +282,7 @@ describe("Docker Orchestration", () => {
             expect(result.error).toBeInstanceOf(DockerError)
             expect(result.error.code).toBe("docker:container_failed")
          }
+         expect(portModule.releasePort).toHaveBeenCalledWith(54321)
       })
    })
 

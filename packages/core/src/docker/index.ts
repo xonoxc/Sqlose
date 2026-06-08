@@ -78,7 +78,14 @@ function parseDockerHost(host: string): Record<string, unknown> {
 }
 
 export async function initDocker(): AsyncAppResult<void> {
-   if (_docker) return Promise.resolve(okResult(undefined))
+   if (_docker) {
+      try {
+         await withTimeout(_docker.ping(), PING_TIMEOUT_MS, "Docker ping")
+         return okResult(undefined)
+      } catch {
+         _docker = null
+      }
+   }
 
    try {
       const mod = await import("dockerode")
@@ -97,6 +104,7 @@ export async function initDocker(): AsyncAppResult<void> {
          // Many Docker Desktop installations expose Docker on tcp://localhost:2375
          attempts.push({})
       } else {
+         attempts.push({ socketPath: "/var/run/docker.sock" })
          attempts.push({})
       }
 
@@ -253,6 +261,8 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
 
    type EnvResult = AppResult<{ port: number; containerId: string; connectionString: string }>
 
+   let reservedPort: number | null = null
+
    return findAvailablePort()
       .then(portResult => {
          if (portResult.isErr()) {
@@ -267,6 +277,7 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
                new DockerError("docker:port_conflict", `Port ${port} is already reserved`)
             ) as EnvResult
          }
+         reservedPort = port
 
          const config = DB_IMAGE_MAP[dbType]
 
@@ -319,9 +330,14 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
             )
          })
       })
-      .catch((e: Error) =>
-         err(new DockerError("docker:container_failed", e.message ?? "Failed to create container"))
-      )
+      .catch((e: Error) => {
+         if (reservedPort !== null) {
+            releasePort(reservedPort)
+         }
+         return err(
+            new DockerError("docker:container_failed", e.message ?? "Failed to create container")
+         )
+      })
 }
 
 export async function startEnvironment(containerId: string): AsyncAppResult<void> {

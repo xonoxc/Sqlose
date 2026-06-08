@@ -1,8 +1,10 @@
 // CJS compat shims for bundled packages
 import { fileURLToPath } from "node:url"
 import path from "node:path"
+import { execFileSync } from "node:child_process"
 import { app, BrowserWindow, dialog, ipcMain } from "electron"
 import { autoUpdater } from "electron-updater"
+import type { DockerAvailability } from "@sqlose/shared"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -36,6 +38,82 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null
 let dockerAvailable = false
+
+function isDockerCliInstalled(): boolean {
+   try {
+      execFileSync("docker", ["--version"], { stdio: "ignore" })
+      return true
+   } catch {
+      return false
+   }
+}
+
+function dockerUnavailableStatus(): DockerAvailability {
+   const cliInstalled = isDockerCliInstalled()
+   const isWindows = process.platform === "win32"
+   const isLinux = process.platform === "linux"
+
+   if (!cliInstalled) {
+      return {
+         available: false,
+         reason: "not-installed",
+         title: isWindows ? "Docker Desktop Not Installed" : "Docker Not Installed",
+         message: isWindows
+            ? "Docker Desktop is not installed or is not available in PATH."
+            : "Docker is not installed or is not available in PATH.",
+         detail: isLinux
+            ? "Install Docker Engine and make sure your user can access the Docker socket. SQLite will work without Docker."
+            : "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
+      }
+   }
+
+   if (isWindows) {
+      return {
+         available: false,
+         reason: "not-running",
+         title: "Docker Desktop Is Not Running",
+         message: "Open Docker Desktop, then try creating the database again.",
+         detail:
+            "Tip: in Docker Desktop, enable Settings -> General -> Start Docker Desktop when you sign in.",
+      }
+   }
+
+   if (isLinux) {
+      return {
+         available: false,
+         reason: "not-running",
+         title: "Docker Daemon Is Not Running",
+         message: "Start the Docker daemon, then try creating the database again.",
+         detail:
+            "On Ubuntu, run `sudo systemctl start docker` and ensure your user has permission for /var/run/docker.sock. SQLite will work without Docker.",
+      }
+   }
+
+   return {
+      available: false,
+      reason: "not-running",
+      title: "Docker Is Not Running",
+      message: "Start Docker, then try creating the database again.",
+      detail: "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
+   }
+}
+
+async function checkDockerAvailability(): Promise<DockerAvailability> {
+   const dockerResult = await initDocker()
+   dockerAvailable = dockerResult.isOk()
+
+   if (dockerAvailable) {
+      return {
+         available: true,
+         reason: "available",
+         title: "Docker Available",
+         message: "Docker is available.",
+         detail: "",
+      }
+   }
+
+   return dockerUnavailableStatus()
+}
 
 function createWindow() {
    win = new BrowserWindow({
@@ -94,16 +172,15 @@ app.on("will-quit", async () => {
 app.whenReady().then(async () => {
    await initDatabase()
 
-   const dockerResult = await initDocker()
-   dockerAvailable = dockerResult.isOk()
+   const dockerStatus = await checkDockerAvailability()
 
    if (dockerAvailable) {
       await Promise.all([stopOrphanedContainers(), reconcileEnvironmentStatuses()])
    }
 
-   ipcMain.handle("docker:check-available", () => ({
+   ipcMain.handle("docker:check-available", async () => ({
       success: true,
-      data: { available: dockerAvailable },
+      data: await checkDockerAvailability(),
    }))
 
    registerAllHandlers()
@@ -114,9 +191,9 @@ app.whenReady().then(async () => {
       win?.webContents.send("docker:not-available")
       dialog.showMessageBox(win!, {
          type: "warning",
-         title: "Docker Not Found",
-         message: "Docker is not available on this system.",
-         detail: "PostgreSQL and MySQL environments require Docker. SQLite will work without it.",
+         title: dockerStatus.title,
+         message: dockerStatus.message,
+         detail: dockerStatus.detail,
       })
    }
 
