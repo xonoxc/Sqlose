@@ -10,7 +10,7 @@ import {
    IconPlus,
    IconAlertTriangle,
 } from "@tabler/icons-react"
-import { Button, Input, cn } from "@sqlose/ui"
+import { Button, cn, Input } from "@sqlose/ui"
 import type { DBType } from "@sqlose/shared"
 import { useCreateDatabaseFlowLogic } from "~/hooks/useCreateDatabaseFlowLogic"
 import { useDockerStatus } from "~/hooks/useDockerStatus"
@@ -54,6 +54,12 @@ const DB_CARDS: {
    },
 ]
 
+const WORKSPACE_IDENTITIES: Record<DBType, string[]> = {
+   sqlite: ["SQLite Database", "SQLite Workspace", "SQLite Sandbox"],
+   postgres: ["PostgreSQL Database", "PostgreSQL Workspace", "PostgreSQL Sandbox"],
+   mysql: ["MySQL Database", "MySQL Workspace", "MySQL Sandbox"],
+}
+
 export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
    const {
       step,
@@ -75,7 +81,6 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
    const steps = ["Source", "Identity", "Review"]
    const currentStepIndex = step === "select-type" ? 0 : step === "configure" ? 1 : 2
-   const progress = ((currentStepIndex + 1) / steps.length) * 100
 
    if (step === "provisioning") {
       return (
@@ -156,21 +161,58 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
    return (
       <div className="w-full max-w-2xl px-6">
-         {/* Step Progress Bar */}
-         <div className="w-full h-[4px] bg-border/40 rounded-full mb-6 overflow-hidden relative border border-white/5">
-            <motion.div
-               initial={{ width: 0 }}
-               animate={{ width: `${progress}%` }}
-               transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-               className="h-full bg-accent shadow-[0_0_15px_rgba(var(--color-accent),0.4)]"
-            />
-         </div>
-         <div className="flex items-center justify-between mb-16">
-            <div className="text-[11px] text-white/80 text-accent uppercase tracking-[0.3em]">
-               PROGRESS {currentStepIndex + 1}/{steps.length}
-            </div>
-            <div className="text-[11px] font-black text-text-muted uppercase tracking-[0.3em]">
-               {steps[currentStepIndex]}
+         <div className="mb-16">
+            <div className="flex items-center gap-3 border-dashed px-6 py-2 rounded-md">
+               {steps.map((label, index) => {
+                  const isCompleted = index < currentStepIndex
+                  const isActive = index === currentStepIndex
+
+                  return (
+                     <div
+                        key={label}
+                        className="flex items-center gap-3 flex-1 min-w-0 last:flex-none"
+                     >
+                        <div className="flex items-center gap-3 min-w-0">
+                           <div
+                              className={cn(
+                                 "flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[12px] font-black transition-all",
+                                 isActive
+                                    ? "border-accent bg-accent text-white shadow-[0_0_0_4px_rgba(var(--color-accent),0.12)]"
+                                    : isCompleted
+                                      ? "border-accent/70 bg-accent/15 text-accent"
+                                      : "border-border bg-bg-secondary text-text-muted/70"
+                              )}
+                           >
+                              {isCompleted ? (
+                                 <IconCheck className="h-3.5 w-3.5" strokeWidth={3} />
+                              ) : (
+                                 index + 1
+                              )}
+                           </div>
+                           <span
+                              className={cn(
+                                 "truncate text-[11px] font-semibold uppercase  transition-colors",
+                                 isActive
+                                    ? "text-white/50"
+                                    : isCompleted
+                                      ? "text-text-primary"
+                                      : "text-text-muted/60"
+                              )}
+                           >
+                              {label}
+                           </span>
+                        </div>
+                        {index < steps.length - 1 && (
+                           <div
+                              className={cn(
+                                 "h-px flex-1 min-w-8 transition-colors",
+                                 index < currentStepIndex ? "bg-accent/60" : "bg-white/10"
+                              )}
+                           />
+                        )}
+                     </div>
+                  )
+               })}
             </div>
          </div>
 
