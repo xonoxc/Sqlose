@@ -65,6 +65,7 @@ function ResultsTab({
  }) {
    const rowSpacing = useSettingsStore(s => s.rowSpacing)
    const alternatingRowColors = useSettingsStore(s => s.alternatingRowColors)
+   const tableFontSize = useSettingsStore(s => s.tableFontSize)
    
    if (isExecuting) {
       return (
@@ -144,6 +145,7 @@ function ResultsTab({
                data={result.rows as Record<string, unknown>[]}
                rowHeight={rowSpacing === "compact" ? 22 : 28}
                alternatingRows={alternatingRowColors}
+               fontSize={tableFontSize}
             />
          </div>
       </div>

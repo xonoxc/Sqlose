@@ -17,6 +17,10 @@ export function useSettingsPanelState() {
    const setTableColumnPreview = useSettingsStore(s => s.setTableColumnPreview)
    const editorFontSize = useSettingsStore(s => s.editorFontSize)
    const setEditorFontSize = useSettingsStore(s => s.setEditorFontSize)
+   const tableFontSize = useSettingsStore(s => s.tableFontSize)
+   const setTableFontSize = useSettingsStore(s => s.setTableFontSize)
+   const uiScale = useSettingsStore(s => s.uiScale)
+   const setUiScale = useSettingsStore(s => s.setUiScale)
    const executionMode = useSettingsStore(s => s.executionMode)
    const setExecutionMode = useSettingsStore(s => s.setExecutionMode)
 
@@ -37,6 +41,15 @@ export function useSettingsPanelState() {
       setEditorFontSize(next)
    }
 
+   const handleTableFontSizeChange = (delta: number) => {
+      const next = Math.min(20, Math.max(10, tableFontSize + delta))
+      setTableFontSize(next)
+   }
+
+   const handleUiScaleChange = (scale: number) => {
+      setUiScale(Math.min(1.3, Math.max(0.8, scale)))
+   }
+
    return {
       vimModeEnabled,
       handleToggleVim,
@@ -54,6 +67,10 @@ export function useSettingsPanelState() {
       setTableColumnPreview,
       editorFontSize,
       handleFontSizeChange,
+      tableFontSize,
+      handleTableFontSizeChange,
+      uiScale,
+      handleUiScaleChange,
       executionMode,
       setExecutionMode,
    }

@@ -72,16 +72,26 @@
    /* Animation */
    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
+   /* UI scale system */
+   --app-ui-scale: 1;
+   --app-font-size: 13px;
+   --app-table-font-size: 13px;
+
    /* Theme dynamic tokens (set by theme-store) */
    --color-editor-selection: #2f3d5e;
    --color-editor-cursor: #c0caf5;
    --color-query-accent: #bb9af7;
 }
 
+/* Base font-size for rem scaling */
+:root {
+   font-size: calc(var(--app-font-size) * var(--app-ui-scale));
+}
+
 @layer base {
    body {
       @apply bg-bg-primary text-text-primary font-sans antialiased selection:bg-accent/30;
-      font-size: 15px;
+      font-size: 1rem;
       font-weight: 400;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;

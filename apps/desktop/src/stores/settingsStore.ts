@@ -20,6 +20,8 @@ interface SettingsStore {
    alternatingRowColors: boolean
    tableColumnPreview: boolean
    editorFontSize: number
+   tableFontSize: number
+   uiScale: number
    executionMode: ExecutionMode
 
    toggleVimMode: () => Result<boolean, AppError>
@@ -31,6 +33,8 @@ interface SettingsStore {
    setAlternatingRowColors: (enabled: boolean) => Result<boolean, AppError>
    setTableColumnPreview: (enabled: boolean) => Result<boolean, AppError>
    setEditorFontSize: (size: number) => Result<number, AppError>
+   setTableFontSize: (size: number) => Result<number, AppError>
+   setUiScale: (scale: number) => Result<number, AppError>
    setExecutionMode: (mode: ExecutionMode) => Result<ExecutionMode, AppError>
    updateKeybinding: (index: number, binding: Keybinding) => Result<Keybinding, AppError>
    addKeybinding: (binding: Keybinding) => Result<Keybinding, AppError>
@@ -50,6 +54,8 @@ export const useSettingsStore = create<SettingsStore>()(
          alternatingRowColors: false,
          tableColumnPreview: true,
          editorFontSize: 14,
+         tableFontSize: 13,
+         uiScale: 1,
          executionMode: "direct",
 
          toggleVimMode: () => {
@@ -103,6 +109,22 @@ export const useSettingsStore = create<SettingsStore>()(
             }
             set({ editorFontSize: size })
             return ok(size)
+         },
+
+         setTableFontSize: (size: number) => {
+            if (size < 10 || size > 20) {
+               return err(new AppError("ipc:invalid_payload", `Invalid table font size: ${size}`))
+            }
+            set({ tableFontSize: size })
+            return ok(size)
+         },
+
+         setUiScale: (scale: number) => {
+            if (scale < 0.8 || scale > 1.3) {
+               return err(new AppError("ipc:invalid_payload", `Invalid UI scale: ${scale}`))
+            }
+            set({ uiScale: scale })
+            return ok(scale)
          },
 
          setExecutionMode: (mode: ExecutionMode) => {

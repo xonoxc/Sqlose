@@ -51,7 +51,15 @@ function AppContent() {
    const loadHistory = useHistoryStore(s => s.loadHistory)
    const loadQueries = useSavedQueriesStore(s => s.loadQueries)
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
+   const uiScale = useSettingsStore(s => s.uiScale)
+   const tableFontSize = useSettingsStore(s => s.tableFontSize)
    useThemeStore()
+
+   useEffect(() => {
+      const root = document.documentElement
+      root.style.setProperty("--app-ui-scale", String(uiScale))
+      root.style.setProperty("--app-table-font-size", `${tableFontSize}px`)
+   }, [uiScale, tableFontSize])
 
    const resultsResize = useResizeHandler({
       axis: "y",

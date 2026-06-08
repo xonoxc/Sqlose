@@ -31,6 +31,7 @@ interface ResultsTableProps<T extends Record<string, unknown>> {
    className?: string
    emptyMessage?: string
    alternatingRows?: boolean
+   fontSize?: number
 }
 
 interface ContextMenuState {
@@ -131,6 +132,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
    className,
    emptyMessage = "No results",
    alternatingRows = false,
+   fontSize,
 }: ResultsTableProps<T>) {
    const [sorting, setSorting] = useState<SortingState>([])
    const [ctxMenu, setCtxMenu] = useState<ContextMenuState>({
@@ -341,6 +343,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
          <div
             ref={parentRef}
             className="h-full overflow-auto custom-scrollbar relative bg-bg-primary"
+            style={fontSize ? { fontSize } : undefined}
          >
             <Table className="text-left border-collapse border-spacing-0">
                <TableHeader className="text-xl">

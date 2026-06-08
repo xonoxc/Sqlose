@@ -53,6 +53,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       setTableColumnPreview,
       editorFontSize,
       handleFontSizeChange,
+      tableFontSize,
+      handleTableFontSizeChange,
+      uiScale,
+      handleUiScaleChange,
       executionMode,
       setExecutionMode,
    } = useSettingsPanelState()
@@ -124,9 +128,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   {/* Body */}
                   <div className="max-h-[65vh] overflow-y-auto custom-scrollbar px-5 py-5 space-y-6">
                      {/* Appearance */}
-                     <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Appearance
+                      <section>
+                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                            Appearance
                         </h3>
                         <p className="text-[13px] text-text-muted mb-3">
                            Select how Sqlose looks on your device.
@@ -190,11 +194,46 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                         </div>
                      </section>
 
+                      <Separator />
+
+                     {/* Display */}
+                     <section>
+                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Display
+                        </h3>
+                        <div className="space-y-4">
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">UI Scale</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Adjust the overall interface size.
+                                 </p>
+                              </div>
+                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
+                                 {[0.9, 1, 1.1, 1.2].map(s => (
+                                    <button
+                                       key={s}
+                                       onClick={() => handleUiScaleChange(s)}
+                                       className={cn(
+                                          "px-2 py-0.5 rounded text-xs font-medium transition-all",
+                                          uiScale === s
+                                             ? "bg-accent/15 text-accent"
+                                             : "text-text-muted hover:text-text-primary"
+                                       )}
+                                    >
+                                       {Math.round(s * 100)}%
+                                    </button>
+                                 ))}
+                              </div>
+                           </div>
+                        </div>
+                     </section>
+
                      <Separator />
 
                      {/* Table */}
                      <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
                            Table
                         </h3>
                         <div className="space-y-4">
@@ -214,6 +253,33 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                     <SelectItem value="compact">Compact</SelectItem>
                                  </SelectContent>
                               </Select>
+                           </div>
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Table Font Size</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Font size for data grid cells.
+                                 </p>
+                              </div>
+                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
+                                 <button
+                                    onClick={() => handleTableFontSizeChange(-1)}
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    aria-label="Decrease table font size"
+                                 >
+                                    <IconMinus className="h-3.5 w-3.5" />
+                                 </button>
+                                 <span className="text-xs font-mono text-text-primary min-w-[36px] text-center tabular-nums">
+                                    {tableFontSize}px
+                                 </span>
+                                 <button
+                                    onClick={() => handleTableFontSizeChange(1)}
+                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                                    aria-label="Increase table font size"
+                                 >
+                                    <IconPlus className="h-3.5 w-3.5" />
+                                 </button>
+                              </div>
                            </div>
                            <div className="flex items-center justify-between">
                               <div>
@@ -259,9 +325,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      <Separator />
 
                      {/* Editor */}
-                     <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Editor
+                      <section>
+                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                            Editor
                         </h3>
                         <div className="space-y-4">
                            <div className="flex items-center justify-between">
@@ -316,9 +382,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      <Separator />
 
                      {/* Execution */}
-                     <section>
-                        <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Execution
+                      <section>
+                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                            Execution
                         </h3>
                         <div className="flex items-center justify-between">
                            <div>
@@ -359,8 +425,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      {/* Keybindings */}
                      <section>
                         <div className="flex items-center justify-between mb-3">
-                           <h3 className="text-[12px] font-semibold tracking-wider uppercase text-text-muted/80">
-                              Keybindings
+                            <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80">
+                               Keybindings
                            </h3>
                            <Button
                               variant="ghost"
