@@ -30,6 +30,7 @@ import { useResizeHandler } from "~/hooks/useResizeHandler"
 import { useContainerHalted } from "~/hooks/useContainerHalted"
 import { useKeyboardShortcuts } from "~/hooks/useKeyboardShortcuts"
 import { useWorkspaceActions } from "~/hooks/useWorkspaceActions"
+import { useUpdateToast } from "~/hooks/useUpdateToast"
 
 const RESULTS_MIN_HEIGHT = 80
 const RESULTS_MAX_HEIGHT = 800
@@ -37,6 +38,7 @@ const SIDEBAR_MIN_WIDTH = 200
 const SIDEBAR_MAX_WIDTH = 400
 
 function AppContent() {
+   useUpdateToast()
    const ui = useAppUIState()
    const workspace = useWorkspaceActions()
    const { stuckEnvId, stuckEnv, handleRestoreEnv, handleExitAndNuke } = useContainerHalted()

@@ -27,11 +27,19 @@ if (typeof window !== "undefined") {
          sql: vi.fn(),
          previewCSV: vi.fn(),
       },
-      dataset: {
-         list: vi.fn(),
-         import: vi.fn(),
-      },
-   }
+       dataset: {
+          list: vi.fn(),
+          import: vi.fn(),
+       },
+       update: {
+          onUpdateAvailable: vi.fn().mockReturnValue(vi.fn()),
+          onDownloadProgress: vi.fn().mockReturnValue(vi.fn()),
+          onUpdateDownloaded: vi.fn().mockReturnValue(vi.fn()),
+          onUpdateError: vi.fn().mockReturnValue(vi.fn()),
+          downloadUpdate: vi.fn(),
+          quitAndInstall: vi.fn(),
+       },
+    }
 
    ;(mockSqloseAPI as Record<string, unknown>).db = {
       get: vi.fn().mockResolvedValue({ success: true, data: null }),

@@ -2,6 +2,7 @@ import { ipcRenderer, contextBridge } from "electron"
 import type { IPCChannel, IPCRequest, IPCResponse } from "@sqlose/shared"
 import type { IPCSerializedResult } from "./ipc-handlers"
 import type { SavedQuery, HistoryEntry } from "../src/lib/types"
+import type { UpdateInfo, ProgressInfo } from "electron-updater"
 
 function createInvoke<C extends IPCChannel>(channel: C) {
    return (request: IPCRequest<C>): Promise<IPCSerializedResult<IPCResponse<C>>> =>
@@ -15,6 +16,8 @@ type DbResult<T> =
 function dbInvoke<T>(channel: string, ...args: unknown[]): Promise<DbResult<T>> {
    return ipcRenderer.invoke(channel, ...args) as Promise<DbResult<T>>
 }
+
+type UpdateAvailableInfo = UpdateInfo & { isPackageManaged: boolean }
 
 const api = {
    docker: {
@@ -98,6 +101,30 @@ const api = {
          ),
       deleteHistoryEntry: (id: string) => dbInvoke<void>("db:delete-history-entry", id),
       clearHistory: () => dbInvoke<void>("db:clear-history"),
+    },
+   update: {
+      onUpdateAvailable: (callback: (info: UpdateAvailableInfo) => void) => {
+         const handler = (_event: Electron.IpcRendererEvent, info: UpdateAvailableInfo) => callback(info)
+         ipcRenderer.on("update-available", handler)
+         return () => ipcRenderer.removeListener("update-available", handler)
+      },
+      onDownloadProgress: (callback: (progress: ProgressInfo) => void) => {
+         const handler = (_event: Electron.IpcRendererEvent, progress: ProgressInfo) => callback(progress)
+         ipcRenderer.on("download-progress", handler)
+         return () => ipcRenderer.removeListener("download-progress", handler)
+      },
+      onUpdateDownloaded: (callback: () => void) => {
+         const handler = () => callback()
+         ipcRenderer.on("update-downloaded", handler)
+         return () => ipcRenderer.removeListener("update-downloaded", handler)
+      },
+      onUpdateError: (callback: (message: string) => void) => {
+         const handler = (_event: Electron.IpcRendererEvent, message: string) => callback(message)
+         ipcRenderer.on("update-error", handler)
+         return () => ipcRenderer.removeListener("update-error", handler)
+      },
+      downloadUpdate: () => ipcRenderer.invoke("update:download"),
+      quitAndInstall: () => ipcRenderer.invoke("update:quit-and-install"),
    },
 }
 

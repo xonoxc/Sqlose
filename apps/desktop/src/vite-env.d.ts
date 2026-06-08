@@ -83,6 +83,14 @@ interface SqloseAPI {
          environmentId: string
       }) => Promise<IPCSerializedResult<{ tablesCreated: string[] }>>
    }
+   update: {
+      onUpdateAvailable: (callback: (info: { version: string; isPackageManaged: boolean }) => void) => () => void
+      onDownloadProgress: (callback: (progress: { percent: number }) => void) => () => void
+      onUpdateDownloaded: (callback: () => void) => () => void
+      onUpdateError: (callback: (message: string) => void) => () => void
+      downloadUpdate: () => Promise<void>
+      quitAndInstall: () => Promise<void>
+   }
 }
 
 declare global {

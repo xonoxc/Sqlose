@@ -136,11 +136,15 @@ function createWindow() {
    }
 }
 
+const isPackageManaged =
+   process.platform === "linux" &&
+   (process.resourcesPath.startsWith("/usr/") || process.resourcesPath.startsWith("/snap/"))
+
 autoUpdater.logger = console
 autoUpdater.autoDownload = false
 
 autoUpdater.on("update-available", info => {
-   win?.webContents?.send("update-available", info)
+   win?.webContents?.send("update-available", { ...info, isPackageManaged })
 })
 
 autoUpdater.on("download-progress", progress => {
@@ -149,6 +153,18 @@ autoUpdater.on("download-progress", progress => {
 
 autoUpdater.on("update-downloaded", () => {
    win?.webContents?.send("update-downloaded")
+})
+
+autoUpdater.on("error", err => {
+   win?.webContents?.send("update-error", err?.message ?? String(err))
+})
+
+ipcMain.handle("update:download", () => {
+   autoUpdater.downloadUpdate()
+})
+
+ipcMain.handle("update:quit-and-install", () => {
+   autoUpdater.quitAndInstall()
 })
 
 app.on("window-all-closed", () => {
@@ -197,5 +213,5 @@ app.whenReady().then(async () => {
       })
    }
 
-   if (!VITE_DEV_SERVER_URL) autoUpdater.checkForUpdatesAndNotify()
+   if (!VITE_DEV_SERVER_URL) autoUpdater.checkForUpdates()
 })
