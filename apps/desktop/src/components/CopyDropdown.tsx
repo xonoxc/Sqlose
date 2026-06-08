@@ -4,7 +4,7 @@ import { IconCopy, IconChevronDown } from "@tabler/icons-react"
 import { cn } from "@sqlose/ui"
 
 interface CopyDropdownProps {
-   onCopy: (withHeaders: boolean) => void
+   onCopy: (format: string) => void
    disabled?: boolean
 }
 
@@ -43,7 +43,7 @@ export function CopyDropdown({ onCopy, disabled }: CopyDropdownProps) {
                         <button
                            key={type}
                            onClick={() => {
-                              onCopy(type === "CSV")
+                              onCopy(type)
                               setOpen(false)
                            }}
                            className="w-full text-left px-3 py-1.5 text-[13px] text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"

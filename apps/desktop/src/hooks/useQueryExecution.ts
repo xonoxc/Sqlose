@@ -6,20 +6,94 @@ import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useHistoryStore } from "~/stores/historyStore"
 import type { QueryResult } from "@sqlose/shared"
 
-export async function copyResultsToClipboard(result: QueryResult, withHeaders: boolean): Promise<void> {
-   const headers = result.columns.join("\t")
-   const rows = result.rows
-      .map(r =>
-         result.columns
-            .map(c => {
-               const v = r[c]
-               return v === null ? "NULL" : String(v)
-            })
-            .join("\t")
-      )
-      .join("\n")
+function escapeCsv(value: string): string {
+   if (value.includes(",") || value.includes('"') || value.includes("\n") || value.includes("\r")) {
+      return `"${value.replace(/"/g, '""')}"`
+   }
+   return value
+}
 
-   const text = withHeaders ? `${headers}\n${rows}` : rows
+function formatCell(v: unknown): string {
+   if (v === null || v === undefined) return ""
+   if (typeof v === "object") return JSON.stringify(v)
+   return String(v)
+}
+
+function formatAsJson(result: QueryResult): string {
+   return JSON.stringify(result.rows, null, 2)
+}
+
+function formatAsCsv(result: QueryResult, withHeaders: boolean): string {
+   const lines: string[] = []
+   if (withHeaders) {
+      lines.push(result.columns.map(c => escapeCsv(c)).join(","))
+   }
+   for (const row of result.rows) {
+      lines.push(result.columns.map(c => escapeCsv(formatCell(row[c]))).join(","))
+   }
+   return lines.join("\n")
+}
+
+function formatAsSql(result: QueryResult): string {
+   if (result.rows.length === 0) return ""
+   const cols = result.columns
+   const tableName = "results"
+   return result.rows
+      .map(row => {
+         const values = cols.map(c => {
+            const v = row[c]
+            if (v === null || v === undefined) return "NULL"
+            if (typeof v === "number") return String(v)
+            return `'${String(v).replace(/'/g, "''")}'`
+         })
+         return `INSERT INTO ${tableName} (${cols.join(", ")}) VALUES (${values.join(", ")});`
+      })
+      .join("\n")
+}
+
+function formatAsTsv(result: QueryResult, withHeaders: boolean): string {
+   const lines: string[] = []
+   if (withHeaders) {
+      lines.push(result.columns.join("\t"))
+   }
+   for (const row of result.rows) {
+      lines.push(result.columns.map(c => formatCell(row[c])).join("\t"))
+   }
+   return lines.join("\n")
+}
+
+function formatAsMarkdown(result: QueryResult): string {
+   const cols = result.columns
+   const header = `| ${cols.join(" | ")} |`
+   const separator = `| ${cols.map(() => "---").join(" | ")} |`
+   const rows = result.rows.map(
+      row => `| ${cols.map(c => formatCell(row[c])).join(" | ")} |`
+   )
+   return [header, separator, ...rows].join("\n")
+}
+
+export async function copyResultsToClipboard(result: QueryResult, format: string): Promise<void> {
+   let text: string
+
+   switch (format) {
+      case "JSON":
+         text = formatAsJson(result)
+         break
+      case "CSV":
+         text = formatAsCsv(result, true)
+         break
+      case "SQL":
+         text = formatAsSql(result)
+         break
+      case "TSV":
+         text = formatAsTsv(result, true)
+         break
+      case "Markdown":
+         text = formatAsMarkdown(result)
+         break
+      default:
+         text = formatAsTsv(result, true)
+   }
 
    if (navigator.clipboard?.writeText) {
       try {
