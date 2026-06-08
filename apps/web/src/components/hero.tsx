@@ -68,7 +68,7 @@ export function HeroSection() {
             <FullWidthDivider position="top" />
             {/* Dashboard Preview Container */}
             <div className="relative">
-               <div className="relative overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex border-3 p-2">
+               <div className="relative overflow-hidden rounded-sm border-white/5 bg-zinc-950/50 flex border-3 p-2">
                   <div
                      className={cn(
                         "pointer-events-none",
@@ -80,7 +80,7 @@ export function HeroSection() {
                         "bg-[repeating-linear-gradient(230deg,rgba(255,255,255,0.1)_0px,rgba(255,255,255,0.1)_1px,transparent_1px,transparent_10px)]"
                      )}
                   />
-                  <div className=" overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex border-2">
+                  <div className=" overflow-hidden rounded-sm border-white/5 bg-zinc-950/50 flex border-2">
                      <Image
                         src="/ss.png"
                         height={400}
