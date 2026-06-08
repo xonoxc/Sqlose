@@ -104,8 +104,8 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                         {provisioningError
                            ? "The deployment cycle was interrupted."
                            : allDone
-                              ? "Your high-redundancy environment is online."
-                              : "Provisioning isolated workspace container..."}
+                             ? "Your high-redundancy environment is online."
+                             : "Provisioning isolated workspace container..."}
                      </p>
                   </div>
 
@@ -121,7 +121,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                                    ? "bg-white/[0.03] border-white/10 text-text-muted"
                                    : ps.status === "error"
                                      ? "bg-error/10 border-error/20 text-error"
-                                      : "bg-transparent border-transparent opacity-20"
+                                     : "bg-transparent border-transparent opacity-20"
                            )}
                         >
                            {ps.status === "done" ? (
@@ -141,7 +141,10 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                   </div>
 
                   {(provisioningError || allDone) && (
-                     <Button onClick={onClose} className="w-full h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest shadow-xl shadow-accent/20">
+                     <Button
+                        onClick={onClose}
+                        className="w-full h-14 rounded-2xl bg-accent text-white font-black uppercase tracking-widest shadow-xl shadow-accent/20"
+                     >
                         Enter Workspace
                      </Button>
                   )}
@@ -163,7 +166,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
             />
          </div>
          <div className="flex items-center justify-between mb-16">
-            <div className="text-[11px] font-black text-accent uppercase tracking-[0.3em]">
+            <div className="text-[11px] text-white/80 text-accent uppercase tracking-[0.3em]">
                PROGRESS {currentStepIndex + 1}/{steps.length}
             </div>
             <div className="text-[11px] font-black text-text-muted uppercase tracking-[0.3em]">
@@ -190,62 +193,88 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                   </div>
 
                   <div className="grid gap-4">
-                      {DB_CARDS.map(card => {
-                         const isDisabled = card.requiresDocker && dockerAvailable === false
-                         return (
-                         <div key={card.type} className="relative">
-                         <button
-                            disabled={isDisabled}
-                            onClick={() => !isDisabled && handleSelectType(card.type)}
-                            className={cn(
-                               "group w-full flex items-center justify-between p-6 rounded-[1.5rem] bg-bg-secondary/40 border border-border transition-all text-left overflow-hidden relative",
-                               isDisabled
-                                  ? "opacity-40 cursor-not-allowed"
-                                  : "hover:border-accent/60 hover:bg-bg-tertiary"
-                            )}
-                         >
-                            <div className={cn("absolute inset-0 transition-colors", isDisabled ? "bg-transparent" : "bg-accent/0 group-hover:bg-accent/5")} />
-                            <div className="flex items-center gap-6 relative z-10">
-                               <div className={cn("h-14 w-14 rounded-2xl bg-bg-tertiary border border-border flex items-center justify-center transition-all", isDisabled ? "" : "group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(var(--color-accent),0.1)]", card.color)}>
-                                  <card.icon className="h-7 w-7" />
-                               </div>
-                               <div>
-                                  <h3 className={cn("text-lg font-bold transition-colors uppercase tracking-tight", isDisabled ? "text-text-muted" : "text-white group-hover:text-accent")}>{card.label}</h3>
-                                  <p className="text-[13px] text-text-muted max-w-[320px] font-medium mt-1 leading-snug opacity-70">{card.description}</p>
-                               </div>
-                            </div>
-                            <div className={cn(
-                               "h-10 w-10 rounded-xl border border-border flex items-center justify-center relative z-10 shadow-lg transition-all",
-                               isDisabled
-                                  ? "opacity-30"
-                                  : "group-hover:bg-accent group-hover:border-accent group-hover:text-white active:scale-95"
-                            )}>
-                               <IconArrowRight className="h-5 w-5" />
-                            </div>
-                         </button>
-                         {isDisabled && (
-                            <div className="flex items-start gap-2 mt-2 ml-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
-                               <IconAlertTriangle className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" />
-                               <div className="space-y-1">
-                                  <p className="text-[11px] font-semibold text-amber-400/90 leading-tight">
-                                     {dockerStatus?.title ?? "Docker is not available"}
-                                  </p>
-                                  <p className="text-[11px] font-medium text-amber-400/70 leading-snug max-w-[520px]">
-                                     {dockerStatus?.message ??
-                                        "PostgreSQL and MySQL environments require Docker."}
-                                  </p>
-                                  {dockerStatus?.detail && (
-                                     <p className="text-[10px] font-medium text-amber-300/60 leading-snug max-w-[520px]">
-                                        {dockerStatus.detail}
-                                     </p>
-                                  )}
-                               </div>
-                            </div>
-                         )}
-                         </div>
-                         )
-                      })}
-                   </div>
+                     {DB_CARDS.map(card => {
+                        const isDisabled = card.requiresDocker && dockerAvailable === false
+                        return (
+                           <div key={card.type} className="relative">
+                              <button
+                                 disabled={isDisabled}
+                                 onClick={() => !isDisabled && handleSelectType(card.type)}
+                                 className={cn(
+                                    "group w-full flex items-center justify-between p-6 rounded-[1.5rem] bg-bg-secondary/40 border border-border transition-all text-left overflow-hidden relative",
+                                    isDisabled
+                                       ? "opacity-40 cursor-not-allowed"
+                                       : "hover:border-accent/60 hover:bg-bg-tertiary"
+                                 )}
+                              >
+                                 <div
+                                    className={cn(
+                                       "absolute inset-0 transition-colors",
+                                       isDisabled
+                                          ? "bg-transparent"
+                                          : "bg-accent/0 group-hover:bg-accent/5"
+                                    )}
+                                 />
+                                 <div className="flex items-center gap-6 relative z-10">
+                                    <div
+                                       className={cn(
+                                          "h-14 w-14 rounded-2xl bg-bg-tertiary border border-border flex items-center justify-center transition-all",
+                                          isDisabled
+                                             ? ""
+                                             : "group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(var(--color-accent),0.1)]",
+                                          card.color
+                                       )}
+                                    >
+                                       <card.icon className="h-7 w-7" />
+                                    </div>
+                                    <div>
+                                       <h3
+                                          className={cn(
+                                             "text-lg font-bold transition-colors uppercase tracking-tight",
+                                             isDisabled ? "text-text-muted" : "text-white"
+                                          )}
+                                       >
+                                          {card.label}
+                                       </h3>
+                                       <p className="text-[13px] text-text-muted max-w-[320px] font-medium mt-1 leading-snug opacity-70">
+                                          {card.description}
+                                       </p>
+                                    </div>
+                                 </div>
+                                 <div
+                                    className={cn(
+                                       "h-10 w-10 rounded-xl border border-border flex items-center justify-center relative z-10 shadow-lg transition-all",
+                                       isDisabled
+                                          ? "opacity-30"
+                                          : "group-hover:bg-accent group-hover:border-accent group-hover:text-white active:scale-95"
+                                    )}
+                                 >
+                                    <IconArrowRight className="h-5 w-5" />
+                                 </div>
+                              </button>
+                              {isDisabled && (
+                                 <div className="flex items-start gap-2 mt-2 ml-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                                    <IconAlertTriangle className="h-3.5 w-3.5 text-amber-400/80 shrink-0 mt-0.5" />
+                                    <div className="space-y-1">
+                                       <p className="text-[11px] font-semibold text-amber-400/90 leading-tight">
+                                          {dockerStatus?.title ?? "Docker is not available"}
+                                       </p>
+                                       <p className="text-[11px] font-medium text-amber-400/70 leading-snug max-w-[520px]">
+                                          {dockerStatus?.message ??
+                                             "PostgreSQL and MySQL environments require Docker."}
+                                       </p>
+                                       {dockerStatus?.detail && (
+                                          <p className="text-[10px] font-medium text-amber-300/60 leading-snug max-w-[520px]">
+                                             {dockerStatus.detail}
+                                          </p>
+                                       )}
+                                    </div>
+                                 </div>
+                              )}
+                           </div>
+                        )
+                     })}
+                  </div>
                </motion.div>
             )}
 
@@ -262,13 +291,16 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                         Configure
                      </h1>
                      <p className="text-lg text-text-muted leading-relaxed font-medium opacity-80">
-                        This environment will be isolated in a dedicated container with your selected blueprint.
+                        This environment will be isolated in a dedicated container with your
+                        selected blueprint.
                      </p>
                   </div>
 
                   <div className="space-y-10">
                      <div className="space-y-3">
-                        <label className="text-[11px] font-black text-accent px-1 uppercase tracking-[0.2em] leading-none">Workspace Identity</label>
+                        <label className="text-[11px] text-white/80 text-accent px-1 uppercase tracking-[0.2em] leading-none">
+                           Workspace Identity
+                        </label>
                         <div className="relative group">
                            <Input
                               autoFocus
@@ -282,9 +314,16 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
 
                      <div className="space-y-4">
                         <div className="flex items-center justify-between mb-2">
-                           <label className="text-[11px] font-black text-accent px-1 uppercase tracking-[0.2em] leading-none">Blueprint Templates</label>
+                           <label className="text-[11px] text-white/80 text-accent px-1 uppercase tracking-[0.2em] leading-none">
+                              Blueprint Templates
+                           </label>
                            {selectedDataset && (
-                              <button onClick={() => setSelectedDataset(null)} className="text-[10px] font-black text-text-muted hover:text-accent transition-colors uppercase tracking-widest">Deselect All</button>
+                              <button
+                                 onClick={() => setSelectedDataset(null)}
+                                 className="text-[10px] font-black text-text-muted hover:text-accent transition-colors uppercase tracking-widest"
+                              >
+                                 Deselect All
+                              </button>
                            )}
                         </div>
                         <div className="grid gap-3 max-h-[300px] overflow-y-auto pr-3 custom-scrollbar scrollbar-thin-subtle focus-within:ring-0">
@@ -294,34 +333,71 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                               .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; }
                            `}</style>
                            {datasetsLoading ? (
-                              <div className="py-20 flex justify-center"><IconLoader2 className="animate-spin h-8 w-8 text-accent" /></div>
+                              <div className="py-20 flex justify-center">
+                                 <IconLoader2 className="animate-spin h-8 w-8 text-accent" />
+                              </div>
                            ) : datasets.length === 0 ? (
                               <div className="p-12 text-center bg-bg-secondary/20 border border-dashed border-border rounded-3xl">
                                  <IconDatabaseImport className="h-8 w-8 text-text-muted/20 mx-auto mb-4" />
-                                 <p className="text-text-muted text-sm italic font-light">No templates found for this engine. Proceeding with clean DB.</p>
+                                 <p className="text-text-muted text-sm italic font-light">
+                                    No templates found for this engine. Proceeding with clean DB.
+                                 </p>
                               </div>
                            ) : (
-                              datasets.filter(ds => ds.dbTypes.includes(selectedDbType!)).map(ds => (
-                                 <button
-                                    key={ds.id}
-                                    onClick={() => setSelectedDataset(selectedDataset?.id === ds.id ? null : ds)}
-                                    className={cn(
-                                       "flex items-center gap-5 p-5 rounded-[1.5rem] border transition-all text-left group relative overflow-hidden",
-                                       selectedDataset?.id === ds.id ? "bg-accent/10 border-accent/40" : "bg-bg-secondary/40 border-border hover:bg-bg-tertiary hover:border-accent/20"
-                                    )}
-                                 >
-                                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-border transition-all", selectedDataset?.id === ds.id ? "bg-accent shadow-[0_0_15px_rgba(var(--color-accent),0.3)] text-white" : "bg-bg-tertiary text-text-muted group-hover:text-text-primary")}>
-                                       <IconDatabaseImport className="h-6 w-6" />
-                                    </div>
-                                    <div className="flex-1">
-                                       <span className={cn("text-[15px] font-bold block transition-colors", selectedDataset?.id === ds.id ? "text-white" : "text-text-primary")}>{ds.name}</span>
-                                       <span className="text-[12px] text-text-muted font-medium truncate block mt-1 opacity-70">{ds.description}</span>
-                                    </div>
-                                    <div className={cn("h-6 w-6 rounded-lg border flex items-center justify-center transition-all", selectedDataset?.id === ds.id ? "bg-accent border-accent text-white scale-100" : "border-border bg-bg-tertiary opacity-0 group-hover:opacity-100 scale-90")}>
-                                       <IconCheck className="h-4 w-4 stroke-[4]" />
-                                    </div>
-                                 </button>
-                              ))
+                              datasets
+                                 .filter(ds => ds.dbTypes.includes(selectedDbType!))
+                                 .map(ds => (
+                                    <button
+                                       key={ds.id}
+                                       onClick={() =>
+                                          setSelectedDataset(
+                                             selectedDataset?.id === ds.id ? null : ds
+                                          )
+                                       }
+                                       className={cn(
+                                          "flex items-center gap-5 p-5 rounded-[1.5rem] border transition-all text-left group relative overflow-hidden",
+                                          selectedDataset?.id === ds.id
+                                             ? "bg-accent/10 border-accent/40"
+                                             : "bg-bg-secondary/40 border-border hover:bg-bg-tertiary hover:border-accent/20"
+                                       )}
+                                    >
+                                       <div
+                                          className={cn(
+                                             "h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-border transition-all",
+                                             selectedDataset?.id === ds.id
+                                                ? "bg-accent shadow-[0_0_15px_rgba(var(--color-accent),0.3)] text-white"
+                                                : "bg-bg-tertiary text-text-muted group-hover:text-text-primary"
+                                          )}
+                                       >
+                                          <IconDatabaseImport className="h-6 w-6" />
+                                       </div>
+                                       <div className="flex-1">
+                                          <span
+                                             className={cn(
+                                                "text-[15px] font-bold block transition-colors",
+                                                selectedDataset?.id === ds.id
+                                                   ? "text-white"
+                                                   : "text-text-primary"
+                                             )}
+                                          >
+                                             {ds.name}
+                                          </span>
+                                          <span className="text-[12px] text-text-muted font-medium truncate block mt-1 opacity-70">
+                                             {ds.description}
+                                          </span>
+                                       </div>
+                                       <div
+                                          className={cn(
+                                             "h-6 w-6 rounded-lg border flex items-center justify-center transition-all",
+                                             selectedDataset?.id === ds.id
+                                                ? "bg-accent border-accent text-white scale-100"
+                                                : "border-border bg-bg-tertiary opacity-0 group-hover:opacity-100 scale-90"
+                                          )}
+                                       >
+                                          <IconCheck className="h-4 w-4 stroke-[4]" />
+                                       </div>
+                                    </button>
+                                 ))
                            )}
                         </div>
                      </div>
@@ -341,11 +417,21 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                disabled={step === "select-type" || creating}
                onClick={handleCreate}
                className={cn(
-                  "h-14 px-14 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] gap-3 transition-all",
-                  step === "select-type" ? "opacity-0 pointer-events-none" : "bg-accent text-white shadow-[0_10px_30px_rgba(var(--color-accent),0.3)] hover:scale-[1.02] active:scale-[0.98]"
+                  "h-14 px-14 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] gap-3 transition-all flex items-center justify-center",
+                  step === "select-type"
+                     ? "opacity-0 pointer-events-none"
+                     : "bg-accent text-white shadow-[0_10px_30px_rgba(var(--color-accent),0.3)] hover:scale-[1.02] active:scale-[0.98]"
                )}
             >
-               {creating ? <><IconLoader2 className="h-5 w-5 animate-spin" /> Provisioning</> : <><IconPlus className="h-5 w-5" strokeWidth={3} /> Launch</>}
+               {creating ? (
+                  <>
+                     <IconLoader2 className="h-5 w-5 animate-spin" /> Provisioning
+                  </>
+               ) : (
+                  <>
+                     <IconPlus className="h-5 w-5" strokeWidth={3} /> Launch
+                  </>
+               )}
             </Button>
          </div>
       </div>

@@ -24,14 +24,21 @@ const nodeTypes = {
    tableNode: TableNode,
 }
 
+export interface ForeignKeyRelation {
+   fromCol: string
+   toTable: string
+   toCol: string
+}
+
 // Extract foreign keys since SQLite doesn't natively return them in pragma_table_info.
 // We query sqlite_master for table definitions and parse them.
 // We are doing a very simplistic fetch mechanism here for any FKs inside SQLite
 // Note: If postgres/mysql, we'd need appropriate queries, but since this is primarily sqlite, we just do a fallback logic.
-async function fetchForeignKeys(envId: string, tableName: string): Promise<Array<{fromCol: string, toTable: string, toCol: string}>> {
+async function fetchForeignKeys(envId: string, tableName: string): Promise<ForeignKeyRelation[]> {
    try {
        // Assuming sqlite for now, we can use pragma foreign_key_list
-       const sql = `PRAGMA foreign_key_list('${tableName}')`
+       const safeTableName = tableName.replace(/'/g, "''")
+       const sql = `PRAGMA foreign_key_list('${safeTableName}')`
        const res = await api.query.execute(envId, sql)
        if (res.isOk()) {
             return res.value.rows.map((r: Record<string, unknown>) => ({
@@ -44,6 +51,41 @@ async function fetchForeignKeys(envId: string, tableName: string): Promise<Array
        // Ignore errors, fallback
    }
    return []
+}
+
+export function buildForeignKeyEdge(
+   tableName: string,
+   foreignKey: ForeignKeyRelation,
+   accentColor: string,
+   surfaceColor: string
+): Edge {
+   return {
+      id: `e-${tableName}-${foreignKey.fromCol}->${foreignKey.toTable}-${foreignKey.toCol}`,
+      source: tableName,
+      sourceHandle: `source-${foreignKey.fromCol}`,
+      target: foreignKey.toTable,
+      targetHandle: `target-${foreignKey.toCol}`,
+      type: "step",
+      animated: false,
+      label: `FK: ${foreignKey.fromCol}`,
+      labelBgStyle: {
+         fill: surfaceColor,
+         fillOpacity: 0.95,
+      },
+      labelBgPadding: [6, 3],
+      labelBgBorderRadius: 6,
+      labelStyle: {
+         fill: accentColor,
+         fontSize: 11,
+         fontWeight: 600,
+      },
+      style: {
+         stroke: accentColor,
+         strokeWidth: 2,
+      },
+      markerEnd: { type: MarkerType.ArrowClosed, color: accentColor },
+      zIndex: 10,
+   }
 }
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => {
@@ -129,17 +171,14 @@ export function SchemaDiagram() {
              // Fetch and Process FKs for Edges
              const fks = await fetchForeignKeys(envId, tName)
              for (const fk of fks) {
-                 newEdges.push({
-                     id: `e-${tName}-${fk.fromCol}->${fk.toTable}-${fk.toCol}`,
-                     source: tName,
-                     sourceHandle: `source-${fk.fromCol}`,
-                     target: fk.toTable,
-                     targetHandle: `target-${fk.toCol}`,
-                     type: 'smoothstep',
-                     animated: true,
-                     style: { stroke: currentTheme.colors.textMuted, strokeWidth: 1.5, opacity: 0.4 },
-                     markerEnd: { type: MarkerType.ArrowClosed, color: currentTheme.colors.textMuted },
-                 })
+                 newEdges.push(
+                    buildForeignKeyEdge(
+                       tName,
+                       fk,
+                       currentTheme.colors.accent,
+                       currentTheme.colors.surface
+                    )
+                 )
              }
          }
 
