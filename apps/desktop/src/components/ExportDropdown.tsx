@@ -4,12 +4,13 @@ import { IconDownload, IconChevronDown } from "@tabler/icons-react"
 import { cn } from "@sqlose/ui"
 
 interface ExportDropdownProps {
+   onExport: (format: string) => void
    disabled?: boolean
 }
 
 const FORMATS = ["JSON", "CSV", "SQL", "TSV", "Markdown"]
 
-export function ExportDropdown({ disabled }: ExportDropdownProps) {
+export function ExportDropdown({ onExport, disabled }: ExportDropdownProps) {
    const [open, setOpen] = useState(false)
 
    return (
@@ -41,7 +42,10 @@ export function ExportDropdown({ disabled }: ExportDropdownProps) {
                      {FORMATS.map(type => (
                         <button
                            key={type}
-                           onClick={() => setOpen(false)}
+                           onClick={() => {
+                              onExport(type)
+                              setOpen(false)
+                           }}
                            className="w-full text-left px-3 py-1.5 text-[13px] text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
                         >
                            Export as {type}

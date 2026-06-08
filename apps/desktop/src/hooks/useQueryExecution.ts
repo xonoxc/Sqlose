@@ -72,28 +72,44 @@ function formatAsMarkdown(result: QueryResult): string {
    return [header, separator, ...rows].join("\n")
 }
 
-export async function copyResultsToClipboard(result: QueryResult, format: string): Promise<void> {
-   let text: string
+const FILE_EXT: Record<string, string> = {
+   JSON: "json", CSV: "csv", SQL: "sql", TSV: "tsv", Markdown: "md",
+}
 
+const MIME_TYPES: Record<string, string> = {
+   JSON: "application/json",
+   CSV: "text/csv",
+   SQL: "text/plain",
+   TSV: "text/tab-separated-values",
+   Markdown: "text/markdown",
+}
+
+function formatResults(result: QueryResult, format: string): string {
    switch (format) {
-      case "JSON":
-         text = formatAsJson(result)
-         break
-      case "CSV":
-         text = formatAsCsv(result, true)
-         break
-      case "SQL":
-         text = formatAsSql(result)
-         break
-      case "TSV":
-         text = formatAsTsv(result, true)
-         break
-      case "Markdown":
-         text = formatAsMarkdown(result)
-         break
-      default:
-         text = formatAsTsv(result, true)
+      case "JSON": return formatAsJson(result)
+      case "CSV": return formatAsCsv(result, true)
+      case "SQL": return formatAsSql(result)
+      case "TSV": return formatAsTsv(result, true)
+      case "Markdown": return formatAsMarkdown(result)
+      default: return formatAsTsv(result, true)
    }
+}
+
+export function exportResultsToFile(result: QueryResult, format: string): void {
+   const content = formatResults(result, format)
+   const ext = FILE_EXT[format] ?? "txt"
+   const mime = MIME_TYPES[format] ?? "text/plain"
+   const blob = new Blob([content], { type: mime })
+   const url = URL.createObjectURL(blob)
+   const a = document.createElement("a")
+   a.href = url
+   a.download = `results.${ext}`
+   a.click()
+   URL.revokeObjectURL(url)
+}
+
+export async function copyResultsToClipboard(result: QueryResult, format: string): Promise<void> {
+   const text = formatResults(result, format)
 
    if (navigator.clipboard?.writeText) {
       try {

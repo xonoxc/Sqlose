@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react"
 import { CopyDropdown } from "~/components/CopyDropdown"
 import { ExportDropdown } from "~/components/ExportDropdown"
-import { copyResultsToClipboard } from "~/hooks/useQueryExecution"
+import { copyResultsToClipboard, exportResultsToFile } from "~/hooks/useQueryExecution"
 import type { Tab } from "~/lib/types"
 
 interface ResultsPanelHeaderProps {
@@ -109,7 +109,9 @@ export function ResultsPanelHeader({
                          onCopy={(format) => copyResultsToClipboard(activeTab.result!, format)}
                       />
 
-                     <ExportDropdown />
+                     <ExportDropdown
+                        onExport={(format) => exportResultsToFile(activeTab.result!, format)}
+                     />
                   </>
                )}
 
