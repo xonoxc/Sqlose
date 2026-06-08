@@ -68,14 +68,27 @@ export function HeroSection() {
             <FullWidthDivider position="top" />
             {/* Dashboard Preview Container */}
             <div className="relative">
-               <div className="overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex">
-                  <Image
-                     src="/ss.png"
-                     height={400}
-                     width={1200}
-                     alt="Sqlose Dashboard Preview"
-                     className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.01]"
+               <div className="relative overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex border-3 p-2">
+                  <div
+                     className={cn(
+                        "pointer-events-none",
+                        "absolute inset-y-0 right-0 hidden sm:block",
+                        "z-10",
+                        "translate-x-14",
+                        "h-full w-10 sm:w-14",
+                        "border-l border-[rgba(255,255,255,0.1)]",
+                        "bg-[repeating-linear-gradient(230deg,rgba(255,255,255,0.1)_0px,rgba(255,255,255,0.1)_1px,transparent_1px,transparent_10px)]"
+                     )}
                   />
+                  <div className=" overflow-hidden rounded-sm border border-white/5 bg-zinc-950/50 flex border-2">
+                     <Image
+                        src="/ss.png"
+                        height={400}
+                        width={1200}
+                        alt="Sqlose Dashboard Preview"
+                        className="w-full h-auto transition-transform duration-700 group-hover:scale-[1.01]"
+                     />
+                  </div>
                </div>
             </div>
 
