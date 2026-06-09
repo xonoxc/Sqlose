@@ -16,6 +16,7 @@ interface CommandPaletteProps {
    onClearResults?: () => void
    onOpenTable?: (tableName: string) => void
    onOpenQuery?: (sql: string) => void
+   onNukeConfirm?: () => void
 }
 
 export function CommandPalette({
@@ -24,6 +25,7 @@ export function CommandPalette({
    onExecuteQuery,
    onClearResults,
    onOpenQuery,
+   onNukeConfirm,
 }: CommandPaletteProps) {
     const {
        query,
@@ -38,7 +40,7 @@ export function CommandPalette({
        handleThemeHover,
        handleThemeSelect,
        groupedItems,
-    } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery)
+     } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery, onNukeConfirm)
 
    const getIconStyles = (id: string) => {
       if (id === "new-query") return "bg-indigo-500/10 text-indigo-400"

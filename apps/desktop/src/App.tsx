@@ -1,5 +1,5 @@
-import { useEffect } from "react"
-import { Toaster } from "sonner"
+import { useEffect, useState } from "react"
+import { toast, Toaster } from "sonner"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { StatusBar } from "@sqlose/ui"
 import { queryClient } from "~/lib/query/queryClient"
@@ -11,9 +11,10 @@ import {
    Dashboard,
    ShortcutsDialog,
    TopBar,
-   ContainerHaltedDialog,
-   ErrorBoundary,
-   EditorWorkspace,
+    ContainerHaltedDialog,
+    ErrorBoundary,
+    EditorWorkspace,
+    NukeConfirmDialog,
 } from "~/components"
 import {
    useEditorStore,
@@ -47,15 +48,33 @@ function AppContent() {
    const vimMode = useEditorStore(s => s.vimMode)
    const paneSizes = useWorkspaceStore(s => s.paneSizes)
    const updatePaneSizes = useWorkspaceStore(s => s.updatePaneSizes)
-   const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
-   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
+    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
+    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const fetchEnvironments = useEnvironmentStore(s => s.fetchEnvironments)
    const loadHistory = useHistoryStore(s => s.loadHistory)
    const loadQueries = useSavedQueriesStore(s => s.loadQueries)
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
-   const uiScale = useSettingsStore(s => s.uiScale)
-   const tableFontSize = useSettingsStore(s => s.tableFontSize)
-   useThemeStore()
+    const uiScale = useSettingsStore(s => s.uiScale)
+    const tableFontSize = useSettingsStore(s => s.tableFontSize)
+    useThemeStore()
+    const [isNuking, setIsNuking] = useState(false)
+
+    const handleNukeConfirm = async () => {
+       const envStore = useEnvironmentStore.getState()
+       const envId = envStore.selectedEnvironmentId
+       if (!envId) return
+       setIsNuking(true)
+       try {
+          await envStore.nukeEnvironment(envId)
+          envStore.selectEnvironment(null)
+          toast.success("Environment has been nuked")
+          ui.closeNukeConfirm()
+       } catch {
+          toast.error("Failed to nuke environment")
+       } finally {
+          setIsNuking(false)
+       }
+    }
 
    useEffect(() => {
       const root = document.documentElement
@@ -177,24 +196,31 @@ function AppContent() {
          ) : (
             <Dashboard />
          )}
-         <CommandPalette
-            isOpen={ui.paletteOpen}
-            onClose={ui.closePalette}
-            onExecuteQuery={workspace.execute}
-            onClearResults={workspace.handleClearResults}
-            onOpenTable={workspace.handleOpenTable}
-            onOpenQuery={workspace.handleOpenQuery}
-         />
+          <CommandPalette
+             isOpen={ui.paletteOpen}
+             onClose={ui.closePalette}
+             onExecuteQuery={workspace.execute}
+             onClearResults={workspace.handleClearResults}
+             onOpenTable={workspace.handleOpenTable}
+             onOpenQuery={workspace.handleOpenQuery}
+             onNukeConfirm={ui.openNukeConfirm}
+          />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />
-         {stuckEnvId && (
-            <ContainerHaltedDialog
-               envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
-               onRestore={handleRestoreEnv}
-               onNuke={handleExitAndNuke}
-            />
-         )}
-         <Toaster
+          {stuckEnvId && (
+             <ContainerHaltedDialog
+                envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
+                onRestore={handleRestoreEnv}
+                onNuke={handleExitAndNuke}
+             />
+          )}
+           <NukeConfirmDialog
+              open={ui.nukeConfirmOpen}
+              onCancel={ui.closeNukeConfirm}
+              onConfirm={handleNukeConfirm}
+              isLoading={isNuking}
+           />
+          <Toaster
             theme="dark"
             position="bottom-right"
             toastOptions={{

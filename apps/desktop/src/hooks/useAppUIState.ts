@@ -10,9 +10,10 @@ export function useAppUIState() {
    const [shortcutsOpen, setShortcutsOpen] = useState(false)
    const [resultsCollapsed, setResultsCollapsed] = useState(false)
    const [resultsActiveTab, setResultsActiveTab] = useState<ResultsTab>("results")
-   const [isResultsMaximized, setIsResultsMaximized] = useState(false)
+    const [isResultsMaximized, setIsResultsMaximized] = useState(false)
+    const [nukeConfirmOpen, setNukeConfirmOpen] = useState(false)
 
-   return {
+    return {
       sidebarOpen,
       sidebarCollapsed,
       setSidebarCollapsed,
@@ -32,5 +33,8 @@ export function useAppUIState() {
       setResultsActiveTab,
       isResultsMaximized,
       toggleResultsMaximize: () => setIsResultsMaximized(v => !v),
+      nukeConfirmOpen,
+      openNukeConfirm: () => setNukeConfirmOpen(true),
+      closeNukeConfirm: () => setNukeConfirmOpen(false),
    }
 }

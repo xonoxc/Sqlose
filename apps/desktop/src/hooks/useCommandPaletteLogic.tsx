@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react"
-import { toast } from "sonner"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useSettingsStore } from "~/stores/settingsStore"
@@ -41,7 +40,8 @@ export function useCommandPaletteLogic(
    onClose: () => void,
    onExecuteQuery?: () => void,
    onClearResults?: () => void,
-   onOpenQuery?: (sql: string) => void
+   onOpenQuery?: (sql: string) => void,
+   onNukeConfirm?: () => void
 ) {
    const [query, setQuery] = useState("")
    const [selectedIndex, setSelectedIndex] = useState(0)
@@ -51,8 +51,7 @@ export function useCommandPaletteLogic(
 
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
-   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
-   const nukeEnvironment = useEnvironmentStore(s => s.nukeEnvironment)
+    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const openTab = useWorkspaceStore(s => s.openTab)
    const tabs = useWorkspaceStore(s => s.tabs)
    const activeTabId = useWorkspaceStore(s => s.activeTabId)
@@ -222,15 +221,9 @@ export function useCommandPaletteLogic(
              "Completely destroy the environment, its container and all data",
          icon: <IconTrash className="h-4 w-4" />,
          category: "action",
-      onSelect: async () => {
-             const envId = selectedEnvironmentId
-             if (envId) {
-                await nukeEnvironment(envId)
-                selectEnvironment(null)
-                onClose()
-                toast.success("Environment has been nuked")
-             }
-          },
+       onSelect: () => {
+              onNukeConfirm?.()
+           },
       },
       ...environments.map(env => ({
          id: `env-${env.id}` as const,
