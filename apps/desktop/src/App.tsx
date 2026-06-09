@@ -128,10 +128,16 @@ function AppContent() {
                   )}
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative py-1">
-                        <TopBar
-                           onOpenPalette={ui.openPalette}
-                           onBackToDashboard={() => selectEnvironment(null)}
-                        />
+                         <TopBar
+                            onOpenPalette={ui.openPalette}
+                            onBackToDashboard={() => selectEnvironment(null)}
+                            onOpenDiagram={() => {
+                               useWorkspaceStore.getState().openTab(undefined, {
+                                  type: "diagram",
+                                  title: "Diagram: main",
+                               })
+                            }}
+                         />
                         <div className="flex items-end border-b border-border/20 bg-bg-secondary/40 px-3 py-0.5 shrink-0 w-full z-10 relative min-h-[52px]">
                            <TabBar />
                         </div>

@@ -1,12 +1,13 @@
-import { IconLogout } from "@tabler/icons-react"
+import { IconLogout, IconSchema } from "@tabler/icons-react"
 import { isMac } from "~/lib/types"
 
 interface TopBarProps {
    onOpenPalette: () => void
    onBackToDashboard: () => void
+   onOpenDiagram: () => void
 }
 
-export function TopBar({ onOpenPalette, onBackToDashboard }: TopBarProps) {
+export function TopBar({ onOpenPalette, onBackToDashboard, onOpenDiagram }: TopBarProps) {
    return (
       <div className="h-14 flex items-center justify-between px-4 border-b border-border/30 bg-bg-secondary/90 shrink-0 shadow-sm z-20 relative">
          <div />
@@ -46,15 +47,22 @@ export function TopBar({ onOpenPalette, onBackToDashboard }: TopBarProps) {
             </button>
          </div>
 
-         <div className="flex items-center gap-1">
-            <button
-               onClick={onBackToDashboard}
-               className="h-9 w-9 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors border-2 rounded-md border-border/25"
-               aria-label="Back to dashboard"
-            >
-               <IconLogout className="h-4.5 w-4.5" />
-            </button>
-         </div>
+          <div className="flex items-center gap-1">
+             <button
+                onClick={onOpenDiagram}
+                className="h-9 w-9 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                aria-label="View schema diagram"
+             >
+                <IconSchema className="h-4.5 w-4.5" />
+             </button>
+             <button
+                onClick={onBackToDashboard}
+                className="h-9 w-9 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors border-2 rounded-md border-border/25"
+                aria-label="Back to dashboard"
+             >
+                <IconLogout className="h-4.5 w-4.5" />
+             </button>
+          </div>
       </div>
    )
 }
