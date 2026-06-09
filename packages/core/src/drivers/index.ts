@@ -1,8 +1,6 @@
 import { err } from "neverthrow"
 import { QueryError } from "@sqlose/shared"
 import type { DBType, QueryResult, AsyncAppResult } from "@sqlose/shared"
-import { executePostgresQuery } from "./postgres"
-import { executeMySQLQuery } from "./mysql"
 import { executeSQLiteQuery } from "./sqlite"
 
 export function executeQueryForDB(
@@ -12,9 +10,9 @@ export function executeQueryForDB(
 ): AsyncAppResult<QueryResult> {
    switch (dbType) {
       case "postgres":
-         return executePostgresQuery(connectionString, sql)
+         return import("./postgres").then(m => m.executePostgresQuery(connectionString, sql))
       case "mysql":
-         return executeMySQLQuery(connectionString, sql)
+         return import("./mysql").then(m => m.executeMySQLQuery(connectionString, sql))
       case "sqlite":
          return executeSQLiteQuery(connectionString, sql)
       default:
