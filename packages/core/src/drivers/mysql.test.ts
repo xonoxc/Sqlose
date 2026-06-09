@@ -1,26 +1,36 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
-import { executeMySQLQuery, testMySQLConnection } from "./mysql"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { destroyAllPools } from "./pool"
 
-const mockConnection = { query: vi.fn(), end: vi.fn() }
+const mockConnection = { query: vi.fn(), release: vi.fn() }
+
+const mockPool = {
+   getConnection: vi.fn(),
+   end: vi.fn(),
+}
 
 vi.mock("mysql2/promise", () => ({
    default: {
       createConnection: vi.fn(),
+      createPool: vi.fn(() => mockPool),
    },
 }))
 
 beforeEach(async () => {
-   const mysql = await import("mysql2/promise")
-   ;(mysql.default.createConnection as ReturnType<typeof vi.fn>).mockReset()
-   ;(mysql.default.createConnection as ReturnType<typeof vi.fn>).mockResolvedValue(mockConnection)
+   mockPool.getConnection.mockReset()
+   mockPool.getConnection.mockResolvedValue(mockConnection)
    mockConnection.query.mockReset()
-   mockConnection.end.mockReset()
+   mockConnection.release.mockReset()
    mockConnection.query.mockResolvedValue([
       [{ id: 1, name: "test" }],
       [{ name: "id" }, { name: "name" }],
    ])
-   mockConnection.end.mockResolvedValue(undefined)
 })
+
+afterEach(async () => {
+   await destroyAllPools()
+})
+
+import { executeMySQLQuery, testMySQLConnection } from "./mysql"
 
 describe("executeMySQLQuery", () => {
    it("should execute query and return results", async () => {
@@ -49,13 +59,21 @@ describe("executeMySQLQuery", () => {
       }
    })
 
-   it("should handle createConnection failure", async () => {
-      const mysql = await import("mysql2/promise")
-      ;(mysql.default.createConnection as ReturnType<typeof vi.fn>).mockRejectedValue(
-         new Error("Connection failed")
-      )
+   it("should handle getConnection failure", async () => {
+      mockPool.getConnection.mockRejectedValue(new Error("Connection failed"))
       const result = await executeMySQLQuery("mysql://localhost:3306/test", "SELECT 1")
       expect(result.isErr()).toBe(true)
+   })
+
+   it("should release connection after successful query", async () => {
+      await executeMySQLQuery("mysql://localhost:3306/test", "SELECT 1")
+      expect(mockConnection.release).toHaveBeenCalledTimes(1)
+   })
+
+   it("should release connection after failed query", async () => {
+      mockConnection.query.mockRejectedValue(new Error("error"))
+      await executeMySQLQuery("mysql://localhost:3306/test", "SELECT 1")
+      expect(mockConnection.release).toHaveBeenCalledTimes(1)
    })
 })
 
@@ -70,14 +88,17 @@ describe("testMySQLConnection", () => {
    })
 
    it("should return false for failed connection", async () => {
-      const mysql = await import("mysql2/promise")
-      ;(mysql.default.createConnection as ReturnType<typeof vi.fn>).mockRejectedValue(
-         new Error("Connection failed")
-      )
+      mockPool.getConnection.mockRejectedValue(new Error("Connection failed"))
       const result = await testMySQLConnection("mysql://localhost:3306/test")
       expect(result.isOk()).toBe(true)
       if (result.isOk()) {
          expect(result.value).toBe(false)
       }
+   })
+
+   it("should release connection after test", async () => {
+      mockConnection.query.mockResolvedValue([[{ "?column?": 1 }], []])
+      await testMySQLConnection("mysql://localhost:3306/test")
+      expect(mockConnection.release).toHaveBeenCalledTimes(1)
    })
 })

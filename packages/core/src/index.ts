@@ -45,7 +45,7 @@ export {
 export { parseSQLDump, extractTableNames } from "./import"
 export type { CSVParsed, InferredSchema, SQLStatement } from "./import"
 
-export { executeQueryForDB } from "./drivers"
+export { executeQueryForDB, destroyPool } from "./drivers"
 
 export { listDatasets, getDatasetSQL, SAMPLE_DATASETS } from "./datasets"
 export type { DatasetSQL } from "./datasets"

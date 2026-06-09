@@ -25,7 +25,7 @@ import {
    resetEnvironmentRecord,
    loadEnvironment,
 } from "@sqlose/core"
-import { releasePort } from "@sqlose/core"
+import { releasePort, destroyPool } from "@sqlose/core"
 import { executeQuery } from "@sqlose/core"
 import { importCSV, previewCSV, parseSQLDump, extractTableNames } from "@sqlose/core"
 import { listDatasets, getDatasetSQL } from "@sqlose/core"
@@ -285,6 +285,10 @@ export function registerAllHandlers(): void {
          }
       }
 
+      if (env.connectionString) {
+         destroyPool(env.connectionString).catch(() => {})
+      }
+
       await destroyEnvironmentRecord(environmentId)
       return serializeOk({ environmentId })
    })
@@ -381,6 +385,10 @@ export function registerAllHandlers(): void {
          } catch {
             // file may not exist
          }
+      }
+
+      if (env.connectionString) {
+         destroyPool(env.connectionString).catch(() => {})
       }
 
       await destroyEnvironmentRecord(environmentId)

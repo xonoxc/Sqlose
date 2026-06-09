@@ -1,15 +1,25 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { destroyAllPools } from "./pool"
 
 const mockClient = {
    connect: vi.fn(),
    query: vi.fn(),
+   release: vi.fn(),
+}
+
+const mockPool = {
+   connect: vi.fn(),
+   on: vi.fn(),
    end: vi.fn(),
 }
 
 vi.mock("pg", () => ({
    default: {
       Client: function Client() {
-         return mockClient
+         return { ...mockClient, end: vi.fn() }
+      },
+      Pool: function Pool() {
+         return mockPool
       },
    },
 }))
@@ -19,18 +29,22 @@ import { executePostgresQuery, testPostgresConnection } from "./postgres"
 beforeEach(() => {
    mockClient.connect.mockReset()
    mockClient.query.mockReset()
-   mockClient.end.mockReset()
+   mockClient.release.mockReset()
+   mockPool.connect.mockReset()
+})
+
+afterEach(async () => {
+   await destroyAllPools()
 })
 
 describe("executePostgresQuery", () => {
    beforeEach(() => {
-      mockClient.connect.mockResolvedValue(undefined)
+      mockPool.connect.mockResolvedValue(mockClient)
       mockClient.query.mockResolvedValue({
          fields: [{ name: "id" }, { name: "name" }],
          rows: [{ id: 1, name: "test" }],
          rowCount: 1,
       })
-      mockClient.end.mockResolvedValue(undefined)
    })
 
    it("should execute query and return results", async () => {
@@ -67,17 +81,27 @@ describe("executePostgresQuery", () => {
    })
 
    it("should handle connection failure", async () => {
-      mockClient.connect.mockRejectedValue(new Error("connect ECONNREFUSED"))
+      mockPool.connect.mockRejectedValue(new Error("connect ECONNREFUSED"))
       const result = await executePostgresQuery("postgresql://localhost:5432/test", "SELECT 1")
       expect(result.isErr()).toBe(true)
+   })
+
+   it("should release client after successful query", async () => {
+      await executePostgresQuery("postgresql://localhost:5432/test", "SELECT 1")
+      expect(mockClient.release).toHaveBeenCalledTimes(1)
+   })
+
+   it("should release client after failed query", async () => {
+      mockClient.query.mockRejectedValue(new Error("error"))
+      await executePostgresQuery("postgresql://localhost:5432/test", "SELECT 1")
+      expect(mockClient.release).toHaveBeenCalledTimes(1)
    })
 })
 
 describe("testPostgresConnection", () => {
    beforeEach(() => {
-      mockClient.connect.mockResolvedValue(undefined)
+      mockPool.connect.mockResolvedValue(mockClient)
       mockClient.query.mockResolvedValue({ rows: [{ "?column?": 1 }] })
-      mockClient.end.mockResolvedValue(undefined)
    })
 
    it("should return true for successful connection", async () => {
@@ -89,11 +113,16 @@ describe("testPostgresConnection", () => {
    })
 
    it("should return false for failed connection", async () => {
-      mockClient.connect.mockRejectedValue(new Error("Connection failed"))
+      mockPool.connect.mockRejectedValue(new Error("Connection failed"))
       const result = await testPostgresConnection("postgresql://localhost:5432/test")
       expect(result.isOk()).toBe(true)
       if (result.isOk()) {
          expect(result.value).toBe(false)
       }
+   })
+
+   it("should release client after test", async () => {
+      await testPostgresConnection("postgresql://localhost:5432/test")
+      expect(mockClient.release).toHaveBeenCalledTimes(1)
    })
 })

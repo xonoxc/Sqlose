@@ -3,6 +3,8 @@ import { QueryError } from "@sqlose/shared"
 import type { DBType, QueryResult, AsyncAppResult } from "@sqlose/shared"
 import { executeSQLiteQuery } from "./sqlite"
 
+export { destroyPool } from "./pool"
+
 export function executeQueryForDB(
    dbType: DBType,
    connectionString: string,
