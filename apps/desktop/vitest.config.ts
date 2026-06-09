@@ -21,12 +21,12 @@ export default defineConfig({
          },
       },
    },
-    resolve: {
-       alias: {
-          "~": path.resolve(__dirname, "src"),
-          "@sqlose/shared": path.resolve(__dirname, "../../packages/shared/src"),
-          "@sqlose/ui": path.resolve(__dirname, "../../packages/ui/src"),
-          "@sqlose/core": path.resolve(__dirname, "../../packages/core/src"),
-       },
-    },
+   resolve: {
+      alias: {
+         "~": path.resolve(__dirname, "src"),
+         "@sqlose/shared": path.resolve(__dirname, "../../packages/shared/src"),
+         "@sqlose/ui": path.resolve(__dirname, "../../packages/ui/src"),
+         "@sqlose/core": path.resolve(__dirname, "../../packages/core/src"),
+      },
+   },
 })

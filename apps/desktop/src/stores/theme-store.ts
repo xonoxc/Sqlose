@@ -59,7 +59,7 @@ interface ThemeStore {
 
 export const useThemeStore = create<ThemeStore>()(
    persist(
-      (set) => ({
+      set => ({
          themeId: themes[0].id,
          currentTheme: themes[0],
          setTheme: (id: string) => {
@@ -68,11 +68,11 @@ export const useThemeStore = create<ThemeStore>()(
             set({ themeId: theme.id, currentTheme: theme })
          },
       }),
-       {
-          name: "sqlose-theme",
-          storage: sqliteStorage,
-          partialize: (state) => ({ themeId: state.themeId }),
-         onRehydrateStorage: () => (state) => {
+      {
+         name: "sqlose-theme",
+         storage: sqliteStorage,
+         partialize: state => ({ themeId: state.themeId }),
+         onRehydrateStorage: () => state => {
             if (state) {
                const theme = themes.find(t => t.id === state.themeId) ?? themes[0]
                state.currentTheme = theme

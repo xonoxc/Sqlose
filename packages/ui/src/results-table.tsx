@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-table"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { cn } from "./cn"
+import { attempt } from "@sqlose/shared"
 import {
    IconArrowUp,
    IconArrowDown,
@@ -99,9 +100,8 @@ function ColumnTypeIcon({ type }: { type: ColumnType }) {
 }
 
 async function copyToClipboard(text: string) {
-   try {
-      await navigator.clipboard.writeText(text)
-   } catch {
+   const result = await attempt(navigator.clipboard.writeText(text))
+   if (result.isErr()) {
       const ta = document.createElement("textarea")
       ta.value = text
       document.body.appendChild(ta)
@@ -173,26 +173,29 @@ export function ResultsTable<T extends Record<string, unknown>>({
       return { types, widths }
    })()
 
-   const columns: ColumnDef<T>[] = data.length === 0 ? [] : Object.keys(data[0]).map(key => {
-      const colType = columnMeta.types[key] ?? "text"
-      return {
-         id: key,
-         accessorKey: key,
-         header: () => (
-            <div className="flex items-center gap-1.5 w-full overflow-hidden">
-               <span className="truncate text-[12px] font-medium leading-none">{key}</span>
-               <ColumnTypeIcon type={colType} />
-            </div>
-         ),
-         cell: info => {
-            const value = info.getValue()
-            if (value === null) return <span className="text-text-muted italic">NULL</span>
-            if (typeof value === "object") return JSON.stringify(value)
-            return String(value)
-         },
-         enableSorting: true,
-      }
-   })
+   const columns: ColumnDef<T>[] =
+      data.length === 0
+         ? []
+         : Object.keys(data[0]).map(key => {
+              const colType = columnMeta.types[key] ?? "text"
+              return {
+                 id: key,
+                 accessorKey: key,
+                 header: () => (
+                    <div className="flex items-center gap-1.5 w-full overflow-hidden">
+                       <span className="truncate text-[12px] font-medium leading-none">{key}</span>
+                       <ColumnTypeIcon type={colType} />
+                    </div>
+                 ),
+                 cell: info => {
+                    const value = info.getValue()
+                    if (value === null) return <span className="text-text-muted italic">NULL</span>
+                    if (typeof value === "object") return JSON.stringify(value)
+                    return String(value)
+                 },
+                 enableSorting: true,
+              }
+           })
 
    const dataKey = data.length === 0 ? "" : Object.keys(data[0]).join(",")
 
@@ -404,13 +407,13 @@ export function ResultsTable<T extends Record<string, unknown>>({
                         const row = rows[virtualRow.index]
                         const isRowSelected = selectedRow === row.id
                         return (
-                            <TableRow
-                               key={row.id}
-                               className={cn(
-                                  "group transition-colors duration-100",
-                                  isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
-                                  alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
-                               )}
+                           <TableRow
+                              key={row.id}
+                              className={cn(
+                                 "group transition-colors duration-100",
+                                 isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
+                                 alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
+                              )}
                               style={{ height: virtualRow.size }}
                               onContextMenu={e => handleContextMenu(e, row)}
                               onClick={() => setSelectedRow(row.id)}

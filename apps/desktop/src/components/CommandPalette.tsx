@@ -27,20 +27,27 @@ export function CommandPalette({
    onOpenQuery,
    onNukeConfirm,
 }: CommandPaletteProps) {
-    const {
-       query,
-       setQuery,
-       selectedIndex,
-       setSelectedIndex,
-       inputRef,
-       flatFiltered,
-       mode,
-       exitThemeMode,
-       filteredThemes,
-       handleThemeHover,
-       handleThemeSelect,
-       groupedItems,
-     } = useCommandPaletteLogic(isOpen, onClose, onExecuteQuery, onClearResults, onOpenQuery, onNukeConfirm)
+   const {
+      query,
+      setQuery,
+      selectedIndex,
+      setSelectedIndex,
+      inputRef,
+      flatFiltered,
+      mode,
+      exitThemeMode,
+      filteredThemes,
+      handleThemeHover,
+      handleThemeSelect,
+      groupedItems,
+   } = useCommandPaletteLogic(
+      isOpen,
+      onClose,
+      onExecuteQuery,
+      onClearResults,
+      onOpenQuery,
+      onNukeConfirm
+   )
 
    const getIconStyles = (id: string) => {
       if (id === "new-query") return "bg-indigo-500/10 text-indigo-400"
@@ -121,9 +128,9 @@ export function CommandPalette({
                   <div className="flex-1 overflow-y-auto py-2.5 custom-scrollbar">
                      {mode === "themes" ? (
                         <div className="flex flex-col">
-                            <div className="px-5 py-2 text-[10.5px] font-bold uppercase tracking-widest text-text-muted/70">
-                                Themes
-                            </div>
+                           <div className="px-5 py-2 text-[10.5px] font-bold uppercase tracking-widest text-text-muted/70">
+                              Themes
+                           </div>
                            {filteredThemes.slice(0, 10).map((theme, index) => {
                               const isActive = index === selectedIndex
                               return (
@@ -146,17 +153,23 @@ export function CommandPalette({
                                     )}
                                  >
                                     <div className="flex -space-x-1.5 shrink-0">
-                                       <div className="h-5 w-5 rounded-full border border-bg-primary shadow-xs" style={{ background: theme.colors.accent }} />
-                                       <div className="h-5 w-5 rounded-full border border-bg-primary shadow-xs" style={{ background: theme.colors.background }} />
+                                       <div
+                                          className="h-5 w-5 rounded-full border border-bg-primary shadow-xs"
+                                          style={{ background: theme.colors.accent }}
+                                       />
+                                       <div
+                                          className="h-5 w-5 rounded-full border border-bg-primary shadow-xs"
+                                          style={{ background: theme.colors.background }}
+                                       />
                                     </div>
                                     <div className="flex-1 flex items-center justify-between min-w-0 font-medium">
-                                       <span className="text-[14.5px] truncate">
-                                          {theme.name}
-                                       </span>
-                                       <span className={cn(
-                                          "text-[11px] ml-2",
-                                          isActive ? "text-white/70" : "text-text-muted/60"
-                                       )}>
+                                       <span className="text-[14.5px] truncate">{theme.name}</span>
+                                       <span
+                                          className={cn(
+                                             "text-[11px] ml-2",
+                                             isActive ? "text-white/70" : "text-text-muted/60"
+                                          )}
+                                       >
                                           {theme.id}
                                        </span>
                                     </div>
@@ -179,7 +192,9 @@ export function CommandPalette({
                            {Object.entries(groupedItems).map(([category, items]) => {
                               if (items.length === 0) return null
                               // Only show if the items in this category are within the first 7 items overall
-                              const visibleInGroup = items.filter(item => limitedItems.some(li => li.id === item.id))
+                              const visibleInGroup = items.filter(item =>
+                                 limitedItems.some(li => li.id === item.id)
+                              )
                               if (visibleInGroup.length === 0) return null
 
                               return (
@@ -187,8 +202,10 @@ export function CommandPalette({
                                     <div className="px-5 py-2 text-[10.5px] font-bold uppercase tracking-widest text-text-muted/70">
                                        {category}
                                     </div>
-                                    {visibleInGroup.map((item) => {
-                                       const indexInFlat = flatFiltered.findIndex(fi => fi.id === item.id)
+                                    {visibleInGroup.map(item => {
+                                       const indexInFlat = flatFiltered.findIndex(
+                                          fi => fi.id === item.id
+                                       )
                                        const isActive = indexInFlat === selectedIndex
                                        const style = getIconStyles(item.id)
                                        return (
@@ -212,9 +229,7 @@ export function CommandPalette({
                                                    isActive ? "bg-white/20 text-white" : style
                                                 )}
                                              >
-                                                <div className="scale-[0.85]">
-                                                   {item.icon}
-                                                </div>
+                                                <div className="scale-[0.85]">{item.icon}</div>
                                              </div>
 
                                              <div className="flex-1 min-w-0 flex items-center justify-between gap-6">
@@ -223,15 +238,21 @@ export function CommandPalette({
                                                       <span
                                                          className={cn(
                                                             "text-[14px] font-semibold truncate transition-colors",
-                                                            isActive ? "text-text-primary" : "text-text-secondary font-medium"
+                                                            isActive
+                                                               ? "text-text-primary"
+                                                               : "text-text-secondary font-medium"
                                                          )}
                                                       >
                                                          {item.label}
                                                       </span>
-                                                      <span className={cn(
-                                                         "text-[11.5px] truncate transition-colors font-medium",
-                                                         isActive ? "text-white/70" : "text-text-muted/70"
-                                                      )}>
+                                                      <span
+                                                         className={cn(
+                                                            "text-[11.5px] truncate transition-colors font-medium",
+                                                            isActive
+                                                               ? "text-white/70"
+                                                               : "text-text-muted/70"
+                                                         )}
+                                                      >
                                                          {item.description}
                                                       </span>
                                                    </div>
@@ -240,19 +261,21 @@ export function CommandPalette({
                                                 <div className="flex items-center gap-4 shrink-0">
                                                    {item.shortcut && (
                                                       <div className="flex items-center gap-1.5">
-                                                         {item.shortcut.split("+").map((key, ki) => (
-                                                            <kbd
-                                                               key={ki}
-                                                               className={cn(
-                                                                  "min-w-[20px] h-5.5 flex items-center justify-center px-1.5 rounded-md border text-[10px] font-mono shadow-xs transition-colors",
-                                                                  isActive 
-                                                                     ? "bg-white/20 border-white/20 text-white" 
-                                                                     : "bg-bg-secondary border-border text-text-muted"
-                                                               )}
-                                                            >
-                                                               {key}
-                                                            </kbd>
-                                                         ))}
+                                                         {item.shortcut
+                                                            .split("+")
+                                                            .map((key, ki) => (
+                                                               <kbd
+                                                                  key={ki}
+                                                                  className={cn(
+                                                                     "min-w-[20px] h-5.5 flex items-center justify-center px-1.5 rounded-md border text-[10px] font-mono shadow-xs transition-colors",
+                                                                     isActive
+                                                                        ? "bg-white/20 border-white/20 text-white"
+                                                                        : "bg-bg-secondary border-border text-text-muted"
+                                                                  )}
+                                                               >
+                                                                  {key}
+                                                               </kbd>
+                                                            ))}
                                                       </div>
                                                    )}
                                                 </div>

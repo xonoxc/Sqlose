@@ -11,56 +11,64 @@ const DATASETS: Dataset[] = [
    {
       id: "ds-ecommerce",
       name: "Brazilian Ecommerce",
-      description: "Olist marketplace with customers, products, orders, payments and reviews across Brazil",
+      description:
+         "Olist marketplace with customers, products, orders, payments and reviews across Brazil",
       category: "ecommerce",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-retail",
       name: "Retail Inventory",
-      description: "Multi-store retail chain with inventory, suppliers, products and point-of-sale transactions",
+      description:
+         "Multi-store retail chain with inventory, suppliers, products and point-of-sale transactions",
       category: "retail",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-healthcare",
       name: "Hospital Management",
-      description: "Hospital system with patients, doctors, appointments, diagnoses and prescriptions",
+      description:
+         "Hospital system with patients, doctors, appointments, diagnoses and prescriptions",
       category: "healthcare",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-analytics",
       name: "Web Analytics",
-      description: "Website analytics with user sessions, page views, events and conversion tracking",
+      description:
+         "Website analytics with user sessions, page views, events and conversion tracking",
       category: "analytics",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-social",
       name: "Social Network",
-      description: "Social media platform with users, posts, comments, likes and follower relationships",
+      description:
+         "Social media platform with users, posts, comments, likes and follower relationships",
       category: "social",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-finance",
       name: "Personal Finance",
-      description: "Personal finance tracker with accounts, transactions, budgets, investments and categories",
+      description:
+         "Personal finance tracker with accounts, transactions, budgets, investments and categories",
       category: "finance",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-movies",
       name: "Movie Database",
-      description: "TMDB/MovieLens inspired catalog with movies, genres, ratings, cast and user reviews",
+      description:
+         "TMDB/MovieLens inspired catalog with movies, genres, ratings, cast and user reviews",
       category: "entertainment",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
    {
       id: "ds-education",
       name: "Student Records",
-      description: "University student performance with courses, enrollments, grades and professor assignments",
+      description:
+         "University student performance with courses, enrollments, grades and professor assignments",
       category: "education",
       dbTypes: ["postgres", "mysql", "sqlite"],
    },
@@ -1324,7 +1332,7 @@ INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (
 INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (8, 2, 'storm', 'moderate', 'Storm warning: wind gusts up to 80mph expected in London.', '2024-02-18');
 INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (9, 10, 'extreme_heat', 'moderate', 'Heat advisory: temperatures reaching 36C in Guarulhos region.', '2024-03-10');
 INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (10, 12, 'extreme_cold', 'high', 'Extreme cold warning: temperatures dropping to -20C in Helsinki.', '2024-02-10');
-`
+`,
 }
 
 export function listDatasets(): AsyncAppResult<Dataset[]> {

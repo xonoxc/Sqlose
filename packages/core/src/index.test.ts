@@ -62,6 +62,6 @@ describe("core package exports", () => {
       expect(listDatasets).toBeDefined()
       expect(getDatasetSQL).toBeDefined()
       expect(SAMPLE_DATASETS).toBeDefined()
-       expect(Object.keys(SAMPLE_DATASETS)).toHaveLength(10)
+      expect(Object.keys(SAMPLE_DATASETS)).toHaveLength(10)
    })
 })

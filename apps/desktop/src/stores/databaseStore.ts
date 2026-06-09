@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { attempt } from "@sqlose/shared"
 import { listTables, getTableColumns, type ColumnInfo } from "~/lib/schema"
 import { api } from "~/lib/api"
 import type { DBType } from "@sqlose/shared"
@@ -60,9 +61,13 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
       const state = get()
       const isExpanded = state.expandedTableIds.includes(tableId)
       if (isExpanded) {
-         set({ expandedTableIds: state.expandedTableIds.filter(id => id !== tableId) })
+         set({
+            expandedTableIds: state.expandedTableIds.filter(id => id !== tableId),
+         })
       } else {
-         set({ expandedTableIds: [...state.expandedTableIds, tableId] })
+         set({
+            expandedTableIds: [...state.expandedTableIds, tableId],
+         })
       }
    },
 
@@ -76,34 +81,39 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
 
    fetchTables: async (envId: string, dbType: DBType) => {
       set({ schemaLoading: true, schemaError: null })
-      try {
-         const result = await listTables(envId, dbType)
-         set({ tables: result, schemaLoading: false })
-      } catch (err) {
-         set({
-            schemaError: err instanceof Error ? err.message : "Failed to load tables",
-            schemaLoading: false,
-         })
-      }
+      const result = await attempt(listTables(envId, dbType))
+      result.match(
+         tables => set({ tables, schemaLoading: false }),
+         err => set({ schemaError: err.message, schemaLoading: false })
+      )
    },
 
    fetchColumns: async (envId: string, tableName: string, dbType: DBType) => {
       const state = get()
       if (state.tableColumns[tableName]) return
 
-      set({ loadingColumnIds: [...state.loadingColumnIds, tableName] })
-      try {
-         const columns = await getTableColumns(envId, tableName, dbType)
-         set(state => ({
-            tableColumns: { ...state.tableColumns, [tableName]: columns },
-            loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
-         }))
-      } catch {
-         set(state => ({
-            tableColumns: { ...state.tableColumns, [tableName]: [] },
-            loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
-         }))
-      }
+      set({
+         loadingColumnIds: [...state.loadingColumnIds, tableName],
+      })
+      const result = await attempt(getTableColumns(envId, tableName, dbType))
+      result.match(
+         columns =>
+            set(state => ({
+               tableColumns: {
+                  ...state.tableColumns,
+                  [tableName]: columns,
+               },
+               loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
+            })),
+         () =>
+            set(state => ({
+               tableColumns: {
+                  ...state.tableColumns,
+                  [tableName]: [],
+               },
+               loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
+            }))
+      )
    },
 
    fetchTableData: async (envId: string, tableName: string, page = 1, pageSize = 100) => {
@@ -114,35 +124,37 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
          set({ tableDataError: "Invalid table name", tableDataLoading: false })
          return
       }
-      try {
-         const countSql = `SELECT COUNT(*) as total FROM ${safeName}`
-         const countResult = await api.query.execute(envId, countSql)
-         let totalCount = 0
-         if (countResult.isOk()) {
-            totalCount = Number(countResult.value.rows[0]?.total ?? 0)
-         }
 
-         const dataSql = `SELECT * FROM ${safeName} LIMIT ${pageSize} OFFSET ${offset}`
-         const dataResult = await api.query.execute(envId, dataSql)
-         if (dataResult.isErr()) throw dataResult.error
-
-         const qr = dataResult.value
-         set({
-            tableData: {
-               columns: qr.columns,
-               rows: qr.rows as Record<string, unknown>[],
-               totalCount,
-               page,
-               pageSize,
-            },
-            tableDataLoading: false,
-         })
-      } catch (err) {
-         set({
-            tableDataError: err instanceof Error ? err.message : "Failed to load table data",
-            tableDataLoading: false,
-         })
+      const countSql = `SELECT COUNT(*) as total FROM ${safeName}`
+      const countResult = await api.query.execute(envId, countSql)
+      let totalCount = 0
+      if (countResult.isOk()) {
+         totalCount = Number(countResult.value.rows[0]?.total ?? 0)
       }
+
+      const dataSql = `SELECT * FROM ${safeName} LIMIT ${pageSize} OFFSET ${offset}`
+      const dataResult = await api.query.execute(envId, dataSql)
+
+      dataResult.match(
+         qr => {
+            set({
+               tableData: {
+                  columns: qr.columns,
+                  rows: qr.rows as Record<string, unknown>[],
+                  totalCount,
+                  page,
+                  pageSize,
+               },
+               tableDataLoading: false,
+            })
+         },
+         err => {
+            set({
+               tableDataError: err.message,
+               tableDataLoading: false,
+            })
+         }
+      )
    },
 
    refreshTableData: async (envId: string, tableName: string) => {

@@ -25,3 +25,4 @@ coverage/
 # --- Generated Code ---
 # If you use code generators or prisma
 # apps/electron-app/src/generated/
+app/desktop/release

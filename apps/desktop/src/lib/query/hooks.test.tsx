@@ -29,77 +29,65 @@ function Wrapper({ children }: { children: ReactNode }) {
 function mockSqlose() {
    const mock = {
       docker: {
-         startEnv: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: { environmentId: "env-1", port: 5432, connectionString: "postgresql://..." },
-            }),
+         startEnv: vi.fn().mockResolvedValue({
+            success: true,
+            data: { environmentId: "env-1", port: 5432, connectionString: "postgresql://..." },
+         }),
          stopEnv: vi.fn().mockResolvedValue({ success: true, data: {} }),
          restartEnv: vi.fn().mockResolvedValue({ success: true, data: {} }),
          health: vi.fn().mockResolvedValue({ success: true, data: { healthy: true, uptime: 120 } }),
          cleanup: vi.fn(),
       },
       env: {
-         create: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: {
-                  id: "env-1",
-                  name: "test",
-                  dbType: "postgres",
-                  status: "running",
-                  port: 5432,
-                  uptime: 120,
-                  connectionString: "postgresql://localhost:5432/sqlose",
-                  containerId: "container-1",
-                  createdAt: "2025-01-01T00:00:00Z",
-               },
-            }),
+         create: vi.fn().mockResolvedValue({
+            success: true,
+            data: {
+               id: "env-1",
+               name: "test",
+               dbType: "postgres",
+               status: "running",
+               port: 5432,
+               uptime: 120,
+               connectionString: "postgresql://localhost:5432/sqlose",
+               containerId: "container-1",
+               createdAt: "2025-01-01T00:00:00Z",
+            },
+         }),
          destroy: vi.fn().mockResolvedValue({ success: true, data: {} }),
          list: vi.fn().mockResolvedValue({ success: true, data: [] }),
-         get: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: {
-                  id: "env-1",
-                  name: "test",
-                  dbType: "postgres",
-                  status: "running",
-                  port: 5432,
-                  uptime: 120,
-                  connectionString: "postgresql://localhost:5432/sqlose",
-                  containerId: "container-1",
-                  createdAt: "2025-01-01T00:00:00Z",
-               },
-            }),
+         get: vi.fn().mockResolvedValue({
+            success: true,
+            data: {
+               id: "env-1",
+               name: "test",
+               dbType: "postgres",
+               status: "running",
+               port: 5432,
+               uptime: 120,
+               connectionString: "postgresql://localhost:5432/sqlose",
+               containerId: "container-1",
+               createdAt: "2025-01-01T00:00:00Z",
+            },
+         }),
          duplicate: vi.fn(),
          reset: vi.fn(),
       },
       query: {
-         execute: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: { columns: ["id"], rows: [], rowCount: 0, executionTimeMs: 5 },
-            }),
+         execute: vi.fn().mockResolvedValue({
+            success: true,
+            data: { columns: ["id"], rows: [], rowCount: 0, executionTimeMs: 5 },
+         }),
       },
       import: {
-         csv: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: { tableName: "users", rowCount: 5, columns: ["id", "name"] },
-            }),
+         csv: vi.fn().mockResolvedValue({
+            success: true,
+            data: { tableName: "users", rowCount: 5, columns: ["id", "name"] },
+         }),
          sql: vi.fn().mockResolvedValue({ success: true, data: { tablesCreated: ["users"] } }),
-         previewCSV: vi
-            .fn()
-            .mockResolvedValue({
-               success: true,
-               data: { columns: ["id"], preview: [{ id: "1" }] },
-            }),
+         previewCSV: vi.fn().mockResolvedValue({
+            success: true,
+            data: { columns: ["id"], preview: [{ id: "1" }] },
+         }),
       },
       dataset: {
          list: vi.fn().mockResolvedValue({ success: true, data: [] }),

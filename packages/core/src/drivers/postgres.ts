@@ -1,5 +1,6 @@
 import pg from "pg"
 import { ok, err } from "neverthrow"
+import { attempt } from "@sqlose/shared"
 import { QueryError } from "@sqlose/shared"
 import type { QueryResult, AsyncAppResult } from "@sqlose/shared"
 import { getPool } from "./pool"
@@ -10,40 +11,49 @@ export async function executePostgresQuery(
 ): AsyncAppResult<QueryResult> {
    const pool = getPool(connectionString, "postgres") as pg.Pool
 
-   let client: pg.PoolClient | null = null
-   try {
-      client = await pool.connect()
-      const start = performance.now()
-      const result = await client.query(sql)
-      const executionTimeMs = Math.round(performance.now() - start)
-      return ok({
-         columns: result.fields.map(f => f.name),
-         rows: result.rows as Record<string, unknown>[],
-         rowCount: result.rowCount ?? result.rows.length,
-         executionTimeMs,
-      })
-   } catch (e) {
-      const message = (e as Error).message ?? ""
-      if (message.toLowerCase().includes("syntax")) {
-         return err(new QueryError("query:invalid_syntax", message))
-      }
-      return err(new QueryError("query:execution_failed", message))
-   } finally {
-      if (client) client.release()
+   const clientResult = await attempt<pg.PoolClient>(pool.connect())
+   if (clientResult.isErr()) {
+      return err(new QueryError("query:execution_failed", clientResult.error.message))
    }
+
+   const client = clientResult.value
+   const start = performance.now()
+
+   const queryResult = await attempt<pg.QueryResult>(client.query(sql))
+   client.release()
+
+   return queryResult.match(
+      result => {
+         const executionTimeMs = Math.round(performance.now() - start)
+         return ok({
+            columns: result.fields.map(f => f.name),
+            rows: result.rows as Record<string, unknown>[],
+            rowCount: result.rowCount ?? result.rows.length,
+            executionTimeMs,
+         })
+      },
+      e => {
+         const message = e.message ?? ""
+         if (message.toLowerCase().includes("syntax")) {
+            return err(new QueryError("query:invalid_syntax", message))
+         }
+         return err(new QueryError("query:execution_failed", message))
+      }
+   )
 }
 
 export async function testPostgresConnection(connectionString: string): AsyncAppResult<boolean> {
    const pool = getPool(connectionString, "postgres") as pg.Pool
 
-   let client: pg.PoolClient | null = null
-   try {
-      client = await pool.connect()
-      await client.query("SELECT 1")
-      return ok(true)
-   } catch {
-      return ok(false)
-   } finally {
-      if (client) client.release()
-   }
+   const clientResult = await attempt<pg.PoolClient>(pool.connect())
+   if (clientResult.isErr()) return ok(false)
+
+   const client = clientResult.value
+   const queryResult = await attempt(client.query("SELECT 1"))
+   client.release()
+
+   return queryResult.match(
+      () => ok(true),
+      () => ok(false)
+   )
 }

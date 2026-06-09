@@ -8,6 +8,7 @@ import type { DockerAvailability } from "@sqlose/shared"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+import { attemptSync } from "@sqlose/shared"
 import {
    initDocker,
    stopOrphanedContainers,
@@ -40,12 +41,10 @@ let win: BrowserWindow | null
 let dockerAvailable = false
 
 function isDockerCliInstalled(): boolean {
-   try {
+   return attemptSync(() => {
       execFileSync("docker", ["--version"], { stdio: "ignore" })
       return true
-   } catch {
-      return false
-   }
+   }).unwrapOr(false)
 }
 
 function dockerUnavailableStatus(): DockerAvailability {

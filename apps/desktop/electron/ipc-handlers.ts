@@ -2,7 +2,7 @@ import { ipcMain, app } from "electron"
 import path from "path"
 import fs from "fs"
 import type { Result } from "neverthrow"
-import { AppError } from "@sqlose/shared"
+import { AppError, attempt, attemptSync } from "@sqlose/shared"
 import type { DBType, IPCRequest } from "@sqlose/shared"
 
 import {
@@ -192,7 +192,7 @@ export function registerAllHandlers(): void {
       if (typeof dbType !== "string" || !["postgres", "mysql", "sqlite"].includes(dbType)) {
          return invalidPayload("dbType must be postgres, mysql, or sqlite")
       }
-      const result = await dockerPullImage(dbType as DBType, (percentage) => {
+      const result = await dockerPullImage(dbType as DBType, percentage => {
          _event.sender.send("docker:pull-progress", { dbType, percentage })
       })
       if (result.isErr()) return serializeErr(result.error)
@@ -278,15 +278,11 @@ export function registerAllHandlers(): void {
       if (env.port > 0) releasePort(env.port)
 
       if (env.dbType === "sqlite") {
-         try {
-            fs.unlinkSync(getSqliteDbPath(environmentId))
-         } catch {
-            // file may not exist if no queries were ever run
-         }
+         attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
       }
 
       if (env.connectionString) {
-         destroyPool(env.connectionString).catch(() => {})
+         attempt(destroyPool(env.connectionString))
       }
 
       await destroyEnvironmentRecord(environmentId)
@@ -325,11 +321,7 @@ export function registerAllHandlers(): void {
          const dup = result.value
          const srcPath = getSqliteDbPath(environmentId)
          const dstPath = getSqliteDbPath(dup.id)
-         try {
-            fs.copyFileSync(srcPath, dstPath)
-         } catch {
-            // source file may not exist
-         }
+         attemptSync(() => fs.copyFileSync(srcPath, dstPath))
          const updated = await updateEnvironment(dup.id, {
             connectionString: dstPath,
             status: "running",
@@ -353,11 +345,7 @@ export function registerAllHandlers(): void {
          )
 
       if (env.dbType === "sqlite") {
-         try {
-            fs.unlinkSync(getSqliteDbPath(environmentId))
-         } catch {
-            // file may not exist
-         }
+         attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
       }
 
       const result = await resetEnvironmentRecord(environmentId)
@@ -380,16 +368,10 @@ export function registerAllHandlers(): void {
       if (env.port > 0) releasePort(env.port)
 
       if (env.dbType === "sqlite") {
-         try {
-            fs.unlinkSync(getSqliteDbPath(environmentId))
-         } catch {
-            // file may not exist
-         }
+         attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
       }
 
-      if (env.connectionString) {
-         destroyPool(env.connectionString).catch(() => {})
-      }
+      if (env.connectionString) attempt(destroyPool(env.connectionString))
 
       await destroyEnvironmentRecord(environmentId)
       return serializeOk({ environmentId })

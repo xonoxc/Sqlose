@@ -35,20 +35,15 @@ export interface ForeignKeyRelation {
 // We are doing a very simplistic fetch mechanism here for any FKs inside SQLite
 // Note: If postgres/mysql, we'd need appropriate queries, but since this is primarily sqlite, we just do a fallback logic.
 async function fetchForeignKeys(envId: string, tableName: string): Promise<ForeignKeyRelation[]> {
-   try {
-       // Assuming sqlite for now, we can use pragma foreign_key_list
-       const safeTableName = tableName.replace(/'/g, "''")
-       const sql = `PRAGMA foreign_key_list('${safeTableName}')`
-       const res = await api.query.execute(envId, sql)
-       if (res.isOk()) {
-            return res.value.rows.map((r: Record<string, unknown>) => ({
-               fromCol: String(r.from),
-               toTable: String(r.table),
-               toCol: String(r.to)
-           }))
-       }
-   } catch {
-       // Ignore errors, fallback
+   const safeTableName = tableName.replace(/'/g, "''")
+   const sql = `PRAGMA foreign_key_list('${safeTableName}')`
+   const res = await api.query.execute(envId, sql)
+   if (res.isOk()) {
+      return res.value.rows.map((r: Record<string, unknown>) => ({
+         fromCol: String(r.from),
+         toTable: String(r.table),
+         toCol: String(r.to),
+      }))
    }
    return []
 }
@@ -111,8 +106,8 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => 
 
    nodes.forEach(node => {
       const nodeWithPosition = dagreGraph.node(node.id)
-       node.targetPosition = direction === "LR" ? Position.Left : Position.Top
-       node.sourcePosition = direction === "LR" ? Position.Right : Position.Bottom
+      node.targetPosition = direction === "LR" ? Position.Left : Position.Top
+      node.sourcePosition = direction === "LR" ? Position.Right : Position.Bottom
 
       // Shift slightly to center
       node.position = {
@@ -140,52 +135,65 @@ export function SchemaDiagram() {
 
       const initializeDiagram = async () => {
          setLoading(true)
-         
+
          // Fetch all tables if needed
          if (tables.length === 0) {
             await fetchTables(envId, dbType)
          }
-         
-         const dbTablesRes = await api.query.execute(envId, dbType === 'sqlite' ? "SELECT name FROM sqlite_master WHERE type='table'" : "SELECT table_name FROM information_schema.tables")
-          const myTables = dbTablesRes.isOk() ? dbTablesRes.value?.rows?.map((r: Record<string, unknown>) => r.name || r.table_name) || [] : []
+
+         const dbTablesRes = await api.query.execute(
+            envId,
+            dbType === "sqlite"
+               ? "SELECT name FROM sqlite_master WHERE type='table'"
+               : "SELECT table_name FROM information_schema.tables"
+         )
+         const myTables = dbTablesRes.isOk()
+            ? dbTablesRes.value?.rows?.map(
+                 (r: Record<string, unknown>) => r.name || r.table_name
+              ) || []
+            : []
 
          const newNodes: Node[] = []
          const newEdges: Edge[] = []
 
          for (const t of myTables) {
-             const tName = String(t)
-             if (tName.startsWith("sqlite_")) continue // Skip internal SQLite tables
-             
-             // Ensure columns are fetched
-             await fetchColumns(envId, tName, dbType)
-             const cols: ColumnInfo[] = useDatabaseStore.getState().tableColumns[tName] || []
-             
-             // Construct Node
-             newNodes.push({
-                 id: tName,
-                 type: "tableNode",
-                 position: { x: 0, y: 0 },
-                 data: { label: tName, columns: cols }
-             })
-             
-             // Fetch and Process FKs for Edges
-             const fks = await fetchForeignKeys(envId, tName)
-             for (const fk of fks) {
-                 newEdges.push(
-                    buildForeignKeyEdge(
-                       tName,
-                       fk,
-                       currentTheme.colors.accent,
-                       currentTheme.colors.surface
-                    )
-                 )
-             }
+            const tName = String(t)
+            if (tName.startsWith("sqlite_")) continue // Skip internal SQLite tables
+
+            // Ensure columns are fetched
+            await fetchColumns(envId, tName, dbType)
+            const cols: ColumnInfo[] = useDatabaseStore.getState().tableColumns[tName] || []
+
+            // Construct Node
+            newNodes.push({
+               id: tName,
+               type: "tableNode",
+               position: { x: 0, y: 0 },
+               data: { label: tName, columns: cols },
+            })
+
+            // Fetch and Process FKs for Edges
+            const fks = await fetchForeignKeys(envId, tName)
+            for (const fk of fks) {
+               newEdges.push(
+                  buildForeignKeyEdge(
+                     tName,
+                     fk,
+                     currentTheme.colors.accent,
+                     currentTheme.colors.surface
+                  )
+               )
+            }
          }
 
-         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(newNodes, newEdges, "LR")
+         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+            newNodes,
+            newEdges,
+            "LR"
+         )
          setNodes(layoutedNodes)
          setEdges(layoutedEdges)
-         
+
          setLoading(false)
       }
 
@@ -239,7 +247,11 @@ export function SchemaDiagram() {
          >
             <Background color={currentTheme.colors.border} gap={24} />
             <Controls className="bg-bg-secondary border border-border" />
-            <MiniMap nodeStrokeColor={currentTheme.colors.border} nodeColor={currentTheme.colors.surface} maskColor="rgba(0,0,0,0.4)" />
+            <MiniMap
+               nodeStrokeColor={currentTheme.colors.border}
+               nodeColor={currentTheme.colors.surface}
+               maskColor="rgba(0,0,0,0.4)"
+            />
          </ReactFlow>
       </div>
    )

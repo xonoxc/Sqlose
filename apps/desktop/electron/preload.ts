@@ -9,9 +9,7 @@ function createInvoke<C extends IPCChannel>(channel: C) {
       ipcRenderer.invoke(channel, request)
 }
 
-type DbResult<T> =
-   | { success: true; data: T }
-   | { success: false; error: string }
+type DbResult<T> = { success: true; data: T } | { success: false; error: string }
 
 function dbInvoke<T>(channel: string, ...args: unknown[]): Promise<DbResult<T>> {
    return ipcRenderer.invoke(channel, ...args) as Promise<DbResult<T>>
@@ -30,7 +28,10 @@ const api = {
       createContainer: createInvoke("docker:create-container"),
       checkAvailable: createInvoke("docker:check-available"),
       onPullProgress: (callback: (dbType: string, percentage: number) => void) => {
-         const handler = (_event: Electron.IpcRendererEvent, data: { dbType: string; percentage: number }) => {
+         const handler = (
+            _event: Electron.IpcRendererEvent,
+            data: { dbType: string; percentage: number }
+         ) => {
             callback(data.dbType, data.percentage)
          }
          ipcRenderer.on("docker:pull-progress", handler)
@@ -101,15 +102,17 @@ const api = {
          ),
       deleteHistoryEntry: (id: string) => dbInvoke<void>("db:delete-history-entry", id),
       clearHistory: () => dbInvoke<void>("db:clear-history"),
-    },
+   },
    update: {
       onUpdateAvailable: (callback: (info: UpdateAvailableInfo) => void) => {
-         const handler = (_event: Electron.IpcRendererEvent, info: UpdateAvailableInfo) => callback(info)
+         const handler = (_event: Electron.IpcRendererEvent, info: UpdateAvailableInfo) =>
+            callback(info)
          ipcRenderer.on("update-available", handler)
          return () => ipcRenderer.removeListener("update-available", handler)
       },
       onDownloadProgress: (callback: (progress: ProgressInfo) => void) => {
-         const handler = (_event: Electron.IpcRendererEvent, progress: ProgressInfo) => callback(progress)
+         const handler = (_event: Electron.IpcRendererEvent, progress: ProgressInfo) =>
+            callback(progress)
          ipcRenderer.on("download-progress", handler)
          return () => ipcRenderer.removeListener("download-progress", handler)
       },

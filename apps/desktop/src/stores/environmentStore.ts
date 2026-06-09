@@ -206,26 +206,26 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
             return result
          },
 
-          nukeEnvironment: async (environmentId: string) => {
-             set({ isLoading: true, error: null })
-             const result = await api.env.nuke(environmentId)
+         nukeEnvironment: async (environmentId: string) => {
+            set({ isLoading: true, error: null })
+            const result = await api.env.nuke(environmentId)
 
-             if (result.isOk()) {
-                const current = get()
-                set({
-                   environments: current.environments.filter(e => e.id !== environmentId),
-                   selectedEnvironmentId:
-                      current.selectedEnvironmentId === environmentId
-                         ? null
-                         : current.selectedEnvironmentId,
-                   isLoading: false,
-                })
-                return ok(environmentId)
-             }
+            if (result.isOk()) {
+               const current = get()
+               set({
+                  environments: current.environments.filter(e => e.id !== environmentId),
+                  selectedEnvironmentId:
+                     current.selectedEnvironmentId === environmentId
+                        ? null
+                        : current.selectedEnvironmentId,
+                  isLoading: false,
+               })
+               return ok(environmentId)
+            }
 
-             set({ error: result.error.message, isLoading: false })
-             return err(result.error)
-          },
+            set({ error: result.error.message, isLoading: false })
+            return err(result.error)
+         },
 
          selectEnvironment: (environmentId: string | null) => {
             if (environmentId !== null) {
@@ -244,13 +244,13 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
             return get().environments.find(e => e.id === environmentId)
          },
       }),
-       {
-          name: "sqlose-environments",
-          storage: sqliteStorage,
-          partialize: state => ({
-             environments: state.environments,
-             selectedEnvironmentId: state.selectedEnvironmentId,
-          }),
-       }
+      {
+         name: "sqlose-environments",
+         storage: sqliteStorage,
+         partialize: state => ({
+            environments: state.environments,
+            selectedEnvironmentId: state.selectedEnvironmentId,
+         }),
+      }
    )
 )

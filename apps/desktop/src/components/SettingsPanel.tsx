@@ -74,9 +74,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       "shortcuts.show": "Show Keyboard Shortcuts",
    }
 
-   const platformKeybindings = keybindings.filter(kb =>
-      isMac() ? kb.meta : kb.ctrl
-   )
+   const platformKeybindings = keybindings.filter(kb => (isMac() ? kb.meta : kb.ctrl))
    const agnostic = keybindings.filter(kb => !kb.meta && !kb.ctrl)
    platformKeybindings.push(...agnostic)
    const seen = new Set<string>()
@@ -128,9 +126,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   {/* Body */}
                   <div className="max-h-[65vh] overflow-y-auto custom-scrollbar px-5 py-5 space-y-6">
                      {/* Appearance */}
-                      <section>
-                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                            Appearance
+                     <section>
+                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Appearance
                         </h3>
                         <p className="text-[13px] text-text-muted mb-3">
                            Select how Sqlose looks on your device.
@@ -194,7 +192,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                         </div>
                      </section>
 
-                      <Separator />
+                     <Separator />
 
                      {/* Display */}
                      <section>
@@ -244,7 +242,10 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                     Adjust the vertical spacing between rows in data tables.
                                  </p>
                               </div>
-                              <Select value={rowSpacing} onValueChange={v => setRowSpacing(v as "comfortable" | "compact")}>
+                              <Select
+                                 value={rowSpacing}
+                                 onValueChange={v => setRowSpacing(v as "comfortable" | "compact")}
+                              >
                                  <SelectTrigger className="w-[150px]">
                                     <SelectValue />
                                  </SelectTrigger>
@@ -285,7 +286,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               <div>
                                  <p className="text-sm text-text-primary">Alternating Row Colors</p>
                                  <p className="text-xs text-text-muted mt-0.5">
-                                    Apply alternating background colors to rows in data tables for easier reading.
+                                    Apply alternating background colors to rows in data tables for
+                                    easier reading.
                                  </p>
                               </div>
                               <button
@@ -325,9 +327,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      <Separator />
 
                      {/* Editor */}
-                      <section>
-                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                            Editor
+                     <section>
+                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Editor
                         </h3>
                         <div className="space-y-4">
                            <div className="flex items-center justify-between">
@@ -382,15 +384,16 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      <Separator />
 
                      {/* Execution */}
-                      <section>
-                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                            Execution
+                     <section>
+                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
+                           Execution
                         </h3>
                         <div className="flex items-center justify-between">
                            <div>
                               <p className="text-sm text-text-primary">Execution Mode</p>
                               <p className="text-xs text-text-muted mt-0.5">
-                                 Review Mode queues changes for review before applying. Direct Mode applies changes immediately.
+                                 Review Mode queues changes for review before applying. Direct Mode
+                                 applies changes immediately.
                               </p>
                            </div>
                            <div className="flex gap-1 bg-bg-tertiary border border-border rounded-lg p-0.5">
@@ -425,8 +428,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      {/* Keybindings */}
                      <section>
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80">
-                               Keybindings
+                           <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80">
+                              Keybindings
                            </h3>
                            <Button
                               variant="ghost"

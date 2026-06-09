@@ -44,11 +44,11 @@
 
 ### Multi-Engine Query Execution
 
-| Engine     | Mode        | Connection                          |
-| ---------- | ----------- | ----------------------------------- |
-| **SQLite** | Local       | Built-in `sql.js` (in-process)      |
-| **PostgreSQL** | Docker container | `pg` driver, auto-provisioned   |
-| **MySQL**  | Docker container | `mysql2` driver, auto-provisioned |
+| Engine         | Mode             | Connection                        |
+| -------------- | ---------------- | --------------------------------- |
+| **SQLite**     | Local            | Built-in `sql.js` (in-process)    |
+| **PostgreSQL** | Docker container | `pg` driver, auto-provisioned     |
+| **MySQL**      | Docker container | `mysql2` driver, auto-provisioned |
 
 Choose your engine on the fly — no config files, no connection strings to remember.
 
@@ -79,11 +79,11 @@ Choose your engine on the fly — no config files, no connection strings to reme
 
 ### 11 Dark Themes
 
-| Theme | Style |
-|-------|-------|
+| Theme                                           | Style                 |
+| ----------------------------------------------- | --------------------- |
 | Default, Tokyo Night, Catppuccin Mocha, Dracula | Popular dark palettes |
-| Gruvbox Dark, Nord, Rose Pine, Kanagawa | Warm & muted tones |
-| One Dark, GitHub Dark, Solarized Dark | Editor classics |
+| Gruvbox Dark, Nord, Rose Pine, Kanagawa         | Warm & muted tones    |
+| One Dark, GitHub Dark, Solarized Dark           | Editor classics       |
 
 Each theme includes coordinated Monaco Editor colors, UI surfaces, and syntax highlighting.
 
@@ -168,7 +168,6 @@ Seed any environment with realistic sample data in one click.
    ```
 
 4. **Create your first environment**
-
    - Click **"New Database"** in the sidebar
    - Choose SQLite (no Docker needed), PostgreSQL, or MySQL
    - Optionally pick a sample dataset to seed it

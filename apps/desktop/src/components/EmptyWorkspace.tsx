@@ -31,7 +31,8 @@ export function EmptyWorkspace({ onNewQuery, onOpenPalette }: EmptyWorkspaceProp
                Ready to write queries
             </h2>
             <p className="text-[14px] text-text-muted mb-8 leading-relaxed">
-               Start interacting with your database by creating a new query tab or using the command system.
+               Start interacting with your database by creating a new query tab or using the command
+               system.
             </p>
 
             <div className="flex flex-col gap-2 w-full max-w-[280px]">
@@ -45,11 +46,17 @@ export function EmptyWorkspace({ onNewQuery, onOpenPalette }: EmptyWorkspaceProp
                   <div className="flex items-center gap-1 opacity-60">
                      {isMac() ? (
                         <>
-                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">⌘</kbd>
-                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">N</kbd>
+                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                              ⌘
+                           </kbd>
+                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                              N
+                           </kbd>
                         </>
                      ) : (
-                        <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">Ctrl+N</kbd>
+                        <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                           Ctrl+N
+                        </kbd>
                      )}
                   </div>
                </button>
@@ -63,11 +70,17 @@ export function EmptyWorkspace({ onNewQuery, onOpenPalette }: EmptyWorkspaceProp
                   <div className="flex items-center gap-1 opacity-60">
                      {isMac() ? (
                         <>
-                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">⌘</kbd>
-                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">K</kbd>
+                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                              ⌘
+                           </kbd>
+                           <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                              K
+                           </kbd>
                         </>
                      ) : (
-                        <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">Ctrl+K</kbd>
+                        <kbd className="font-mono text-[11px] bg-bg-primary px-1.5 py-0.5 rounded shadow-sm border border-border/40">
+                           Ctrl+K
+                        </kbd>
                      )}
                   </div>
                </button>

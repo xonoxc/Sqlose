@@ -15,20 +15,39 @@ vi.mock("@sqlose/core", () => {
    const f = () => vi.fn()
    const stopOrphaned = f()
    return {
-      createEnvironment: f(), startEnvironment: f(), stopEnvironment: f(), restartEnvironment: f(),
-      healthCheck: f(), destroyContainer: f(), stopOrphanedContainers: stopOrphaned, cleanupOrphans: stopOrphaned,
-      createEnvironmentRecord: f(), getEnvironment: f(), listEnvironments: f(), updateEnvironment: f(),
-      destroyEnvironmentRecord: f(), duplicateEnvironmentRecord: f(), resetEnvironmentRecord: f(),
-      loadEnvironment: f(), releasePort: f(), pullImage: f(),
+      createEnvironment: f(),
+      startEnvironment: f(),
+      stopEnvironment: f(),
+      restartEnvironment: f(),
+      healthCheck: f(),
+      destroyContainer: f(),
+      stopOrphanedContainers: stopOrphaned,
+      cleanupOrphans: stopOrphaned,
+      createEnvironmentRecord: f(),
+      getEnvironment: f(),
+      listEnvironments: f(),
+      updateEnvironment: f(),
+      destroyEnvironmentRecord: f(),
+      duplicateEnvironmentRecord: f(),
+      resetEnvironmentRecord: f(),
+      loadEnvironment: f(),
+      releasePort: f(),
+      pullImage: f(),
+      destroyPool: vi.fn().mockResolvedValue(undefined),
       executeQuery: f(),
-      importCSV: f(), previewCSV: f(), parseSQLDump: f(), extractTableNames: f(),
-      listDatasets: f(), getDatasetSQL: f(),
+      importCSV: f(),
+      previewCSV: f(),
+      parseSQLDump: f(),
+      extractTableNames: f(),
+      listDatasets: f(),
+      getDatasetSQL: f(),
    }
 })
 
 beforeEach(async () => {
    const electron = await import("electron")
-   mockHandle = (electron as unknown as { ipcMain: { handle: ReturnType<typeof vi.fn> } }).ipcMain.handle
+   mockHandle = (electron as unknown as { ipcMain: { handle: ReturnType<typeof vi.fn> } }).ipcMain
+      .handle
    Object.assign(mockCore, await import("@sqlose/core"))
 })
 

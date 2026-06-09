@@ -17,9 +17,5 @@ const modeConfig: Record<VimMode, { label: string }> = {
 
 export function VimIndicator({ mode, className }: VimIndicatorProps) {
    const config = modeConfig[mode]
-   return (
-      <span className={cn("font-mono font-semibold", className)}>
-         {config.label}
-      </span>
-   )
+   return <span className={cn("font-mono font-semibold", className)}>{config.label}</span>
 }

@@ -1,4 +1,5 @@
 import { useRef, useCallback } from "react"
+import { attempt, attemptSync } from "@sqlose/shared"
 import { api } from "~/lib/api"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useEditorStore } from "~/stores/editorStore"
@@ -66,14 +67,16 @@ function formatAsMarkdown(result: QueryResult): string {
    const cols = result.columns
    const header = `| ${cols.join(" | ")} |`
    const separator = `| ${cols.map(() => "---").join(" | ")} |`
-   const rows = result.rows.map(
-      row => `| ${cols.map(c => formatCell(row[c])).join(" | ")} |`
-   )
+   const rows = result.rows.map(row => `| ${cols.map(c => formatCell(row[c])).join(" | ")} |`)
    return [header, separator, ...rows].join("\n")
 }
 
 const FILE_EXT: Record<string, string> = {
-   JSON: "json", CSV: "csv", SQL: "sql", TSV: "tsv", Markdown: "md",
+   JSON: "json",
+   CSV: "csv",
+   SQL: "sql",
+   TSV: "tsv",
+   Markdown: "md",
 }
 
 const MIME_TYPES: Record<string, string> = {
@@ -86,12 +89,18 @@ const MIME_TYPES: Record<string, string> = {
 
 function formatResults(result: QueryResult, format: string): string {
    switch (format) {
-      case "JSON": return formatAsJson(result)
-      case "CSV": return formatAsCsv(result, true)
-      case "SQL": return formatAsSql(result)
-      case "TSV": return formatAsTsv(result, true)
-      case "Markdown": return formatAsMarkdown(result)
-      default: return formatAsTsv(result, true)
+      case "JSON":
+         return formatAsJson(result)
+      case "CSV":
+         return formatAsCsv(result, true)
+      case "SQL":
+         return formatAsSql(result)
+      case "TSV":
+         return formatAsTsv(result, true)
+      case "Markdown":
+         return formatAsMarkdown(result)
+      default:
+         return formatAsTsv(result, true)
    }
 }
 
@@ -112,12 +121,11 @@ export async function copyResultsToClipboard(result: QueryResult, format: string
    const text = formatResults(result, format)
 
    if (navigator.clipboard?.writeText) {
-      try {
-         await navigator.clipboard.writeText(text)
+      const clipResult = await attempt(navigator.clipboard.writeText(text))
+      if (clipResult.isOk()) {
          return
-      } catch (err) {
-         console.warn("Clipboard API failed, trying fallback:", err)
       }
+      console.warn("Clipboard API failed, trying fallback:", clipResult.error)
    }
 
    const ta = document.createElement("textarea")
@@ -128,13 +136,13 @@ export async function copyResultsToClipboard(result: QueryResult, format: string
    document.body.appendChild(ta)
    ta.select()
 
-   try {
-      ;(document as HTMLDocument & { execCommand(name: string): boolean }).execCommand("copy")
-   } catch (err) {
-      console.error("All clipboard copy methods failed:", err)
-   } finally {
-      document.body.removeChild(ta)
+   const execResult = attemptSync(() =>
+      (document as HTMLDocument & { execCommand(name: string): boolean }).execCommand("copy")
+   )
+   if (execResult.isErr()) {
+      console.error("All clipboard copy methods failed:", execResult.error)
    }
+   document.body.removeChild(ta)
 }
 
 export function useQueryExecution() {

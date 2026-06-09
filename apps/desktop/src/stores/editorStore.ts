@@ -29,7 +29,7 @@ function isValidVimMode(mode: unknown): mode is VimMode {
 
 export const useEditorStore = create<EditorStore>()(
    persist(
-      (set) => ({
+      set => ({
          vimMode: "normal",
          queryDraft: "",
          selectedEnvironmentId: null,
@@ -52,14 +52,14 @@ export const useEditorStore = create<EditorStore>()(
             return ok(environmentId)
          },
       }),
-       {
-          name: "sqlose-editor",
-          storage: sqliteStorage,
-          partialize: state => ({
-             vimMode: state.vimMode,
-             queryDraft: state.queryDraft,
-             selectedEnvironmentId: state.selectedEnvironmentId,
-          }),
-       }
+      {
+         name: "sqlose-editor",
+         storage: sqliteStorage,
+         partialize: state => ({
+            vimMode: state.vimMode,
+            queryDraft: state.queryDraft,
+            selectedEnvironmentId: state.selectedEnvironmentId,
+         }),
+      }
    )
 )

@@ -55,7 +55,15 @@ export const useHistoryStore = create<HistoryStore>()((set, get) => ({
    },
 
    addEntry: async (sql, environmentId, dbType, duration, rowCount, status, error) => {
-      const entry = createHistoryEntry(sql, environmentId, dbType, duration, rowCount, status, error)
+      const entry = createHistoryEntry(
+         sql,
+         environmentId,
+         dbType,
+         duration,
+         rowCount,
+         status,
+         error
+      )
       const result = await window.sqlose.db.addHistoryEntry(
          entry.id,
          entry.sql,

@@ -61,16 +61,14 @@ describe("settingsStore", () => {
       })
 
       it("updateKeybinding should update a keybinding at index", () => {
-         useSettingsStore
-            .getState()
-            .addKeybinding({
-               action: "query.execute",
-               key: "r",
-               ctrl: true,
-               shift: false,
-               alt: false,
-               meta: false,
-            })
+         useSettingsStore.getState().addKeybinding({
+            action: "query.execute",
+            key: "r",
+            ctrl: true,
+            shift: false,
+            alt: false,
+            meta: false,
+         })
          const newBinding = {
             action: "env.create",
             key: "n",
@@ -85,40 +83,34 @@ describe("settingsStore", () => {
       })
 
       it("updateKeybinding should return error for invalid index", () => {
-         const result = useSettingsStore
-            .getState()
-            .updateKeybinding(99, {
-               action: "query.execute",
-               key: "x",
-               ctrl: false,
-               shift: false,
-               alt: false,
-               meta: false,
-            })
+         const result = useSettingsStore.getState().updateKeybinding(99, {
+            action: "query.execute",
+            key: "x",
+            ctrl: false,
+            shift: false,
+            alt: false,
+            meta: false,
+         })
          expect(result.isErr()).toBe(true)
       })
 
       it("removeKeybinding should remove a keybinding at index", () => {
-         useSettingsStore
-            .getState()
-            .addKeybinding({
-               action: "query.execute",
-               key: "r",
-               ctrl: true,
-               shift: false,
-               alt: false,
-               meta: false,
-            })
-         useSettingsStore
-            .getState()
-            .addKeybinding({
-               action: "env.create",
-               key: "n",
-               ctrl: true,
-               shift: false,
-               alt: false,
-               meta: false,
-            })
+         useSettingsStore.getState().addKeybinding({
+            action: "query.execute",
+            key: "r",
+            ctrl: true,
+            shift: false,
+            alt: false,
+            meta: false,
+         })
+         useSettingsStore.getState().addKeybinding({
+            action: "env.create",
+            key: "n",
+            ctrl: true,
+            shift: false,
+            alt: false,
+            meta: false,
+         })
          const result = useSettingsStore.getState().removeKeybinding(0)
          expect(result.isOk()).toBe(true)
          expect(useSettingsStore.getState().keybindings).toHaveLength(1)
@@ -131,16 +123,14 @@ describe("settingsStore", () => {
       })
 
       it("resetKeybindings should reset to defaults", () => {
-         useSettingsStore
-            .getState()
-            .addKeybinding({
-               action: "query.execute",
-               key: "r",
-               ctrl: true,
-               shift: false,
-               alt: false,
-               meta: false,
-            })
+         useSettingsStore.getState().addKeybinding({
+            action: "query.execute",
+            key: "r",
+            ctrl: true,
+            shift: false,
+            alt: false,
+            meta: false,
+         })
          const result = useSettingsStore.getState().resetKeybindings()
          expect(result.isOk()).toBe(true)
       })

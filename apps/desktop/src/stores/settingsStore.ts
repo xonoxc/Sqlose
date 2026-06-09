@@ -166,9 +166,9 @@ export const useSettingsStore = create<SettingsStore>()(
             return ok(defaults)
          },
       }),
-       {
-          name: "sqlose-settings",
-          storage: sqliteStorage,
-       }
+      {
+         name: "sqlose-settings",
+         storage: sqliteStorage,
+      }
    )
 )

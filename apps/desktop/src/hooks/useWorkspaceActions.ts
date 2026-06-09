@@ -31,13 +31,16 @@ export function useWorkspaceActions() {
       }
    }, [openTab, setQueryDraft])
 
-   const handleQueryChange = useCallback((value: string) => {
-      setQueryDraft(value)
-      const tid = useWorkspaceStore.getState().activeTabId
-      if (tid) {
-         useWorkspaceStore.getState().updateTab(tid, { query: value, isDirty: true })
-      }
-   }, [setQueryDraft])
+   const handleQueryChange = useCallback(
+      (value: string) => {
+         setQueryDraft(value)
+         const tid = useWorkspaceStore.getState().activeTabId
+         if (tid) {
+            useWorkspaceStore.getState().updateTab(tid, { query: value, isDirty: true })
+         }
+      },
+      [setQueryDraft]
+   )
 
    const handleClearResults = useCallback(() => {
       const tid = useWorkspaceStore.getState().activeTabId
@@ -46,23 +49,29 @@ export function useWorkspaceActions() {
       }
    }, [])
 
-   const handleOpenTable = useCallback((tableName: string) => {
-      const result = openTab(selectedEnvironmentId ?? undefined, { tableName, title: tableName })
-      if (result.isOk()) {
-         const tab = result.value
-         setActiveTab(tab.id)
-      }
-   }, [openTab, selectedEnvironmentId, setActiveTab])
+   const handleOpenTable = useCallback(
+      (tableName: string) => {
+         const result = openTab(selectedEnvironmentId ?? undefined, { tableName, title: tableName })
+         if (result.isOk()) {
+            const tab = result.value
+            setActiveTab(tab.id)
+         }
+      },
+      [openTab, selectedEnvironmentId, setActiveTab]
+   )
 
-   const handleOpenQuery = useCallback((sql: string) => {
-      const result = openTab()
-      if (result.isOk()) {
-         const tab = result.value
-         updateTab(tab.id, { query: sql })
-         setQueryDraft(sql)
-         setActiveTab(tab.id)
-      }
-   }, [openTab, updateTab, setQueryDraft, setActiveTab])
+   const handleOpenQuery = useCallback(
+      (sql: string) => {
+         const result = openTab()
+         if (result.isOk()) {
+            const tab = result.value
+            updateTab(tab.id, { query: sql })
+            setQueryDraft(sql)
+            setActiveTab(tab.id)
+         }
+      },
+      [openTab, updateTab, setQueryDraft, setActiveTab]
+   )
 
    return {
       queryDraft,

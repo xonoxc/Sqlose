@@ -1,6 +1,6 @@
 import type Docker from "dockerode"
 import { ok, err } from "neverthrow"
-import { AppError, DockerError, okResult } from "@sqlose/shared"
+import { AppError, DockerError, okResult, attempt } from "@sqlose/shared"
 import type { DBType, AsyncAppResult, AppResult } from "@sqlose/shared"
 import { findAvailablePort, reservePort, releasePort } from "./port"
 import { loadEnvironments, saveEnvironment } from "../environment/store"
@@ -79,46 +79,44 @@ function parseDockerHost(host: string): Record<string, unknown> {
 
 export async function initDocker(): AsyncAppResult<void> {
    if (_docker) {
-      try {
-         await withTimeout(_docker.ping(), PING_TIMEOUT_MS, "Docker ping")
+      const pingResult = await attempt(withTimeout(_docker.ping(), PING_TIMEOUT_MS, "Docker ping"))
+      if (pingResult.isOk()) {
          return okResult(undefined)
-      } catch {
-         _docker = null
       }
+      _docker = null
    }
 
-   try {
-      const mod = await import("dockerode")
-      const Docker = mod.default
+   const modResult = await attempt(import("dockerode"))
+   if (modResult.isErr()) {
+      _docker = null
+      return err(new DockerError("docker:not_available", "Docker is not reachable"))
+   }
 
-      const attempts: Record<string, unknown>[] = []
+   const Docker = modResult.value.default
 
-      if (process.env.DOCKER_HOST) {
-         attempts.push(parseDockerHost(process.env.DOCKER_HOST))
+   const attempts: Record<string, unknown>[] = []
+
+   if (process.env.DOCKER_HOST) {
+      attempts.push(parseDockerHost(process.env.DOCKER_HOST))
+   }
+
+   if (process.platform === "win32") {
+      attempts.push({ socketPath: "//./pipe/docker_engine" })
+      attempts.push({ socketPath: "//./pipe/docker_engine_wsl" })
+      attempts.push({})
+   } else {
+      attempts.push({ socketPath: "/var/run/docker.sock" })
+      attempts.push({})
+   }
+
+   for (const opts of attempts) {
+      const client = new Docker(opts)
+      const pingResult = await attempt(withTimeout(client.ping(), PING_TIMEOUT_MS, "Docker ping"))
+      if (pingResult.isOk()) {
+         _docker = client
+         return okResult(undefined)
       }
-
-      if (process.platform === "win32") {
-         attempts.push({ socketPath: "//./pipe/docker_engine" })
-         attempts.push({ socketPath: "//./pipe/docker_engine_wsl" })
-         // Fallback: let dockerode auto-detect via TCP or default config
-         // Many Docker Desktop installations expose Docker on tcp://localhost:2375
-         attempts.push({})
-      } else {
-         attempts.push({ socketPath: "/var/run/docker.sock" })
-         attempts.push({})
-      }
-
-      for (const opts of attempts) {
-         try {
-            const client = new Docker(opts)
-            await withTimeout(client.ping(), PING_TIMEOUT_MS, "Docker ping")
-            _docker = client
-            return okResult(undefined)
-         } catch {
-            continue
-         }
-      }
-   } catch {}
+   }
 
    _docker = null
    return err(new DockerError("docker:not_available", "Docker is not reachable"))
@@ -139,65 +137,80 @@ export async function pullImage(
    onProgress?: (percentage: number) => void
 ): AsyncAppResult<void> {
    const config = DB_IMAGE_MAP[dbType]
-   if (!config.image) return Promise.resolve(okResult(undefined))
+   if (!config.image) return okResult(undefined)
 
    const docker = getDocker()
 
-   return withTimeout(
-      docker.listImages({ filters: { reference: [config.image] } }),
-      OP_TIMEOUT_MS,
-      "Listing Docker images"
+   const listResult = await attempt(
+      withTimeout(
+         docker.listImages({ filters: { reference: [config.image] } }),
+         OP_TIMEOUT_MS,
+         "Listing Docker images"
+      )
    )
-      .then(images => {
-         if (images.length > 0) return okResult(undefined)
 
-         return withTimeout(
-            new Promise<void>((resolve, reject) => {
-               docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
-                  if (err) return reject(err)
-                  
-                  const layers: Record<string, { current: number; total: number }> = {}
-                  
-                  docker.modem.followProgress(
-                     stream as NodeJS.ReadableStream,
-                     (progressErr: Error | null) => {
-                        if (progressErr) reject(progressErr)
-                        else resolve()
-                     },
-                     (event: PullProgressEvent) => {
-                        if (onProgress && event.id && event.status && event.progressDetail?.total) {
-                           if (event.status === "Downloading" || event.status === "Extracting") {
-                              layers[event.id] = {
-                                 current: event.progressDetail.current || 0,
-                                 total: event.progressDetail.total,
-                              }
-                              let current = 0
-                              let total = 0
-                              for (const layer of Object.values(layers)) {
-                                 current += layer.current
-                                 total += layer.total
-                              }
-                              if (total > 0) {
-                                 onProgress(Math.round((current / total) * 100))
-                              }
+   if (listResult.isErr()) {
+      return err(
+         new DockerError(
+            "docker:pull_failed",
+            listResult.error.message ?? `Failed to pull image ${config.image}`
+         )
+      )
+   }
+
+   if (listResult.value.length > 0) return okResult(undefined)
+
+   const pullResult = await attempt(
+      withTimeout(
+         new Promise<void>((resolve, reject) => {
+            docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
+               if (err) return reject(err)
+
+               const layers: Record<string, { current: number; total: number }> = {}
+
+               docker.modem.followProgress(
+                  stream as NodeJS.ReadableStream,
+                  (progressErr: Error | null) => {
+                     if (progressErr) reject(progressErr)
+                     else resolve()
+                  },
+                  (event: PullProgressEvent) => {
+                     if (onProgress && event.id && event.status && event.progressDetail?.total) {
+                        if (event.status === "Downloading" || event.status === "Extracting") {
+                           layers[event.id] = {
+                              current: event.progressDetail.current || 0,
+                              total: event.progressDetail.total,
+                           }
+                           let current = 0
+                           let total = 0
+                           for (const layer of Object.values(layers)) {
+                              current += layer.current
+                              total += layer.total
+                           }
+                           if (total > 0) {
+                              onProgress(Math.round((current / total) * 100))
                            }
                         }
                      }
-                  )
-               })
-            }),
-            PULL_TIMEOUT_MS,
-            `Pulling image ${config.image}`
-         ).then(() => okResult(undefined))
-      })
-      .catch((e: Error) =>
+                  }
+               )
+            })
+         }),
+         PULL_TIMEOUT_MS,
+         `Pulling image ${config.image}`
+      )
+   )
+
+   return pullResult.match(
+      () => okResult(undefined),
+      e =>
          err(
             new DockerError(
                "docker:pull_failed",
                e.message ?? `Failed to pull image ${config.image}`
             )
          )
-      )
+   )
 }
 
 export function waitForDatabaseReady(
@@ -206,11 +219,11 @@ export function waitForDatabaseReady(
 ): AsyncAppResult<void> {
    if (dbType === "sqlite") return Promise.resolve(okResult(undefined))
 
-   let attempt = 0
+   let pollAttempt = 0
 
    async function poll(): AsyncAppResult<void> {
-      attempt++
-      if (attempt > DB_READY_RETRIES) {
+      pollAttempt++
+      if (pollAttempt > DB_READY_RETRIES) {
          return Promise.resolve(
             err(new DockerError("docker:container_failed", "Database did not become ready in time"))
          )
@@ -222,21 +235,13 @@ export function waitForDatabaseReady(
                  import("../drivers/postgres").then(m => m.testPostgresConnection(connectionString))
             : () => import("../drivers/mysql").then(m => m.testMySQLConnection(connectionString))
 
-      return testFn()
-         .then(result => {
-            if (result.isOk() && result.value) {
-               return okResult(undefined)
-            }
-            return new Promise<AppResult<void>>(resolve =>
-               setTimeout(() => resolve(poll()), DB_READY_INTERVAL_MS)
-            )
-         })
-         .catch(
-            () =>
-               new Promise<AppResult<void>>(resolve =>
-                  setTimeout(() => resolve(poll()), DB_READY_INTERVAL_MS)
-               )
-         )
+      const testResult = await attempt(testFn())
+      if (testResult.isOk() && testResult.value.isOk() && testResult.value.value) {
+         return okResult(undefined)
+      }
+      return new Promise<AppResult<void>>(resolve =>
+         setTimeout(() => resolve(poll()), DB_READY_INTERVAL_MS)
+      )
    }
 
    return poll()
@@ -261,134 +266,149 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
 
    type EnvResult = AppResult<{ port: number; containerId: string; connectionString: string }>
 
-   let reservedPort: number | null = null
+   const portResult = await findAvailablePort()
+   if (portResult.isErr()) {
+      return err(new DockerError("docker:port_conflict", portResult.error.message)) as EnvResult
+   }
 
-   return findAvailablePort()
-      .then(portResult => {
-         if (portResult.isErr()) {
-            return err(
-               new DockerError("docker:port_conflict", portResult.error.message)
-            ) as EnvResult
-         }
+   const port = portResult.value
+   if (!reservePort(port)) {
+      return err(
+         new DockerError("docker:port_conflict", `Port ${port} is already reserved`)
+      ) as EnvResult
+   }
 
-         const port = portResult.value
-         if (!reservePort(port)) {
-            return err(
-               new DockerError("docker:port_conflict", `Port ${port} is already reserved`)
-            ) as EnvResult
-         }
-         reservedPort = port
+   const config = DB_IMAGE_MAP[dbType]
 
-         const config = DB_IMAGE_MAP[dbType]
+   const pullResult = await pullImage(dbType)
+   if (pullResult.isErr()) {
+      releasePort(port)
+      return err(new DockerError("docker:pull_failed", pullResult.error.message)) as EnvResult
+   }
 
-         return pullImage(dbType).then(pullResult => {
-            if (pullResult.isErr()) {
-               releasePort(port)
-               return err(
-                  new DockerError("docker:pull_failed", pullResult.error.message)
-               ) as EnvResult
-            }
+   const createResult = await attempt(
+      withTimeout(
+         docker.createContainer({
+            Image: config.image,
+            Env: config.env,
+            ExposedPorts: { [`${config.internalPort}/tcp`]: {} },
+            HostConfig: {
+               PortBindings: {
+                  [`${config.internalPort}/tcp`]: [{ HostPort: String(port) }],
+               },
+            },
+         }),
+         OP_TIMEOUT_MS,
+         "Creating container"
+      )
+   )
 
-            return withTimeout(
-               docker
-                  .createContainer({
-                     Image: config.image,
-                     Env: config.env,
-                     ExposedPorts: { [`${config.internalPort}/tcp`]: {} },
-                     HostConfig: {
-                        PortBindings: {
-                           [`${config.internalPort}/tcp`]: [{ HostPort: String(port) }],
-                        },
-                     },
-                  })
-                  .then(container =>
-                     withTimeout(container.start(), OP_TIMEOUT_MS, "Starting container").then(
-                        async () => {
-                           const connectionString = buildConnectionString(dbType, port)
-                           return waitForDatabaseReady(dbType, connectionString).then(
-                              readyResult => {
-                                 if (readyResult.isErr()) {
-                                    container.stop().catch(() => Promise.resolve())
-                                    container
-                                       .remove({ v: true, force: true })
-                                       .catch(() => Promise.resolve())
-                                    releasePort(port)
-                                    return err(readyResult.error) as EnvResult
-                                 }
-                                 return ok({
-                                    port,
-                                    containerId: container.id,
-                                    connectionString,
-                                 })
-                              }
-                           )
-                        }
-                     )
-                  ),
-               OP_TIMEOUT_MS,
-               "Creating container"
-            )
-         })
-      })
-      .catch((e: Error) => {
-         if (reservedPort !== null) {
-            releasePort(reservedPort)
-         }
-         return err(
-            new DockerError("docker:container_failed", e.message ?? "Failed to create container")
+   if (createResult.isErr()) {
+      releasePort(port)
+      return err(
+         new DockerError(
+            "docker:container_failed",
+            createResult.error.message ?? "Failed to create container"
          )
-      })
+      ) as EnvResult
+   }
+
+   const container = createResult.value
+
+   const startResult = await attempt(
+      withTimeout(container.start(), OP_TIMEOUT_MS, "Starting container")
+   )
+
+   if (startResult.isErr()) {
+      attempt(container.remove({ v: true, force: true }))
+      releasePort(port)
+
+      return err(
+         new DockerError(
+            "docker:container_failed",
+            startResult.error.message ?? "Failed to start container"
+         )
+      ) as EnvResult
+   }
+
+   const connectionString = buildConnectionString(dbType, port)
+   const readyResult = await waitForDatabaseReady(dbType, connectionString)
+
+   if (readyResult.isErr()) {
+      attempt(container.stop())
+      attempt(
+         container.remove({
+            v: true,
+            force: true,
+         })
+      )
+      releasePort(port)
+      return err(readyResult.error) as EnvResult
+   }
+
+   return ok({
+      port,
+      containerId: container.id,
+      connectionString,
+   })
 }
 
 export async function startEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
-   return withTimeout(docker.getContainer(containerId).start(), OP_TIMEOUT_MS, "Starting container")
-      .then(() => okResult(undefined))
-      .catch((e: Error) =>
-         err(new AppError("env:start_failed", e.message ?? "Failed to start container"))
-      )
+   const result = await attempt(
+      withTimeout(docker.getContainer(containerId).start(), OP_TIMEOUT_MS, "Starting container")
+   )
+   return result.match(
+      () => okResult(undefined),
+      (e: Error) => err(new AppError("env:start_failed", e.message ?? "Failed to start container"))
+   )
 }
 
 export async function stopEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
-   return withTimeout(docker.getContainer(containerId).stop(), OP_TIMEOUT_MS, "Stopping container")
-      .then(() => okResult(undefined))
-      .catch((e: Error) =>
-         err(new AppError("env:stop_failed", e.message ?? "Failed to stop container"))
-      )
+   const result = await attempt(
+      withTimeout(docker.getContainer(containerId).stop(), OP_TIMEOUT_MS, "Stopping container")
+   )
+   return result.match(
+      () => okResult(undefined),
+      (e: Error) => err(new AppError("env:stop_failed", e.message ?? "Failed to stop container"))
+   )
 }
 
 export async function restartEnvironment(containerId: string): AsyncAppResult<void> {
    const docker = getDocker()
-   return withTimeout(
-      docker.getContainer(containerId).restart(),
-      OP_TIMEOUT_MS,
-      "Restarting container"
+   const result = await attempt(
+      withTimeout(docker.getContainer(containerId).restart(), OP_TIMEOUT_MS, "Restarting container")
    )
-      .then(() => okResult(undefined))
-      .catch((e: Error) =>
+   return result.match(
+      () => okResult(undefined),
+      (e: Error) =>
          err(new DockerError("docker:container_failed", e.message ?? "Failed to restart container"))
-      )
+   )
 }
 
 export async function healthCheck(
    containerId: string
 ): AsyncAppResult<{ healthy: boolean; uptime: number }> {
    if (!containerId) {
-      return Promise.resolve(ok({ healthy: true, uptime: 0 }))
+      return ok({ healthy: true, uptime: 0 })
    }
 
    const docker = getDocker()
-   return withTimeout(docker.getContainer(containerId).inspect(), OP_TIMEOUT_MS, "Health check")
-      .then(info => {
+   const result = await attempt(
+      withTimeout(docker.getContainer(containerId).inspect(), OP_TIMEOUT_MS, "Health check")
+   )
+
+   return result.match(
+      info => {
          const running = info.State.Running
          const startedAt = info.State.StartedAt
             ? new Date(info.State.StartedAt).getTime()
             : Date.now()
          const uptime = running ? Math.floor((Date.now() - startedAt) / 1000) : 0
          return ok({ healthy: running, uptime })
-      })
-      .catch((e: { statusCode?: number; message?: string; code?: string }) => {
+      },
+      (e: { statusCode?: number; message?: string; code?: string }) => {
          if (e.statusCode === 404) {
             return ok({ healthy: false, uptime: 0 })
          }
@@ -396,109 +416,109 @@ export async function healthCheck(
             return err(new DockerError("docker:health_timeout", "Health check timed out"))
          }
          return err(new DockerError("docker:health_timeout", e.message ?? "Health check failed"))
-      })
+      }
+   )
 }
 
 export async function destroyContainer(containerId: string): AsyncAppResult<void> {
-   if (!containerId) return Promise.resolve(okResult(undefined))
+   if (!containerId) return okResult(undefined)
 
    const docker = getDocker()
    const container = docker.getContainer(containerId)
 
-   return withTimeout(
-      container
-         .stop()
-         .catch(() => Promise.resolve())
-         .then(() => container.remove({ v: true, force: true })),
-      OP_TIMEOUT_MS,
-      "Destroying container"
-   )
-      .then(() => okResult(undefined))
-      .catch((e: Error) =>
-         err(new AppError("env:destroy_failed", e.message ?? "Failed to destroy container"))
+   await attempt(container.stop())
+
+   const removeResult = await attempt(
+      withTimeout(
+         container.remove({
+            v: true,
+            force: true,
+         }),
+         OP_TIMEOUT_MS,
+         "Destroying container"
       )
+   )
+
+   return removeResult.match(
+      () => okResult(undefined),
+      (e: Error) =>
+         err(new AppError("env:destroy_failed", e.message ?? "Failed to destroy container"))
+   )
 }
 
 export async function stopAllContainers(): AsyncAppResult<number> {
    const docker = getDocker()
-   return docker
-      .listContainers({ all: true })
-      .then(async containers => {
-         let acted = 0
-         const stopPromises: Promise<void>[] = []
 
-         for (const containerInfo of containers) {
-            const name = containerInfo.Names[0] ?? ""
-            if (name.includes("sqlose") && containerInfo.State === "running") {
-               const container = docker.getContainer(containerInfo.Id)
-               stopPromises.push(
-                  withTimeout(container.stop(), 15000, "Stopping container")
-                     .then(() => {
-                        acted++
-                     })
-                     .catch(() => {})
-               )
-            }
-         }
-
-         return Promise.all(stopPromises).then(() => {
-            const envs = loadEnvironments()
-            for (const env of envs) {
-               if (env.containerId && containers.some(c => c.Id === env.containerId)) {
-                  saveEnvironment({
-                     ...env,
-                     status: "stopped",
-                     uptime: 0,
-                  })
-               }
-            }
-            return ok(acted)
-         })
-      })
-      .catch((e: Error) =>
-         err(new DockerError("docker:stop_failed", e.message ?? "Failed to stop containers"))
+   const listResult = await attempt(docker.listContainers({ all: true }))
+   if (listResult.isErr()) {
+      return err(
+         new DockerError(
+            "docker:stop_failed",
+            listResult.error.message ?? "Failed to stop containers"
+         )
       )
+   }
+
+   const containers = listResult.value
+   let acted = 0
+
+   for (const containerInfo of containers) {
+      const name = containerInfo.Names[0] ?? ""
+      if (name.includes("sqlose") && containerInfo.State === "running") {
+         const container = docker.getContainer(containerInfo.Id)
+         const stopResult = await attempt(
+            withTimeout(container.stop(), 15000, "Stopping container")
+         )
+         if (stopResult.isOk()) acted++
+      }
+   }
+
+   const envs = loadEnvironments()
+   for (const env of envs) {
+      if (env.containerId && containers.some(c => c.Id === env.containerId)) {
+         saveEnvironment({
+            ...env,
+            status: "stopped",
+            uptime: 0,
+         })
+      }
+   }
+
+   return ok(acted)
 }
 
 export async function stopOrphanedContainers(): AsyncAppResult<number> {
    const docker = getDocker()
-   return docker
-      .listContainers({ all: true })
-      .then(async containers => {
-         const envs = loadEnvironments()
-         const envContainerIds = new Set(envs.filter(e => e.containerId).map(e => e.containerId))
-         let stopped = 0
-         const stopPromises: Promise<void>[] = []
 
-         for (const containerInfo of containers) {
-            const name = containerInfo.Names[0] ?? ""
-            if (
-               name.includes("sqlose") &&
-               containerInfo.State === "running" &&
-               !envContainerIds.has(containerInfo.Id)
-            ) {
-               const container = docker.getContainer(containerInfo.Id)
-               stopPromises.push(
-                  container
-                     .stop()
-                     .then(() => {
-                        stopped++
-                     })
-                     .catch(() => {})
-               )
-            }
-         }
-
-         return Promise.all(stopPromises).then(() => ok(stopped))
-      })
-      .catch((e: Error) =>
-         err(
-            new DockerError(
-               "docker:cleanup_failed",
-               e.message ?? "Failed to stop orphaned containers"
-            )
+   const listResult = await attempt(docker.listContainers({ all: true }))
+   if (listResult.isErr()) {
+      return err(
+         new DockerError(
+            "docker:cleanup_failed",
+            listResult.error.message ?? "Failed to stop orphaned containers"
          )
       )
+   }
+
+   const containers = listResult.value
+   const envs = loadEnvironments()
+   const envContainerIds = new Set(envs.filter(e => e.containerId).map(e => e.containerId))
+   let stopped = 0
+
+   for (const containerInfo of containers) {
+      const name = containerInfo.Names[0] ?? ""
+      if (
+         name.includes("sqlose") &&
+         containerInfo.State === "running" &&
+         !envContainerIds.has(containerInfo.Id)
+      ) {
+         const container = docker.getContainer(containerInfo.Id)
+         const stopResult = await attempt(container.stop())
+         if (stopResult.isOk()) stopped++
+      }
+   }
+
+   return ok(stopped)
 }
 
 export async function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
@@ -506,42 +526,33 @@ export async function reconcileEnvironmentStatuses(): AsyncAppResult<number> {
    let updated = 0
 
    const envs = loadEnvironments()
-   const checks: Promise<void>[] = []
 
    for (const env of envs) {
       if (!env.containerId) continue
 
       const containerId = env.containerId
+      const inspectResult = await attempt(docker.getContainer(containerId).inspect())
 
-      const check = docker
-         .getContainer(containerId)
-         .inspect()
-         .then(info => {
-            if (info.State.Running) {
-               const startedAt = info.State.StartedAt
-                  ? new Date(info.State.StartedAt).getTime()
-                  : Date.now()
-               const uptime = Math.floor((Date.now() - startedAt) / 1000)
-               saveEnvironment({ ...env, status: "running", uptime })
-               updated++
-            } else {
-               saveEnvironment({ ...env, status: "stopped", uptime: 0 })
-               updated++
-            }
-         })
-         .catch((e: { statusCode?: number }) => {
-            if (e.statusCode === 404) {
-               saveEnvironment({ ...env, status: "error", containerId: null })
-               updated++
-            }
-         })
-
-      checks.push(check)
+      if (inspectResult.isOk()) {
+         const info = inspectResult.value
+         if (info.State.Running) {
+            const startedAt = info.State.StartedAt
+               ? new Date(info.State.StartedAt).getTime()
+               : Date.now()
+            const uptime = Math.floor((Date.now() - startedAt) / 1000)
+            saveEnvironment({ ...env, status: "running", uptime })
+            updated++
+         } else {
+            saveEnvironment({ ...env, status: "stopped", uptime: 0 })
+            updated++
+         }
+      } else if ((inspectResult.error as { statusCode?: number }).statusCode === 404) {
+         saveEnvironment({ ...env, status: "error", containerId: null })
+         updated++
+      }
    }
 
-   return Promise.all(checks)
-      .then(() => ok(updated))
-      .catch(() => ok(updated))
+   return ok(updated)
 }
 
 export const cleanupOrphans = stopOrphanedContainers

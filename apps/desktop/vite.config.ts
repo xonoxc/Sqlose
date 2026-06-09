@@ -62,12 +62,12 @@ export default defineConfig({
          renderer: process.env.NODE_ENV === "test" ? undefined : {},
       }),
    ],
-    resolve: {
-       alias: {
-          "~": path.resolve(DESKTOP_DIR, "src"),
-          "@sqlose/shared": path.resolve(DESKTOP_DIR, "../../packages/shared/src"),
-          "@sqlose/ui": path.resolve(DESKTOP_DIR, "../../packages/ui/src"),
-          "@sqlose/core": path.resolve(DESKTOP_DIR, "../../packages/core/src"),
-       },
-    },
+   resolve: {
+      alias: {
+         "~": path.resolve(DESKTOP_DIR, "src"),
+         "@sqlose/shared": path.resolve(DESKTOP_DIR, "../../packages/shared/src"),
+         "@sqlose/ui": path.resolve(DESKTOP_DIR, "../../packages/ui/src"),
+         "@sqlose/core": path.resolve(DESKTOP_DIR, "../../packages/core/src"),
+      },
+   },
 })

@@ -36,9 +36,7 @@ export function useContainerHalted() {
       }
    }, [stuckEnvId, nukeEnvironment, selectEnvironment])
 
-   const stuckEnv = stuckEnvId
-      ? environments.find(e => e.id === stuckEnvId) ?? null
-      : null
+   const stuckEnv = stuckEnvId ? (environments.find(e => e.id === stuckEnvId) ?? null) : null
 
    return { stuckEnvId, stuckEnv, handleRestoreEnv, handleExitAndNuke }
 }

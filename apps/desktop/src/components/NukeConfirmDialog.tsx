@@ -8,7 +8,12 @@ interface NukeConfirmDialogProps {
    isLoading?: boolean
 }
 
-export function NukeConfirmDialog({ open, onCancel, onConfirm, isLoading }: NukeConfirmDialogProps) {
+export function NukeConfirmDialog({
+   open,
+   onCancel,
+   onConfirm,
+   isLoading,
+}: NukeConfirmDialogProps) {
    if (!open) return null
 
    return (

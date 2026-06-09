@@ -11,11 +11,12 @@ import {
    Dashboard,
    ShortcutsDialog,
    TopBar,
-    ContainerHaltedDialog,
-    ErrorBoundary,
-    EditorWorkspace,
-    NukeConfirmDialog,
+   ContainerHaltedDialog,
+   ErrorBoundary,
+   EditorWorkspace,
+   NukeConfirmDialog,
 } from "~/components"
+import { attempt } from "@sqlose/shared"
 import {
    useEditorStore,
    useWorkspaceStore,
@@ -48,33 +49,32 @@ function AppContent() {
    const vimMode = useEditorStore(s => s.vimMode)
    const paneSizes = useWorkspaceStore(s => s.paneSizes)
    const updatePaneSizes = useWorkspaceStore(s => s.updatePaneSizes)
-    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
-    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
+   const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
+   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const fetchEnvironments = useEnvironmentStore(s => s.fetchEnvironments)
    const loadHistory = useHistoryStore(s => s.loadHistory)
    const loadQueries = useSavedQueriesStore(s => s.loadQueries)
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
-    const uiScale = useSettingsStore(s => s.uiScale)
-    const tableFontSize = useSettingsStore(s => s.tableFontSize)
-    useThemeStore()
-    const [isNuking, setIsNuking] = useState(false)
+   const uiScale = useSettingsStore(s => s.uiScale)
+   const tableFontSize = useSettingsStore(s => s.tableFontSize)
+   useThemeStore()
+   const [isNuking, setIsNuking] = useState(false)
 
-    const handleNukeConfirm = async () => {
-       const envStore = useEnvironmentStore.getState()
-       const envId = envStore.selectedEnvironmentId
-       if (!envId) return
-       setIsNuking(true)
-       try {
-          await envStore.nukeEnvironment(envId)
-          envStore.selectEnvironment(null)
-          toast.success("Environment has been nuked")
-          ui.closeNukeConfirm()
-       } catch {
-          toast.error("Failed to nuke environment")
-       } finally {
-          setIsNuking(false)
-       }
-    }
+   const handleNukeConfirm = async () => {
+      const envStore = useEnvironmentStore.getState()
+      const envId = envStore.selectedEnvironmentId
+      if (!envId) return
+      setIsNuking(true)
+      const result = await attempt(envStore.nukeEnvironment(envId))
+      setIsNuking(false)
+      if (result.isOk()) {
+         envStore.selectEnvironment(null)
+         toast.success("Environment has been nuked")
+         ui.closeNukeConfirm()
+      } else {
+         toast.error("Failed to nuke environment")
+      }
+   }
 
    useEffect(() => {
       const root = document.documentElement
@@ -147,16 +147,16 @@ function AppContent() {
                   )}
                   <div className="flex-1 min-w-0 overflow-hidden">
                      <div className="flex flex-col h-full bg-bg-primary w-full relative py-1">
-                         <TopBar
-                            onOpenPalette={ui.openPalette}
-                            onBackToDashboard={() => selectEnvironment(null)}
-                            onOpenDiagram={() => {
-                               useWorkspaceStore.getState().openTab(undefined, {
-                                  type: "diagram",
-                                  title: "Diagram: main",
-                               })
-                            }}
-                         />
+                        <TopBar
+                           onOpenPalette={ui.openPalette}
+                           onBackToDashboard={() => selectEnvironment(null)}
+                           onOpenDiagram={() => {
+                              useWorkspaceStore.getState().openTab(undefined, {
+                                 type: "diagram",
+                                 title: "Diagram: main",
+                              })
+                           }}
+                        />
                         <div className="flex items-end border-b border-border/20 bg-bg-secondary/40 px-3 py-0.5 shrink-0 w-full z-10 relative min-h-[52px]">
                            <TabBar />
                         </div>
@@ -196,31 +196,31 @@ function AppContent() {
          ) : (
             <Dashboard />
          )}
-          <CommandPalette
-             isOpen={ui.paletteOpen}
-             onClose={ui.closePalette}
-             onExecuteQuery={workspace.execute}
-             onClearResults={workspace.handleClearResults}
-             onOpenTable={workspace.handleOpenTable}
-             onOpenQuery={workspace.handleOpenQuery}
-             onNukeConfirm={ui.openNukeConfirm}
-          />
+         <CommandPalette
+            isOpen={ui.paletteOpen}
+            onClose={ui.closePalette}
+            onExecuteQuery={workspace.execute}
+            onClearResults={workspace.handleClearResults}
+            onOpenTable={workspace.handleOpenTable}
+            onOpenQuery={workspace.handleOpenQuery}
+            onNukeConfirm={ui.openNukeConfirm}
+         />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />
-          {stuckEnvId && (
-             <ContainerHaltedDialog
-                envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
-                onRestore={handleRestoreEnv}
-                onNuke={handleExitAndNuke}
-             />
-          )}
-           <NukeConfirmDialog
-              open={ui.nukeConfirmOpen}
-              onCancel={ui.closeNukeConfirm}
-              onConfirm={handleNukeConfirm}
-              isLoading={isNuking}
-           />
-          <Toaster
+         {stuckEnvId && (
+            <ContainerHaltedDialog
+               envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
+               onRestore={handleRestoreEnv}
+               onNuke={handleExitAndNuke}
+            />
+         )}
+         <NukeConfirmDialog
+            open={ui.nukeConfirmOpen}
+            onCancel={ui.closeNukeConfirm}
+            onConfirm={handleNukeConfirm}
+            isLoading={isNuking}
+         />
+         <Toaster
             theme="dark"
             position="bottom-right"
             toastOptions={{

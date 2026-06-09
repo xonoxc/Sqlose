@@ -1,10 +1,6 @@
 import { motion } from "motion/react"
 import { ResultsTable, cn } from "@sqlose/ui"
-import {
-   IconAlertCircle,
-   IconDatabase,
-   IconFileCode,
-} from "@tabler/icons-react"
+import { IconAlertCircle, IconDatabase, IconFileCode } from "@tabler/icons-react"
 import type { QueryResult } from "@sqlose/shared"
 import { isMac } from "~/lib/types"
 import { useSettingsStore } from "~/stores/settingsStore"
@@ -58,15 +54,15 @@ function ResultsTab({
    result,
    error,
    isExecuting,
- }: {
+}: {
    result: QueryResult | null
    error: string | null
    isExecuting: boolean
- }) {
+}) {
    const rowSpacing = useSettingsStore(s => s.rowSpacing)
    const alternatingRowColors = useSettingsStore(s => s.alternatingRowColors)
    const tableFontSize = useSettingsStore(s => s.tableFontSize)
-   
+
    if (isExecuting) {
       return (
          <div className="flex items-center justify-center h-full bg-bg-primary">
@@ -110,27 +106,43 @@ function ResultsTab({
                      <IconDatabase className="h-7 w-7" />
                   </div>
                </div>
-               
+
                <div className="flex flex-col items-center gap-1.5">
-                  <span className="text-[14px] font-semibold text-text-primary/90">Ready to Execute</span>
-                  <span className="text-[12px] text-text-muted/50 font-medium">Select a query and run to see results</span>
+                  <span className="text-[14px] font-semibold text-text-primary/90">
+                     Ready to Execute
+                  </span>
+                  <span className="text-[12px] text-text-muted/50 font-medium">
+                     Select a query and run to see results
+                  </span>
                </div>
 
                <div className="flex flex-col gap-2 mt-2">
                   <div className="flex items-center gap-6 px-4 py-2.5 rounded-xl bg-bg-secondary/40 border border-border/30 backdrop-blur-sm shadow-sm transition-all hover:border-border/50">
                      <div className="flex items-center gap-1.5">
-                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">{isMac() ? "⌘" : "Ctrl"}</kbd>
-                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">↵</kbd>
+                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">
+                           {isMac() ? "⌘" : "Ctrl"}
+                        </kbd>
+                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">
+                           ↵
+                        </kbd>
                      </div>
-                     <span className="text-[11px] font-medium text-text-muted/60">Run Statement</span>
+                     <span className="text-[11px] font-medium text-text-muted/60">
+                        Run Statement
+                     </span>
                   </div>
-                  
+
                   <div className="flex items-center gap-6 px-4 py-2.5 rounded-xl bg-bg-secondary/40 border border-border/30 backdrop-blur-sm shadow-sm transition-all hover:border-border/50 group">
                      <div className="flex items-center gap-1.5">
-                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">{isMac() ? "⌘" : "Ctrl"}</kbd>
-                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">K</kbd>
+                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">
+                           {isMac() ? "⌘" : "Ctrl"}
+                        </kbd>
+                        <kbd className="min-w-[22px] h-5 flex items-center justify-center px-1.5 rounded bg-bg-tertiary border border-border/60 text-[10px] font-mono text-text-muted/80">
+                           K
+                        </kbd>
                      </div>
-                     <span className="text-[11px] font-medium text-text-muted/60">Command Palette</span>
+                     <span className="text-[11px] font-medium text-text-muted/60">
+                        Command Palette
+                     </span>
                   </div>
                </div>
             </div>
@@ -191,7 +203,9 @@ function MessagesTab({
    if (!result) {
       return (
          <div className="flex items-center justify-center h-full">
-            <span className="text-[12px] text-text-muted/30 font-medium">No active session messages</span>
+            <span className="text-[12px] text-text-muted/30 font-medium">
+               No active session messages
+            </span>
          </div>
       )
    }
@@ -204,8 +218,9 @@ function MessagesTab({
                Success
             </p>
             <p className="text-[12px] text-text-secondary/80 leading-relaxed">
-               Query processed {result.rowCount} row{result.rowCount !== 1 ? "s" : ""} across {result.columns.length} columns.
-               Total execution time: <span className="text-accent font-mono ml-1">{result.executionTimeMs}ms</span>
+               Query processed {result.rowCount} row{result.rowCount !== 1 ? "s" : ""} across{" "}
+               {result.columns.length} columns. Total execution time:{" "}
+               <span className="text-accent font-mono ml-1">{result.executionTimeMs}ms</span>
             </p>
          </div>
       </div>
@@ -228,7 +243,9 @@ function StatsTab({
    if (isExecuting) {
       return (
          <div className="flex items-center justify-center h-full">
-             <span className="text-[12px] text-text-muted/40 animate-pulse">Calculating metrics...</span>
+            <span className="text-[12px] text-text-muted/40 animate-pulse">
+               Calculating metrics...
+            </span>
          </div>
       )
    }
@@ -236,7 +253,9 @@ function StatsTab({
    if (!result && !error) {
       return (
          <div className="flex items-center justify-center h-full">
-            <span className="text-[12px] text-text-muted/30 font-medium">Session statistics unavailable</span>
+            <span className="text-[12px] text-text-muted/30 font-medium">
+               Session statistics unavailable
+            </span>
          </div>
       )
    }
@@ -256,11 +275,19 @@ function StatsTab({
       <div className="p-6 h-full overflow-y-auto custom-scrollbar">
          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stats.map(s => (
-               <div key={s.label} className="p-3.5 rounded-xl bg-bg-secondary/40 border border-border/30 shadow-sm transition-all hover:border-border/50">
+               <div
+                  key={s.label}
+                  className="p-3.5 rounded-xl bg-bg-secondary/40 border border-border/30 shadow-sm transition-all hover:border-border/50"
+               >
                   <p className="text-[10px] font-semibold text-text-muted/50 uppercase mb-1.5">
                      {s.label}
                   </p>
-                  <p className={cn("text-[15px] font-mono font-semibold", s.color || "text-text-primary")}>
+                  <p
+                     className={cn(
+                        "text-[15px] font-mono font-semibold",
+                        s.color || "text-text-primary"
+                     )}
+                  >
                      {s.value}
                   </p>
                </div>
@@ -294,7 +321,9 @@ function PlanTab() {
             <IconFileCode className="h-6 w-6" />
          </div>
          <span className="text-[13px] font-bold text-text-primary/70 mb-1">Execution Plan</span>
-         <span className="text-[12px] max-w-xs text-center leading-relaxed">Optimization statistics require EXPLAIN support from your database driver.</span>
+         <span className="text-[12px] max-w-xs text-center leading-relaxed">
+            Optimization statistics require EXPLAIN support from your database driver.
+         </span>
       </div>
    )
 }

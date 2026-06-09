@@ -10,7 +10,11 @@ interface SelectTypeStepProps {
    onSelectType: (type: DBType) => void
 }
 
-export function SelectTypeStep({ dockerAvailable, dockerStatus, onSelectType }: SelectTypeStepProps) {
+export function SelectTypeStep({
+   dockerAvailable,
+   dockerStatus,
+   onSelectType,
+}: SelectTypeStepProps) {
    return (
       <motion.div
          key="step1"

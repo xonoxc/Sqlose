@@ -105,12 +105,12 @@ export function ResultsPanelHeader({
             <div className="flex items-center gap-0.5">
                {activeTab?.result && (
                   <>
-                      <CopyDropdown
-                         onCopy={(format) => copyResultsToClipboard(activeTab.result!, format)}
-                      />
+                     <CopyDropdown
+                        onCopy={format => copyResultsToClipboard(activeTab.result!, format)}
+                     />
 
                      <ExportDropdown
-                        onExport={(format) => exportResultsToFile(activeTab.result!, format)}
+                        onExport={format => exportResultsToFile(activeTab.result!, format)}
                      />
                   </>
                )}

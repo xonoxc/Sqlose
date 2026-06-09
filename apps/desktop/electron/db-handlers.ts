@@ -1,4 +1,5 @@
 import { ipcMain } from "electron"
+import { attemptSync } from "@sqlose/shared"
 import type { SavedQuery, HistoryEntry } from "../src/lib/types"
 import {
    storeGet,
@@ -14,9 +15,7 @@ import {
    clearHistory,
 } from "./db"
 
-type HandlerResult<T> =
-   | { success: true; data: T }
-   | { success: false; error: string }
+type HandlerResult<T> = { success: true; data: T } | { success: false; error: string }
 
 function ok<T>(data: T): HandlerResult<T> {
    return { success: true, data }
@@ -28,41 +27,29 @@ function err(msg: string): HandlerResult<never> {
 
 export function registerDbHandlers(): void {
    ipcMain.handle("db:get", (_event, key: string): HandlerResult<string | null> => {
-      try {
-         const val = storeGet(key)
-         return ok(val ?? null)
-      } catch (e) {
-         return err(String(e))
-      }
+      const result = attemptSync(() => storeGet(key))
+      if (result.isOk()) return ok(result.value ?? null)
+      return err(String(result.error))
    })
 
-   ipcMain.handle(
-      "db:set",
-      (_event, key: string, value: string): HandlerResult<void> => {
-         try {
-            storeSet(key, value)
-            return ok(undefined)
-         } catch (e) {
-            return err(String(e))
-         }
-      }
-   )
+   ipcMain.handle("db:set", (_event, key: string, value: string): HandlerResult<void> => {
+      const result = attemptSync(() => storeSet(key, value))
+      if (result.isOk()) return ok(undefined)
+      return err(String(result.error))
+   })
 
    ipcMain.handle("db:delete", (_event, key: string): HandlerResult<void> => {
-      try {
-         storeDelete(key)
-         return ok(undefined)
-      } catch (e) {
-         return err(String(e))
-      }
+      const result = attemptSync(() => storeDelete(key))
+      if (result.isOk()) return ok(undefined)
+      return err(String(result.error))
    })
 
    ipcMain.handle(
       "db:get-saved-queries",
       (_event, environmentId?: string | null): HandlerResult<SavedQuery[]> => {
-         try {
+         const result = attemptSync(() => {
             const rows = getSavedQueries(environmentId)
-            const queries: SavedQuery[] = rows.map(r => ({
+            return rows.map(r => ({
                id: r.id,
                name: r.name,
                sql: r.sql_text,
@@ -71,10 +58,9 @@ export function registerDbHandlers(): void {
                createdAt: r.created_at,
                updatedAt: r.updated_at,
             }))
-            return ok(queries)
-         } catch (e) {
-            return err(String(e))
-         }
+         })
+         if (result.isOk()) return ok(result.value)
+         return err(String(result.error))
       }
    )
 
@@ -88,48 +74,33 @@ export function registerDbHandlers(): void {
          tags: string[],
          environmentId: string | null
       ): HandlerResult<void> => {
-         try {
-            saveQuery(id, name, sql, tags, environmentId)
-            return ok(undefined)
-         } catch (e) {
-            return err(String(e))
-         }
+         const result = attemptSync(() => saveQuery(id, name, sql, tags, environmentId))
+         if (result.isOk()) return ok(undefined)
+         return err(String(result.error))
       }
    )
 
    ipcMain.handle(
       "db:update-query",
-      (
-         _event,
-         id: string,
-         name: string,
-         sql: string,
-         tags: string[]
-      ): HandlerResult<boolean> => {
-         try {
-            const result = updateSavedQuery(id, name, sql, tags)
-            return ok(result)
-         } catch (e) {
-            return err(String(e))
-         }
+      (_event, id: string, name: string, sql: string, tags: string[]): HandlerResult<boolean> => {
+         const result = attemptSync(() => updateSavedQuery(id, name, sql, tags))
+         if (result.isOk()) return ok(result.value)
+         return err(String(result.error))
       }
    )
 
    ipcMain.handle("db:delete-query", (_event, id: string): HandlerResult<void> => {
-      try {
-         deleteSavedQuery(id)
-         return ok(undefined)
-      } catch (e) {
-         return err(String(e))
-      }
+      const result = attemptSync(() => deleteSavedQuery(id))
+      if (result.isOk()) return ok(undefined)
+      return err(String(result.error))
    })
 
    ipcMain.handle(
       "db:get-history",
       (_event, environmentId?: string | null, limit?: number): HandlerResult<HistoryEntry[]> => {
-         try {
+         const result = attemptSync(() => {
             const rows = getHistory(environmentId, limit)
-            const entries: HistoryEntry[] = rows.map(r => ({
+            return rows.map(r => ({
                id: r.id,
                sql: r.sql_text,
                environmentId: r.environment_id,
@@ -140,10 +111,9 @@ export function registerDbHandlers(): void {
                error: r.error_text,
                executedAt: r.executed_at,
             }))
-            return ok(entries)
-         } catch (e) {
-            return err(String(e))
-         }
+         })
+         if (result.isOk()) return ok(result.value)
+         return err(String(result.error))
       }
    )
 
@@ -161,30 +131,33 @@ export function registerDbHandlers(): void {
          error: string | null,
          executedAt: string
       ): HandlerResult<void> => {
-         try {
-            addHistoryEntry(id, sql, environmentId, dbType, duration, rowCount, status, error, executedAt)
-            return ok(undefined)
-         } catch (e) {
-            return err(String(e))
-         }
+         const result = attemptSync(() =>
+            addHistoryEntry(
+               id,
+               sql,
+               environmentId,
+               dbType,
+               duration,
+               rowCount,
+               status,
+               error,
+               executedAt
+            )
+         )
+         if (result.isOk()) return ok(undefined)
+         return err(String(result.error))
       }
    )
 
    ipcMain.handle("db:delete-history-entry", (_event, id: string): HandlerResult<void> => {
-      try {
-         deleteHistoryEntry(id)
-         return ok(undefined)
-      } catch (e) {
-         return err(String(e))
-      }
+      const result = attemptSync(() => deleteHistoryEntry(id))
+      if (result.isOk()) return ok(undefined)
+      return err(String(result.error))
    })
 
    ipcMain.handle("db:clear-history", (_event): HandlerResult<void> => {
-      try {
-         clearHistory()
-         return ok(undefined)
-      } catch (e) {
-         return err(String(e))
-      }
+      const result = attemptSync(() => clearHistory())
+      if (result.isOk()) return ok(undefined)
+      return err(String(result.error))
    })
 }

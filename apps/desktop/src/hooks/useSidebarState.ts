@@ -103,11 +103,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       if (filteredTables.length === 0) return
 
       let currentIndex =
-         keyboardFocusedIndex >= 0
-            ? keyboardFocusedIndex
-            : filteredIndex >= 0
-              ? filteredIndex
-              : 0
+         keyboardFocusedIndex >= 0 ? keyboardFocusedIndex : filteredIndex >= 0 ? filteredIndex : 0
 
       switch (e.key) {
          case "ArrowDown":

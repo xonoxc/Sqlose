@@ -151,7 +151,18 @@ describe("Shared Type Definitions", () => {
    })
 
    it("DATASET_CATEGORIES should contain all dataset categories", () => {
-      expect(DATASET_CATEGORIES).toEqual(["ecommerce", "analytics", "social", "finance", "retail", "healthcare", "entertainment", "education", "business", "environment"])
+      expect(DATASET_CATEGORIES).toEqual([
+         "ecommerce",
+         "analytics",
+         "social",
+         "finance",
+         "retail",
+         "healthcare",
+         "entertainment",
+         "education",
+         "business",
+         "environment",
+      ])
    })
 
    it("IMPORT_FORMATS should contain all import formats", () => {

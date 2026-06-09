@@ -51,7 +51,7 @@ export function useCommandPaletteLogic(
 
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
-    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
+   const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const openTab = useWorkspaceStore(s => s.openTab)
    const tabs = useWorkspaceStore(s => s.tabs)
    const activeTabId = useWorkspaceStore(s => s.activeTabId)
@@ -112,7 +112,9 @@ export function useCommandPaletteLogic(
    const filteredThemes = !query
       ? themes
       : themes.filter(
-           t => t.name.toLowerCase().includes(query.toLowerCase()) || t.id.toLowerCase().includes(query.toLowerCase())
+           t =>
+              t.name.toLowerCase().includes(query.toLowerCase()) ||
+              t.id.toLowerCase().includes(query.toLowerCase())
         )
 
    const actions: PaletteAction[] = [
@@ -184,9 +186,7 @@ export function useCommandPaletteLogic(
          category: "action",
          onSelect: () => {
             if (environments.length > 0) {
-               const currentIdx = environments.findIndex(
-                  e => e.id === activeTab?.environmentId
-               )
+               const currentIdx = environments.findIndex(e => e.id === activeTab?.environmentId)
                const nextIdx = (currentIdx + 1) % environments.length
                handleSelectEnvironment(environments[nextIdx].id)
             }
@@ -217,13 +217,12 @@ export function useCommandPaletteLogic(
       {
          id: "nuke-env",
          label: "Nuke Environment",
-         description:
-             "Completely destroy the environment, its container and all data",
+         description: "Completely destroy the environment, its container and all data",
          icon: <IconTrash className="h-4 w-4" />,
          category: "action",
-       onSelect: () => {
-              onNukeConfirm?.()
-           },
+         onSelect: () => {
+            onNukeConfirm?.()
+         },
       },
       ...environments.map(env => ({
          id: `env-${env.id}` as const,
@@ -342,12 +341,13 @@ export function useCommandPaletteLogic(
             }
             return
          }
-          const next = () => {
-             const visible = mode === "themes"
-                ? Math.min(filteredThemes.length, 10)
-                : Math.min(flatFiltered.length, 7)
-             setSelectedIndex(p => Math.min(p + 1, visible - 1))
-          }
+         const next = () => {
+            const visible =
+               mode === "themes"
+                  ? Math.min(filteredThemes.length, 10)
+                  : Math.min(flatFiltered.length, 7)
+            setSelectedIndex(p => Math.min(p + 1, visible - 1))
+         }
          const prev = () => {
             setSelectedIndex(p => Math.max(p - 1, 0))
          }

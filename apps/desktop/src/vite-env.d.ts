@@ -40,7 +40,9 @@ interface SqloseAPI {
       }) => Promise<IPCSerializedResult<{ healthy: boolean; uptime: number }>>
       cleanup: (request: Record<string, never>) => Promise<IPCSerializedResult<{ cleaned: number }>>
       pullImage: (request: { dbType: DBType }) => Promise<IPCSerializedResult<{ image: string }>>
-      createContainer: (request: { environmentId: string }) => Promise<IPCSerializedResult<Environment>>
+      createContainer: (request: {
+         environmentId: string
+      }) => Promise<IPCSerializedResult<Environment>>
       checkAvailable: (
          request: Record<string, never>
       ) => Promise<IPCSerializedResult<DockerAvailability>>
@@ -84,7 +86,9 @@ interface SqloseAPI {
       }) => Promise<IPCSerializedResult<{ tablesCreated: string[] }>>
    }
    update: {
-      onUpdateAvailable: (callback: (info: { version: string; isPackageManaged: boolean }) => void) => () => void
+      onUpdateAvailable: (
+         callback: (info: { version: string; isPackageManaged: boolean }) => void
+      ) => () => void
       onDownloadProgress: (callback: (progress: { percent: number }) => void) => () => void
       onUpdateDownloaded: (callback: () => void) => () => void
       onUpdateError: (callback: (message: string) => void) => () => void

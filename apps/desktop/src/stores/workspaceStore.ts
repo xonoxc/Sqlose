@@ -161,19 +161,19 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             return state.tabs.find(t => t.id === state.activeTabId)
          },
       }),
-       {
-          name: "sqlose-workspace",
-          storage: sqliteStorage,
-          partialize: state => ({
-             tabs: state.tabs.map(tab => ({
-                ...tab,
-                result: null,
-                error: null,
-                isExecuting: false,
-             })),
-             activeTabId: state.activeTabId,
-             paneSizes: state.paneSizes,
-          }),
-       }
+      {
+         name: "sqlose-workspace",
+         storage: sqliteStorage,
+         partialize: state => ({
+            tabs: state.tabs.map(tab => ({
+               ...tab,
+               result: null,
+               error: null,
+               isExecuting: false,
+            })),
+            activeTabId: state.activeTabId,
+            paneSizes: state.paneSizes,
+         }),
+      }
    )
 )

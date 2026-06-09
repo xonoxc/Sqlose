@@ -221,9 +221,11 @@ export function useSQLEditorLogic(
                vimModeRef.current = initVimMode(editorRef.current!, vimStatusRef.current!)
                setupVimObserver()
                contentChangeDisposableRef.current?.dispose()
-               contentChangeDisposableRef.current = editorRef.current!.onDidChangeModelContent(() => {
-                  onChangeRef.current(editorRef.current!.getValue())
-               })
+               contentChangeDisposableRef.current = editorRef.current!.onDidChangeModelContent(
+                  () => {
+                     onChangeRef.current(editorRef.current!.getValue())
+                  }
+               )
             })
          }
       }

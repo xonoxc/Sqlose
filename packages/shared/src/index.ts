@@ -41,3 +41,5 @@ export type {
 } from "./ipc"
 
 export { isErrorCode, isAppError, isDBType } from "./guards"
+
+export { attempt, attemptSync } from "./attempt"
