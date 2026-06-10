@@ -1,10 +1,21 @@
-import { IconDatabase, IconPlus, IconServer, IconCircleFilled } from "@tabler/icons-react"
+import { IconDatabase, IconPlus, IconServer, IconCircleFilled, IconTrash, IconLoader2 } from "@tabler/icons-react"
 import { motion, AnimatePresence } from "motion/react"
+import { Button } from "@sqlose/ui"
 import { useDashboardState } from "~/hooks/useDashboardState"
 import { CreateDatabaseFlow } from "~/components/CreateDatabaseFlow"
 
 export function Dashboard() {
-   const { showCreateFlow, setShowCreateFlow, environments, handleSelectEnv } = useDashboardState()
+   const {
+      showCreateFlow,
+      isLoading,
+      setShowCreateFlow,
+      environments,
+      handleSelectEnv,
+      handleDestroyEnv,
+      destroyTarget,
+      setDestroyTarget,
+      confirmDestroy,
+   } = useDashboardState()
 
    const slideVariants = {
       initial: (direction: number) => ({
@@ -70,11 +81,11 @@ export function Dashboard() {
                                  className="w-full flex items-center justify-between p-4 rounded-[1.25rem] bg-bg-secondary/60 border border-border/60 hover:bg-bg-tertiary hover:border-accent/40 transition-all group overflow-hidden"
                               >
                                  <div className="flex items-center gap-4 text-left">
-                                    <div className="h-10 w-10 rounded-xl bg-bg-tertiary border border-border flex items-center justify-center transition-all group-hover:border-accent/30 group-hover:bg-accent/5">
+                                    <div className="h-10 w-10 rounded-xl bg-bg-tertiary border border-border flex items-center justify-center">
                                        {env.dbType === "sqlite" ? (
-                                          <IconDatabase className="h-5 w-5 text-text-primary opacity-90 group-hover:text-accent group-hover:opacity-100 transition-all" />
+                                          <IconDatabase className="h-5 w-5 text-text-primary" />
                                        ) : (
-                                          <IconServer className="h-5 w-5 text-text-primary opacity-90 group-hover:text-accent group-hover:opacity-100 transition-all" />
+                                          <IconServer className="h-5 w-5 text-text-primary" />
                                        )}
                                     </div>
                                     <div className="flex flex-col items-start translate-y-[-1px]">
@@ -87,7 +98,7 @@ export function Dashboard() {
                                     </div>
                                  </div>
 
-                                 <div className="flex items-center gap-2">
+                                 <div className="flex items-center gap-1">
                                     {env.status === "running" ? (
                                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-accent/20 border border-accent/30 transition-all">
                                           <IconCircleFilled className="h-1.5 w-1.5 text-white animate-pulse" />
@@ -103,9 +114,19 @@ export function Dashboard() {
                                           </span>
                                        </div>
                                     )}
+                                    <button
+                                       onClick={e => handleDestroyEnv(e, env.id)}
+                                       className="ml-1 h-9 w-9 flex items-center justify-center rounded-lg text-text-muted/30 group-hover:text-text-muted/80 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                    >
+                                       <IconTrash className="h-4 w-4" />
+                                    </button>
                                  </div>
                               </motion.button>
                            ))
+                        ) : isLoading ? (
+                           <div className="flex items-center justify-center py-12">
+                              <IconLoader2 className="h-6 w-6 text-text-muted animate-spin" />
+                           </div>
                         ) : (
                            <div className="text-center py-12 px-6 rounded-2xl border border-dashed border-border bg-bg-secondary/30">
                               <p className="text-[13px] text-text-muted">No databases found.</p>
@@ -140,6 +161,59 @@ export function Dashboard() {
                </motion.div>
             )}
          </AnimatePresence>
+         {destroyTarget && (
+            <div
+               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+               onClick={() => setDestroyTarget(null)}
+            >
+               <div
+                  className="w-full max-w-md rounded-xl border border-border bg-bg-secondary p-8 shadow-2xl"
+                  onClick={e => e.stopPropagation()}
+               >
+                  <div className="flex flex-col items-center text-center">
+                     <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border-2 border-red-500/25 bg-red-500/15">
+                        <IconTrash className="h-6 w-6 text-red-400" />
+                     </div>
+                     <h2 className="mb-2 text-lg font-semibold text-text-primary">
+                        Delete Workspace
+                     </h2>
+                     <p className="mb-6 text-sm text-text-muted">
+                        Are you sure you want to delete{" "}
+                        <strong>
+                           {environments.find(e => e.id === destroyTarget)?.name ||
+                              "this workspace"}
+                        </strong>
+                        ? This will remove the container and all data. This action cannot be undone.
+                     </p>
+                     <div className="flex w-full gap-3">
+                        <Button
+                           variant="secondary"
+                           size="default"
+                           onClick={() => setDestroyTarget(null)}
+                           disabled={isLoading}
+                           className="flex flex-1 items-center justify-center gap-2"
+                        >
+                           Cancel
+                        </Button>
+                        <Button
+                           variant="destructive"
+                           size="default"
+                           onClick={confirmDestroy}
+                           disabled={isLoading}
+                           className="flex flex-1 items-center justify-center gap-2"
+                        >
+                           {isLoading ? (
+                              <IconLoader2 className="h-4 w-4 animate-spin" />
+                           ) : (
+                              <IconTrash className="h-4 w-4" />
+                           )}
+                           {isLoading ? "Deleting..." : "Delete"}
+                        </Button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         )}
       </div>
    )
 }

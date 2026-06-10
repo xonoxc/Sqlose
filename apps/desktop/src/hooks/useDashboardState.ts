@@ -3,6 +3,7 @@ import { useEnvironmentStore } from "~/stores/environmentStore"
 
 export function useDashboardState() {
    const [showCreateFlow, setShowCreateFlow] = useState(false)
+   const [destroyTarget, setDestroyTarget] = useState<string | null>(null)
    const environments = useEnvironmentStore(s => s.environments)
    const isLoading = useEnvironmentStore(s => s.isLoading)
    const error = useEnvironmentStore(s => s.error)
@@ -15,7 +16,13 @@ export function useDashboardState() {
 
    const handleDestroyEnv = (e: React.MouseEvent, id: string) => {
       e.stopPropagation()
-      destroyEnvironment(id)
+      setDestroyTarget(id)
+   }
+
+   const confirmDestroy = async () => {
+      if (!destroyTarget) return
+      await destroyEnvironment(destroyTarget)
+      setDestroyTarget(null)
    }
 
    return {
@@ -26,5 +33,8 @@ export function useDashboardState() {
       error,
       handleSelectEnv,
       handleDestroyEnv,
+      destroyTarget,
+      setDestroyTarget,
+      confirmDestroy,
    }
 }
