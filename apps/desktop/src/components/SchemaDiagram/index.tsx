@@ -48,6 +48,51 @@ async function fetchForeignKeys(envId: string, tableName: string): Promise<Forei
    return []
 }
 
+function inferForeignKeys(
+   tableName: string,
+   columns: ColumnInfo[],
+   allTableNames: string[],
+   allTableColumns: Record<string, ColumnInfo[]>
+): ForeignKeyRelation[] {
+   const relations: ForeignKeyRelation[] = []
+   const lowerTableNames = allTableNames.map(t => t.toLowerCase())
+
+   for (const col of columns) {
+      const colNameLower = col.name.toLowerCase()
+      if (colNameLower === "id" || !colNameLower.endsWith("_id")) continue
+
+      const base = col.name.slice(0, -3)
+      if (!base) continue
+
+      const candidates = new Set<string>([base, `${base}s`, `${base}es`])
+      if (base.endsWith("y") && base.length > 1 && !"aeiou".includes(base[base.length - 2])) {
+         candidates.add(`${base.slice(0, -1)}ies`)
+      }
+      if (base.endsWith("s") && !base.endsWith("ss")) {
+         candidates.add(base.slice(0, -1))
+      }
+
+      let matchedTable: string | null = null
+      for (const candidate of candidates) {
+         const idx = lowerTableNames.indexOf(candidate.toLowerCase())
+         if (idx !== -1) {
+            matchedTable = allTableNames[idx]
+            break
+         }
+      }
+
+      if (matchedTable && matchedTable !== tableName) {
+         const targetCols = allTableColumns[matchedTable] || []
+         const pkCol = targetCols.find(tc => tc.primaryKey)
+         if (pkCol) {
+            relations.push({ fromCol: col.name, toTable: matchedTable, toCol: pkCol.name })
+         }
+      }
+   }
+
+   return relations
+}
+
 export function buildForeignKeyEdge(
    tableName: string,
    foreignKey: ForeignKeyRelation,
@@ -136,7 +181,6 @@ export function SchemaDiagram() {
       const initializeDiagram = async () => {
          setLoading(true)
 
-         // Fetch all tables if needed
          if (tables.length === 0) {
             await fetchTables(envId, dbType)
          }
@@ -155,34 +199,48 @@ export function SchemaDiagram() {
 
          const newNodes: Node[] = []
          const newEdges: Edge[] = []
+         const allTableNames: string[] = []
+         const allTableColumns: Record<string, ColumnInfo[]> = {}
 
          for (const t of myTables) {
             const tName = String(t)
-            if (tName.startsWith("sqlite_")) continue // Skip internal SQLite tables
+            if (tName.startsWith("sqlite_")) continue
 
-            // Ensure columns are fetched
             await fetchColumns(envId, tName, dbType)
             const cols: ColumnInfo[] = useDatabaseStore.getState().tableColumns[tName] || []
 
-            // Construct Node
+            allTableNames.push(tName)
+            allTableColumns[tName] = cols
+
             newNodes.push({
                id: tName,
                type: "tableNode",
                position: { x: 0, y: 0 },
                data: { label: tName, columns: cols },
             })
+         }
 
-            // Fetch and Process FKs for Edges
-            const fks = await fetchForeignKeys(envId, tName)
-            for (const fk of fks) {
+         for (const tName of allTableNames) {
+            const explicitFks = await fetchForeignKeys(envId, tName)
+            for (const fk of explicitFks) {
                newEdges.push(
-                  buildForeignKeyEdge(
-                     tName,
-                     fk,
-                     currentTheme.colors.accent,
-                     currentTheme.colors.surface
-                  )
+                  buildForeignKeyEdge(tName, fk, currentTheme.colors.accent, currentTheme.colors.surface)
                )
+            }
+
+            const inferredFks = inferForeignKeys(tName, allTableColumns[tName], allTableNames, allTableColumns)
+            for (const fk of inferredFks) {
+               const isDuplicate = newEdges.some(
+                  edge =>
+                     edge.source === tName &&
+                     edge.sourceHandle === `source-${fk.fromCol}` &&
+                     edge.target === fk.toTable
+               )
+               if (!isDuplicate) {
+                  newEdges.push(
+                     buildForeignKeyEdge(tName, fk, currentTheme.colors.accent, currentTheme.colors.surface)
+                  )
+               }
             }
          }
 
@@ -199,6 +257,30 @@ export function SchemaDiagram() {
 
       initializeDiagram()
    }, [envId, dbType])
+
+   useEffect(() => {
+      setEdges(prevEdges =>
+         prevEdges.map(edge => ({
+            ...edge,
+            style: {
+               ...edge.style,
+               stroke: currentTheme.colors.accent,
+            },
+            markerEnd: {
+               ...(typeof edge.markerEnd === "object" && edge.markerEnd ? edge.markerEnd : {}),
+               color: currentTheme.colors.accent,
+            },
+            labelStyle: {
+               ...edge.labelStyle,
+               fill: currentTheme.colors.accent,
+            },
+            labelBgStyle: {
+               ...edge.labelBgStyle,
+               fill: currentTheme.colors.surface,
+            },
+         }))
+      )
+   }, [currentTheme, setEdges])
 
    if (loading) {
       return (
@@ -249,7 +331,7 @@ export function SchemaDiagram() {
             <Controls className="bg-bg-secondary border border-border" />
             <MiniMap
                nodeStrokeColor={currentTheme.colors.border}
-               nodeColor={currentTheme.colors.surface}
+               nodeColor={currentTheme.colors.surface2}
                maskColor="rgba(0,0,0,0.4)"
             />
          </ReactFlow>

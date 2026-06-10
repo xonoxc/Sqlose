@@ -12,7 +12,7 @@ export function TableNode({ data }: { data: TableNodeData }) {
    const { currentTheme } = useThemeStore()
    return (
       <div
-         className="w-72 rounded-[16px] shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-300 font-sans border flex flex-col group animate-in fade-in zoom-in-95 relative overflow-hidden"
+         className="w-72 rounded-[8px] shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-300 font-sans border flex flex-col group animate-in fade-in zoom-in-95 relative overflow-hidden"
          style={{
             backgroundColor: currentTheme.colors.surface,
             borderColor: currentTheme.colors.border,
