@@ -21,11 +21,12 @@ import { registerDbHandlers } from "./db-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
 
-// Wayland support for Linux: enable Ozone platform and native decorations
+// Wayland support for Linux: force native Wayland when running under a Wayland session
 if (process.platform === "linux") {
-   app.commandLine.appendSwitch("ozone-platform-hint", "auto")
+   if (process.env.WAYLAND_DISPLAY) {
+      app.commandLine.appendSwitch("ozone-platform", "wayland")
+   }
    app.commandLine.appendSwitch("enable-features", "WaylandWindowDecorations")
-   // Enable per-monitor DPI scaling on Wayland
    app.commandLine.appendSwitch("enable-wayland-ime")
 }
 
@@ -121,7 +122,7 @@ function createWindow() {
       height: 750,
       webPreferences: {
          preload: path.join(__dirname, "preload.mjs"),
-         sandbox: true,
+         sandbox: false,
          contextIsolation: true,
          nodeIntegration: false,
       },

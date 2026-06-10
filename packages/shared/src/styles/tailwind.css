@@ -16,10 +16,9 @@
 }
 
 /* Wayland-safe font rendering:
-   - Wayland only supports grayscale AA (no subpixel)
-   - Use antialiased on Wayland, subpixel-antialiased on X11/macOS
+   - Wayland/Linux only supports grayscale AA (no subpixel)
+   - Use antialiased on Wayland, subpixel-antialiased on macOS
    - Font weight 500 on Linux for better readability */
-@custom-media --wayland (-moz-platform: linux), (prefers-rendering: non-retina);
 
 @theme {
    /* Background colors — layered surface system */
@@ -98,12 +97,10 @@
       text-rendering: optimizeLegibility;
    }
 
-   /* Wayland/Linux: subpixel AA not available, use slightly heavier weight */
-   @media (-moz-platform: linux), (prefers-rendering: non-retina) {
-      body {
-         -webkit-font-smoothing: auto;
-         font-weight: 500;
-      }
+   /* Linux (Wayland): no subpixel AA, use heavier weight for readability */
+   [data-platform="linux"] body {
+      -webkit-font-smoothing: auto;
+      font-weight: 500;
    }
 
    /* Minimal custom scrollbar */

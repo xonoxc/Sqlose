@@ -82,6 +82,17 @@ function AppContent() {
       root.style.setProperty("--app-table-font-size", `${tableFontSize}px`)
    }, [uiScale, tableFontSize])
 
+   useEffect(() => {
+      const root = document.documentElement
+      if (navigator.platform?.toLowerCase().includes("linux")) {
+         root.setAttribute("data-platform", "linux")
+      } else if (navigator.platform?.toLowerCase().includes("mac")) {
+         root.setAttribute("data-platform", "mac")
+      } else if (navigator.platform?.toLowerCase().includes("win")) {
+         root.setAttribute("data-platform", "win")
+      }
+   }, [])
+
    const resultsResize = useResizeHandler({
       axis: "y",
       min: RESULTS_MIN_HEIGHT,

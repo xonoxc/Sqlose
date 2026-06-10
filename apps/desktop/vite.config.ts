@@ -57,9 +57,15 @@ export default defineConfig({
                      "@sqlose/shared": path.resolve(DESKTOP_DIR, "../../packages/shared/src"),
                   },
                },
+               build: {
+                  rollupOptions: {
+                     output: {
+                        format: "es",
+                     },
+                  },
+               },
             },
          },
-         renderer: process.env.NODE_ENV === "test" ? undefined : {},
       }),
    ],
    resolve: {
