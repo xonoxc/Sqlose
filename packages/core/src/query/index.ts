@@ -4,17 +4,13 @@ import type { QueryResult, AsyncAppResult } from "@sqlose/shared"
 import { executeQueryForDB } from "../drivers"
 import { loadEnvironment } from "../environment/store"
 
-export function executeQuery(environmentId: string, sql: string): AsyncAppResult<QueryResult> {
+export async function executeQuery(environmentId: string, sql: string): AsyncAppResult<QueryResult> {
    const env = loadEnvironment(environmentId)
    if (!env) {
-      return Promise.resolve(
-         err(new QueryError("query:connection_failed", `Environment ${environmentId} not found`))
-      )
+      return err(new QueryError("query:connection_failed", `Environment ${environmentId} not found`))
    }
    if (env.status !== "running") {
-      return Promise.resolve(
-         err(new QueryError("query:connection_failed", "Environment is not running"))
-      )
+      return err(new QueryError("query:connection_failed", "Environment is not running"))
    }
 
    return executeQueryForDB(env.dbType, env.connectionString, sql)

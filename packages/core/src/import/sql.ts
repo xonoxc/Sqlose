@@ -6,7 +6,7 @@ export interface SQLStatement {
    sql: string
 }
 
-export function parseSQLDump(content: string): AsyncAppResult<SQLStatement[]> {
+export async function parseSQLDump(content: string): AsyncAppResult<SQLStatement[]> {
    const statements: SQLStatement[] = []
    const cleaned = content.replace(/--.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "")
    const parts = splitSQL(cleaned)
@@ -24,7 +24,7 @@ export function parseSQLDump(content: string): AsyncAppResult<SQLStatement[]> {
       statements.push({ type, sql: trimmed })
    }
 
-   return Promise.resolve(ok(statements))
+   return ok(statements)
 }
 
 function splitSQL(content: string): string[] {

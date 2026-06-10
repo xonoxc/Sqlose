@@ -1335,15 +1335,13 @@ INSERT INTO alerts (id, station_id, type, severity, message, issued_at) VALUES (
 `,
 }
 
-export function listDatasets(): AsyncAppResult<Dataset[]> {
-   return Promise.resolve(ok(DATASETS))
+export async function listDatasets(): AsyncAppResult<Dataset[]> {
+   return ok(DATASETS)
 }
 
-export function getDatasetSQL(datasetId: string): AsyncAppResult<string> {
+export async function getDatasetSQL(datasetId: string): AsyncAppResult<string> {
    const sql = SAMPLE_DATASETS[datasetId]
    if (!sql)
-      return Promise.resolve(
-         err(new ImportError("import:parse_failed", `Dataset ${datasetId} not found`))
-      )
-   return Promise.resolve(ok(sql))
+      return err(new ImportError("import:parse_failed", `Dataset ${datasetId} not found`))
+   return ok(sql)
 }

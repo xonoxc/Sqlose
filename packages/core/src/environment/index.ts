@@ -10,74 +10,71 @@ function generateId(): string {
    return `env-${Date.now()}-${envCounter}`
 }
 
-export function createEnvironmentRecord(
+export async function createEnvironmentRecord(
    dbType: DBType,
    name?: string
 ): AsyncAppResult<Environment> {
-   return Promise.resolve()
-      .then(() => {
-         const env: Environment = {
-            id: generateId(),
-            name: name ?? `${dbType}-${envCounter}`,
-            dbType,
-            status: "creating",
-            port: 0,
-            uptime: null,
-            connectionString: "",
-            containerId: null,
-            createdAt: new Date().toISOString(),
-         }
-         saveEnvironment(env)
-         return ok(env)
-      })
-      .catch((e: Error) =>
-         err(new EnvironmentError("env:create_failed", e.message ?? "Failed to create environment"))
+   try {
+      const env: Environment = {
+         id: generateId(),
+         name: name ?? `${dbType}-${envCounter}`,
+         dbType,
+         status: "creating",
+         port: 0,
+         uptime: null,
+         connectionString: "",
+         containerId: null,
+         createdAt: new Date().toISOString(),
+      }
+      saveEnvironment(env)
+      return ok(env)
+   } catch (e) {
+      return err(
+         new EnvironmentError(
+            "env:create_failed",
+            (e as Error).message ?? "Failed to create environment"
+         )
       )
+   }
 }
 
-export function getEnvironment(id: string): AsyncAppResult<Environment> {
+export async function getEnvironment(id: string): AsyncAppResult<Environment> {
    const env = loadEnvironment(id)
    return env
-      ? Promise.resolve(ok(env))
-      : Promise.resolve(err(new EnvironmentError("env:not_found", `Environment ${id} not found`)))
+      ? ok(env)
+      : err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
 }
 
-export function listEnvironments(): AsyncAppResult<Environment[]> {
-   return Promise.resolve(ok(loadEnvironments()))
+export async function listEnvironments(): AsyncAppResult<Environment[]> {
+   return ok(loadEnvironments())
 }
 
-export function updateEnvironment(
+export async function updateEnvironment(
    id: string,
    updates: Partial<Environment>
 ): AsyncAppResult<Environment> {
    const env = loadEnvironment(id)
    if (!env) {
-      return Promise.resolve(
-         err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
-      )
+      return err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
    }
    const updated = { ...env, ...updates }
    saveEnvironment(updated)
-   return Promise.resolve(ok(updated))
+   return ok(updated)
 }
 
-export function destroyEnvironmentRecord(id: string): AsyncAppResult<void> {
+export async function destroyEnvironmentRecord(id: string): AsyncAppResult<void> {
    const env = loadEnvironment(id)
    if (!env) {
-      return Promise.resolve(
-         err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
-      )
+      return err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
    }
    deleteEnvironment(id)
-   return Promise.resolve(okResult(undefined))
+   return okResult(undefined)
 }
 
-export function duplicateEnvironmentRecord(id: string): AsyncAppResult<Environment> {
+export async function duplicateEnvironmentRecord(id: string): AsyncAppResult<Environment> {
    const env = loadEnvironment(id)
    if (!env) {
-      return Promise.resolve(
-         err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
-      )
+      return err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
    }
    const duplicate: Environment = {
       ...env,
@@ -91,15 +88,13 @@ export function duplicateEnvironmentRecord(id: string): AsyncAppResult<Environme
       createdAt: new Date().toISOString(),
    }
    saveEnvironment(duplicate)
-   return Promise.resolve(ok(duplicate))
+   return ok(duplicate)
 }
 
-export function resetEnvironmentRecord(id: string): AsyncAppResult<Environment> {
+export async function resetEnvironmentRecord(id: string): AsyncAppResult<Environment> {
    const env = loadEnvironment(id)
    if (!env) {
-      return Promise.resolve(
-         err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
-      )
+      return err(new EnvironmentError("env:not_found", `Environment ${id} not found`))
    }
    const reset: Environment = {
       ...env,
@@ -110,5 +105,5 @@ export function resetEnvironmentRecord(id: string): AsyncAppResult<Environment> 
       containerId: null,
    }
    saveEnvironment(reset)
-   return Promise.resolve(ok(reset))
+   return ok(reset)
 }

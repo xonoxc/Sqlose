@@ -5,21 +5,19 @@ import { executeSQLiteQuery } from "./sqlite"
 
 export { destroyPool } from "./pool"
 
-export function executeQueryForDB(
+export async function executeQueryForDB(
    dbType: DBType,
    connectionString: string,
    sql: string
 ): AsyncAppResult<QueryResult> {
    switch (dbType) {
       case "postgres":
-         return import("./postgres").then(m => m.executePostgresQuery(connectionString, sql))
+         return (await import("./postgres")).executePostgresQuery(connectionString, sql)
       case "mysql":
-         return import("./mysql").then(m => m.executeMySQLQuery(connectionString, sql))
+         return (await import("./mysql")).executeMySQLQuery(connectionString, sql)
       case "sqlite":
          return executeSQLiteQuery(connectionString, sql)
       default:
-         return Promise.resolve(
-            err(new QueryError("query:execution_failed", `Unsupported DB type: ${dbType}`))
-         )
+         return err(new QueryError("query:execution_failed", `Unsupported DB type: ${dbType}`))
    }
 }

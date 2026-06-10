@@ -12,9 +12,9 @@ export interface InferredSchema {
    columns: { name: string; type: string }[]
 }
 
-export function parseCSV(content: string): AsyncAppResult<CSVParsed> {
+export async function parseCSV(content: string): AsyncAppResult<CSVParsed> {
    if (!content || content.trim().length === 0) {
-      return Promise.resolve(err(new ImportError("import:parse_failed", "CSV has no content")))
+      return err(new ImportError("import:parse_failed", "CSV has no content"))
    }
 
    const lines = content
@@ -23,12 +23,12 @@ export function parseCSV(content: string): AsyncAppResult<CSVParsed> {
       .filter(l => l.trim().length > 0)
 
    if (lines.length < 1) {
-      return Promise.resolve(err(new ImportError("import:parse_failed", "CSV has no content")))
+      return err(new ImportError("import:parse_failed", "CSV has no content"))
    }
 
    const columns = parseCSVLine(lines[0])
    if (columns.length === 0) {
-      return Promise.resolve(err(new ImportError("import:parse_failed", "CSV has no columns")))
+      return err(new ImportError("import:parse_failed", "CSV has no columns"))
    }
 
    const rows: Record<string, string>[] = []
@@ -36,12 +36,10 @@ export function parseCSV(content: string): AsyncAppResult<CSVParsed> {
       const values = parseCSVLine(lines[i])
       if (values.length === 0) continue
       if (values.length !== columns.length) {
-         return Promise.resolve(
-            err(
-               new ImportError(
-                  "import:parse_failed",
-                  `Row ${i + 1} has ${values.length} values but expected ${columns.length}`
-               )
+         return err(
+            new ImportError(
+               "import:parse_failed",
+               `Row ${i + 1} has ${values.length} values but expected ${columns.length}`
             )
          )
       }
@@ -52,7 +50,7 @@ export function parseCSV(content: string): AsyncAppResult<CSVParsed> {
       rows.push(row)
    }
 
-   return Promise.resolve(ok({ columns, rows }))
+   return ok({ columns, rows })
 }
 
 function parseCSVLine(line: string): string[] {

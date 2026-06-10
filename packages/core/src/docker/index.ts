@@ -213,19 +213,19 @@ export async function pullImage(
    )
 }
 
-export function waitForDatabaseReady(
+export async function waitForDatabaseReady(
    dbType: DBType,
    connectionString: string
 ): AsyncAppResult<void> {
-   if (dbType === "sqlite") return Promise.resolve(okResult(undefined))
+   if (dbType === "sqlite") return okResult(undefined)
 
    let pollAttempt = 0
 
    async function poll(): AsyncAppResult<void> {
       pollAttempt++
       if (pollAttempt > DB_READY_RETRIES) {
-         return Promise.resolve(
-            err(new DockerError("docker:container_failed", "Database did not become ready in time"))
+         return err(
+            new DockerError("docker:container_failed", "Database did not become ready in time")
          )
       }
 
@@ -239,9 +239,8 @@ export function waitForDatabaseReady(
       if (testResult.isOk() && testResult.value.isOk() && testResult.value.value) {
          return okResult(undefined)
       }
-      return new Promise<AppResult<void>>(resolve =>
-         setTimeout(() => resolve(poll()), DB_READY_INTERVAL_MS)
-      )
+      await new Promise<void>(resolve => setTimeout(resolve, DB_READY_INTERVAL_MS))
+      return poll()
    }
 
    return poll()
@@ -253,13 +252,11 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
    connectionString: string
 }> {
    if (dbType === "sqlite") {
-      return Promise.resolve(
-         ok({
-            port: 0,
-            containerId: "",
-            connectionString: buildConnectionString(dbType, 0),
-         })
-      )
+      return ok({
+         port: 0,
+         containerId: "",
+         connectionString: buildConnectionString(dbType, 0),
+      })
    }
 
    const docker = getDocker()
