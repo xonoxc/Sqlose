@@ -42,8 +42,8 @@ export function ResultsPanelHeader({
    ]
 
    return (
-      <div className="flex items-center justify-between px-3 h-9 bg-bg-secondary/40 shrink-0 border-b border-border/20 z-30">
-         <div className="flex items-center gap-0.5 h-full">
+      <div className="flex items-center justify-between p-1 h-10 bg-bg-secondary/40 shrink-0 border-b border-border/20 z-30">
+         <div className="flex items-center gap-0.5 h-full py-4">
             <button
                onClick={onToggleCollapse}
                className="flex items-center justify-center -ml-1 h-7 w-7 rounded-md hover:bg-white/5 text-text-muted/60 transition-colors"
@@ -57,7 +57,7 @@ export function ResultsPanelHeader({
                />
             </button>
 
-            <div className="flex items-center ml-2 h-full gap-4">
+            <div className="flex items-center ml-2 gap-4">
                {tabs.map(tab => {
                   const isActive = resultsActiveTab === tab.id
                   return (
@@ -102,7 +102,7 @@ export function ResultsPanelHeader({
                )}
             </div>
 
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-0.5 px-4 flex items-center justify-center gap-3">
                {activeTab?.result && (
                   <>
                      <CopyDropdown
@@ -117,35 +117,33 @@ export function ResultsPanelHeader({
 
                <button
                   onClick={onClearResults}
-                  className="h-7 w-7 flex items-center justify-center rounded-md text-text-muted/60 hover:text-error hover:bg-error/5 transition-all"
+                  className="h-8 w-8 flex items-center justify-center rounded-md text-text-muted/80 hover:text-error hover:bg-error/5 transition-all"
                   title="Clear results"
                >
-                  <IconTrash className="h-3.5 w-3.5" />
+                  <IconTrash className="h-4.5 w-4.5" />
                </button>
 
-               <div className="w-px h-3.5 bg-border/20 mx-1" />
+               <div className="w-px h-3.5 bg-border/70 mx-1" />
 
                <button
-                  className="h-7 w-7 flex items-center justify-center rounded-md text-text-muted/60 hover:text-text-primary hover:bg-white/5 transition-all"
+                  className="h-7 w-7 flex items-center justify-center rounded-md text-text-muted/80 hover:text-text-primary hover:bg-white/5 transition-all"
                   title="More options"
                >
-                  <IconDotsVertical className="h-3.5 w-3.5" />
+                  <IconDotsVertical className="h-4.5 w-4.5" />
                </button>
 
                <button
                   onClick={onToggleMaximize}
                   className={cn(
                      "h-7 w-7 flex items-center justify-center rounded-md transition-all",
-                     isResultsMaximized
-                        ? "text-accent bg-accent/10"
-                        : "text-text-muted/60 hover:text-text-primary hover:bg-white/5"
+                     "text-text-muted/80 hover:text-text-primary hover:bg-white/5"
                   )}
                   title={isResultsMaximized ? "Restore panel" : "Maximize panel"}
                >
                   {isResultsMaximized ? (
-                     <IconMinimize className="h-4 w-4" />
+                     <IconMinimize className="h-5 w-5" />
                   ) : (
-                     <IconMaximize className="h-4 w-4" />
+                     <IconMaximize className="h-5 w-5" />
                   )}
                </button>
             </div>

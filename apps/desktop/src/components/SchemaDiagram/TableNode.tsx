@@ -18,17 +18,17 @@ export function TableNode({ data }: { data: TableNodeData }) {
             borderColor: currentTheme.colors.border,
          }}
       >
-         {/* Subtle Glow Overlay on Hover */}
-         <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500 z-10"
-            style={{
-               boxShadow: `inset 0 0 20px ${currentTheme.colors.accent}10, 0 0 0 1px ${currentTheme.colors.accent}20`,
-            }}
-         />
+          {/* Subtle Glow Overlay on Hover */}
+          <div
+             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500 z-30"
+             style={{
+                boxShadow: `inset 0 0 20px ${currentTheme.colors.accent}10, 0 0 0 1px ${currentTheme.colors.accent}20`,
+             }}
+          />
 
-         {/* Header */}
-         <div
-            className="px-4 py-3 flex items-center justify-between border-b relative z-20"
+          {/* Header */}
+          <div
+             className="px-4 py-4 flex items-center justify-between border-b relative z-20"
             style={{
                backgroundColor: currentTheme.colors.surface2,
                borderColor: currentTheme.colors.border,
