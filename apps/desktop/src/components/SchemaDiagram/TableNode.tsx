@@ -12,39 +12,41 @@ export function TableNode({ data }: { data: TableNodeData }) {
    const { currentTheme } = useThemeStore()
    return (
       <div
-         className="w-72 rounded-[8px] shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-300 font-sans border flex flex-col group animate-in fade-in zoom-in-95 relative overflow-hidden"
+         className="w-72 rounded-[10px] shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-all duration-300 font-sans border flex flex-col group animate-in fade-in zoom-in-95 relative overflow-hidden"
          style={{
             backgroundColor: currentTheme.colors.surface,
             borderColor: currentTheme.colors.border,
          }}
       >
-          {/* Subtle Glow Overlay on Hover */}
-          <div
-             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500 z-30"
-             style={{
-                boxShadow: `inset 0 0 20px ${currentTheme.colors.accent}10, 0 0 0 1px ${currentTheme.colors.accent}20`,
-             }}
-          />
-
-          {/* Header */}
-          <div
-             className="px-4 py-4 flex items-center justify-between border-b relative z-20"
+         {/* Subtle Glow Overlay on Hover */}
+         <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500 z-30"
             style={{
-               backgroundColor: currentTheme.colors.surface2,
-               borderColor: currentTheme.colors.border,
+               boxShadow: `inset 0 0 20px ${currentTheme.colors.accent}10, 0 0 0 1px ${currentTheme.colors.accent}20`,
             }}
-         >
-            <div className="flex items-center gap-2">
-               <IconTable
-                  className="h-4 w-4 opacity-70"
-                  style={{ color: currentTheme.colors.text }}
-               />
-               <span
-                  className="font-semibold text-[14px] tracking-wide"
-                  style={{ color: currentTheme.colors.text, opacity: 0.9 }}
-               >
-                  {data.label}
-               </span>
+         />
+
+         {/* Header */}
+         <div className="p-[0.4px]">
+            <div
+               className="px-4 py-4 flex items-center justify-between border-b relative z-20 rounded-b-[8px]"
+               style={{
+                  backgroundColor: currentTheme.colors.surface2,
+                  borderColor: currentTheme.colors.border,
+               }}
+            >
+               <div className="flex items-center gap-2">
+                  <IconTable
+                     className="h-4 w-4 opacity-70"
+                     style={{ color: currentTheme.colors.text }}
+                  />
+                  <span
+                     className="font-semibold text-[14px] tracking-wide"
+                     style={{ color: currentTheme.colors.text, opacity: 0.9 }}
+                  >
+                     {data.label}
+                  </span>
+               </div>
             </div>
          </div>
 
