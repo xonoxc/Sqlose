@@ -18,7 +18,6 @@ export function TableNode({ data }: { data: TableNodeData }) {
             borderColor: currentTheme.colors.border,
          }}
       >
-         {/* Subtle Glow Overlay on Hover */}
          <div
             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none duration-500 z-30"
             style={{
