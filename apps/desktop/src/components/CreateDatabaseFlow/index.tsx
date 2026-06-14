@@ -22,6 +22,7 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
       datasetsLoading,
       creating,
       allDone,
+      duplicateNameError,
       handleSelectType,
       handleCreate,
    } = useCreateDatabaseFlowLogic(onClose)
@@ -55,17 +56,18 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
                />
             )}
 
-            {step === "configure" && (
-               <ConfigureStep
-                  dbName={dbName}
-                  setDbName={setDbName}
-                  selectedDbType={selectedDbType}
-                  datasets={datasets}
-                  datasetsLoading={datasetsLoading}
-                  selectedDataset={selectedDataset}
-                  setSelectedDataset={setSelectedDataset}
-               />
-            )}
+             {step === "configure" && (
+                <ConfigureStep
+                   dbName={dbName}
+                   setDbName={setDbName}
+                   selectedDbType={selectedDbType}
+                   datasets={datasets}
+                   datasetsLoading={datasetsLoading}
+                   selectedDataset={selectedDataset}
+                   setSelectedDataset={setSelectedDataset}
+                   nameError={duplicateNameError}
+                />
+             )}
          </AnimatePresence>
 
          <div className="mt-20 flex items-center justify-end gap-6 border-t border-border/40 pt-10">
@@ -75,9 +77,9 @@ export function CreateDatabaseFlow({ onClose }: { onClose: () => void }) {
             >
                Cancel
             </button>
-            <Button
-               disabled={step === "select-type" || creating}
-               onClick={handleCreate}
+             <Button
+                disabled={step === "select-type" || creating || !!duplicateNameError}
+                onClick={handleCreate}
                className={cn(
                   "h-14 px-14 rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] gap-3 transition-all flex items-center justify-center",
                   step === "select-type"

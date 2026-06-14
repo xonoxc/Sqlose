@@ -27,6 +27,13 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
 
    const provisionStarted = useRef(false)
 
+   const environments = useEnvironmentStore(s => s.environments)
+   const existingNames = environments.map(e => e.name).filter(Boolean)
+   const duplicateNameError =
+      step === "configure" && dbName.trim() && existingNames.includes(dbName.trim())
+         ? `A workspace named "${dbName.trim()}" already exists`
+         : null
+
    const createEnvironment = useEnvironmentStore(s => s.createEnvironment)
    const syncEnvironment = useEnvironmentStore(s => s.syncEnvironment)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
@@ -154,6 +161,10 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
    }
 
    const handleCreate = () => {
+      const names = useEnvironmentStore.getState().environments.map(e => e.name).filter(Boolean)
+      if (dbName.trim() && names.includes(dbName.trim())) {
+         return
+      }
       setCreating(true)
       setStep("provisioning")
    }
@@ -173,6 +184,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
       datasetsLoading,
       creating,
       allDone,
+      duplicateNameError,
       handleSelectType,
       handleCreate,
       setStep,

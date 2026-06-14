@@ -11,6 +11,7 @@ interface ConfigureStepProps {
    datasetsLoading: boolean
    selectedDataset: Dataset | null
    setSelectedDataset: (ds: Dataset | null) => void
+   nameError: string | null
 }
 
 const scrollbarStyles = `
@@ -27,6 +28,7 @@ export function ConfigureStep({
    datasetsLoading,
    selectedDataset,
    setSelectedDataset,
+   nameError,
 }: ConfigureStepProps) {
    return (
       <motion.div
@@ -51,15 +53,21 @@ export function ConfigureStep({
                <label className="text-[11px] text-white/80 text-accent px-1 uppercase tracking-[0.2em] leading-none">
                   Workspace Identity
                </label>
-               <div className="relative group">
-                  <Input
-                     autoFocus
-                     value={dbName}
-                     onChange={e => setDbName(e.target.value)}
-                     placeholder="e.g. finance-sandbox-v1"
-                     className="w-full h-16 bg-bg-secondary/60 border-border focus:border-accent/60 focus:bg-bg-tertiary rounded-2xl text-xl px-7 transition-all font-bold text-white shadow-inner"
-                  />
-               </div>
+                <div className="relative group">
+                   <Input
+                      autoFocus
+                      value={dbName}
+                      onChange={e => setDbName(e.target.value)}
+                      placeholder="e.g. finance-sandbox-v1"
+                      className={cn(
+                         "w-full h-16 bg-bg-secondary/60 border-border focus:border-accent/60 focus:bg-bg-tertiary rounded-2xl text-xl px-7 transition-all font-bold text-white shadow-inner",
+                         nameError && "border-error/60 focus:border-error"
+                      )}
+                   />
+                </div>
+                {nameError && (
+                   <p className="text-[13px] font-medium text-error mt-2 px-1">{nameError}</p>
+                )}
             </div>
 
             <div className="space-y-4">
