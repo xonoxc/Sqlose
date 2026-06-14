@@ -13,6 +13,7 @@ export const ERROR_CODES = [
    "env:not_running",
    "env:create_failed",
    "env:destroy_failed",
+   "env:duplicate_name",
    "env:start_failed",
    "env:stop_failed",
    "env:duplicate_failed",

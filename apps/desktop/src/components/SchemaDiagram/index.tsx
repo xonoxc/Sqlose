@@ -171,8 +171,11 @@ export function SchemaDiagram() {
 
    const envId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const dbType = useEnvironmentStore(s => s.environments.find(e => e.id === envId)?.dbType)
-   const { tables, fetchTables, fetchColumns } = useDatabaseStore()
+   const tablesByEnv = useDatabaseStore(s => s.tables)
+   const fetchTables = useDatabaseStore(s => s.fetchTables)
+   const fetchColumns = useDatabaseStore(s => s.fetchColumns)
    const { currentTheme } = useThemeStore()
+   const tables = envId ? (tablesByEnv[envId] ?? []) : []
 
    // Load schemas and calculate nodes
    useEffect(() => {
@@ -207,7 +210,7 @@ export function SchemaDiagram() {
             if (tName.startsWith("sqlite_")) continue
 
             await fetchColumns(envId, tName, dbType)
-            const cols: ColumnInfo[] = useDatabaseStore.getState().tableColumns[tName] || []
+            const cols: ColumnInfo[] = (useDatabaseStore.getState().tableColumns[envId]?.[tName]) || []
 
             allTableNames.push(tName)
             allTableColumns[tName] = cols

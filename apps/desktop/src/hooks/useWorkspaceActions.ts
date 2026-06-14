@@ -1,13 +1,9 @@
 import { useCallback } from "react"
-import { useEditorStore } from "~/stores/editorStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useQueryExecution } from "~/hooks/useQueryExecution"
 
 export function useWorkspaceActions() {
-   const queryDraft = useEditorStore(s => s.queryDraft)
-   const setQueryDraft = useEditorStore(s => s.setQueryDraft)
-
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
 
@@ -19,28 +15,32 @@ export function useWorkspaceActions() {
 
    const { execute } = useQueryExecution()
    const isExecuting = activeTab?.isExecuting ?? false
+   const queryDraft = activeTab?.query ?? ""
 
    const selectedEnv = selectedEnvironmentId
       ? (environments.find(e => e.id === selectedEnvironmentId) ?? null)
       : null
 
    const handleNewQuery = useCallback(() => {
-      const result = openTab()
-      if (result.isOk()) {
-         setQueryDraft("")
-      }
-   }, [openTab, setQueryDraft])
+      openTab()
+   }, [openTab])
 
    const handleQueryChange = useCallback(
       (value: string) => {
-         setQueryDraft(value)
          const tid = useWorkspaceStore.getState().activeTabId
          if (tid) {
             useWorkspaceStore.getState().updateTab(tid, { query: value, isDirty: true })
          }
       },
-      [setQueryDraft]
+      []
    )
+
+   const setQueryDraft = useCallback((value: string) => {
+      const tid = useWorkspaceStore.getState().activeTabId
+      if (tid) {
+         useWorkspaceStore.getState().updateTab(tid, { query: value })
+      }
+   }, [])
 
    const handleClearResults = useCallback(() => {
       const tid = useWorkspaceStore.getState().activeTabId
@@ -51,13 +51,13 @@ export function useWorkspaceActions() {
 
    const handleOpenTable = useCallback(
       (tableName: string) => {
-         const result = openTab(selectedEnvironmentId ?? undefined, { tableName, title: tableName })
+         const result = openTab({ tableName, title: tableName })
          if (result.isOk()) {
             const tab = result.value
             setActiveTab(tab.id)
          }
       },
-      [openTab, selectedEnvironmentId, setActiveTab]
+      [openTab, setActiveTab]
    )
 
    const handleOpenQuery = useCallback(
@@ -66,11 +66,10 @@ export function useWorkspaceActions() {
          if (result.isOk()) {
             const tab = result.value
             updateTab(tab.id, { query: sql })
-            setQueryDraft(sql)
             setActiveTab(tab.id)
          }
       },
-      [openTab, updateTab, setQueryDraft, setActiveTab]
+      [openTab, updateTab, setActiveTab]
    )
 
    return {

@@ -45,8 +45,6 @@ describe("SQLEditor", () => {
    beforeEach(() => {
       useEditorStore.setState({
          vimMode: "normal",
-         queryDraft: "SELECT * FROM users;",
-         selectedEnvironmentId: null,
       })
       useEnvironmentStore.setState({
          environments: [],
@@ -81,7 +79,6 @@ describe("SQLEditor", () => {
       const user = userEvent.setup()
       const onExecute = vi.fn()
 
-      useEditorStore.setState({ selectedEnvironmentId: "env-1" })
       useEnvironmentStore.setState({
          environments: [
             {

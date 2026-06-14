@@ -242,7 +242,7 @@ export function registerAllHandlers(): void {
 
       const dockerResult = await dockerCreateEnvironment(env.dbType)
       if (dockerResult.isErr()) {
-         await destroyEnvironmentRecord(environmentId)
+         await updateEnvironment(environmentId, { status: "error" })
          return serializeErr(dockerResult.error)
       }
 

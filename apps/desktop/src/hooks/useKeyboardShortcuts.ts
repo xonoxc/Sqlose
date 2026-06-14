@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
-import { useEditorStore } from "~/stores/editorStore"
 import { isMac } from "~/lib/types"
 
 interface ShortcutActions {
@@ -42,10 +41,7 @@ export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute }: Shor
 
          if (!e.shiftKey && e.key === "n") {
             e.preventDefault()
-            const result = useWorkspaceStore.getState().openTab()
-            if (result.isOk()) {
-               useEditorStore.getState().setQueryDraft("")
-            }
+            useWorkspaceStore.getState().openTab()
             return
          }
 

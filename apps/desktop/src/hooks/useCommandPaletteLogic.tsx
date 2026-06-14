@@ -57,6 +57,7 @@ export function useCommandPaletteLogic(
    const activeTabId = useWorkspaceStore(s => s.activeTabId)
    const activeTab = tabs.find(t => t.id === activeTabId)
    const setActiveTab = useWorkspaceStore(s => s.setActiveTab)
+   const setActiveWorkspace = useWorkspaceStore(s => s.setActiveWorkspace)
    const vimModeEnabled = useSettingsStore(s => s.vimModeEnabled)
    const setVimModeEnabled = useSettingsStore(s => s.setVimModeEnabled)
    const savedQueriesAll = useSavedQueriesStore(s => s.queries)
@@ -71,7 +72,7 @@ export function useCommandPaletteLogic(
 
    const handleSelectEnvironment = (envId: string) => {
       selectEnvironment(envId)
-      openTab(envId)
+      setActiveWorkspace(envId)
    }
 
    const enterThemeMode = () => {
@@ -176,7 +177,7 @@ export function useCommandPaletteLogic(
          icon: <IconDeviceFloppy className="h-4 w-4" />,
          shortcut: undefined,
          category: "action",
-         onSelect: () => openTab(undefined, { type: "diagram", title: "Diagram: main" }),
+         onSelect: () => openTab({ type: "diagram", title: "Diagram: main" }),
       },
       {
          id: "switch-db",

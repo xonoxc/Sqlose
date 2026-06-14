@@ -21,6 +21,7 @@ vi.mock("./store", () => ({
 describe("Environment Lifecycle", () => {
    beforeEach(() => {
       vi.clearAllMocks()
+      ;(store.loadEnvironments as Mock).mockReturnValue([])
    })
 
    describe("createEnvironmentRecord", () => {
@@ -43,6 +44,20 @@ describe("Environment Lifecycle", () => {
          expect(result.isOk()).toBe(true)
          if (result.isOk()) {
             expect(result.value.name).toContain("mysql-")
+         }
+      })
+
+      it("should reject duplicate names", async () => {
+         ;(store.loadEnvironments as Mock).mockReturnValue([
+            { id: "env-1", name: "My DB", dbType: "postgres" },
+         ] as never)
+
+         const result = await createEnvironmentRecord("postgres", "My DB")
+
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("env:duplicate_name")
+            expect(result.error.message).toContain("My DB")
          }
       })
 

@@ -12,14 +12,19 @@ export function useTableBrowserState() {
    const tableNameRef = useRef(tableName)
    if (tableName) tableNameRef.current = tableName
 
-   const tableData = useDatabaseStore(s => s.tableData)
-   const tableDataLoading = useDatabaseStore(s => s.tableDataLoading)
-   const tableDataError = useDatabaseStore(s => s.tableDataError)
-   const fetchTableData = useDatabaseStore(s => s.fetchTableData)
-   const tableColumns = useDatabaseStore(s => s.tableColumns)
-
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const environments = useEnvironmentStore(s => s.environments)
+
+   const tableDataByEnv = useDatabaseStore(s => s.tableData)
+   const tableDataLoadingByEnv = useDatabaseStore(s => s.tableDataLoading)
+   const tableDataErrorByEnv = useDatabaseStore(s => s.tableDataError)
+   const tableColumnsByEnv = useDatabaseStore(s => s.tableColumns)
+   const fetchTableData = useDatabaseStore(s => s.fetchTableData)
+
+   const tableData = selectedEnvironmentId ? (tableDataByEnv[selectedEnvironmentId] ?? null) : null
+   const tableDataLoading = selectedEnvironmentId ? (tableDataLoadingByEnv[selectedEnvironmentId] ?? false) : false
+   const tableDataError = selectedEnvironmentId ? (tableDataErrorByEnv[selectedEnvironmentId] ?? null) : null
+   const tableColumns = selectedEnvironmentId ? (tableColumnsByEnv[selectedEnvironmentId] ?? {}) : {}
    const selectedEnv = selectedEnvironmentId
       ? (environments.find(e => e.id === selectedEnvironmentId) ?? null)
       : null

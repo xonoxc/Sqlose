@@ -26,6 +26,7 @@ interface EnvironmentStore {
    nukeEnvironment: (environmentId: string) => Promise<Result<string, AppError>>
    selectEnvironment: (environmentId: string | null) => Result<string | null, AppError>
    getEnvironment: (environmentId: string) => Environment | undefined
+   syncEnvironment: (environmentId: string) => Promise<Result<Environment, AppError>>
 }
 
 export const useEnvironmentStore = create<EnvironmentStore>()(
@@ -242,6 +243,17 @@ export const useEnvironmentStore = create<EnvironmentStore>()(
 
          getEnvironment: (environmentId: string) => {
             return get().environments.find(e => e.id === environmentId)
+         },
+
+         syncEnvironment: async (environmentId: string) => {
+            const result = await api.env.get(environmentId)
+            if (result.isOk()) {
+               const environments = get().environments.map(e =>
+                  e.id === environmentId ? result.value : e
+               )
+               set({ environments })
+            }
+            return result
          },
       }),
       {

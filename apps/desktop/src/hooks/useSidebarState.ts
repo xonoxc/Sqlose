@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import type { Environment, DBType } from "@sqlose/shared"
 import { useEnvironmentStore } from "~/stores/environmentStore"
-import { useEditorStore } from "~/stores/editorStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useHistoryStore } from "~/stores/historyStore"
 import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
@@ -13,7 +12,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
-   const setSelectedEnvironment = useEditorStore(s => s.setSelectedEnvironment)
+   const setActiveWorkspace = useWorkspaceStore(s => s.setActiveWorkspace)
    const openTab = useWorkspaceStore(s => s.openTab)
    const historyEntries = useHistoryStore(s => s.entries)
    const savedQueries = useSavedQueriesStore(s => s.queries)
@@ -30,20 +29,29 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       return map
    })()
 
-   const tables = useDatabaseStore(s => s.tables)
-   const tableColumns = useDatabaseStore(s => s.tableColumns)
-   const schemaLoading = useDatabaseStore(s => s.schemaLoading)
-   const schemaError = useDatabaseStore(s => s.schemaError)
-   const loadingColumnIds = useDatabaseStore(s => s.loadingColumnIds)
-   const expandedTableIds = useDatabaseStore(s => s.expandedTableIds)
-   const activeTableId = useDatabaseStore(s => s.activeTableId)
-   const keyboardFocusedIndex = useDatabaseStore(s => s.keyboardFocusedIndex)
+   const tablesByEnv = useDatabaseStore(s => s.tables)
+   const tableColumnsByEnv = useDatabaseStore(s => s.tableColumns)
+   const schemaLoadingByEnv = useDatabaseStore(s => s.schemaLoading)
+   const schemaErrorByEnv = useDatabaseStore(s => s.schemaError)
+   const loadingColumnIdsByEnv = useDatabaseStore(s => s.loadingColumnIds)
+   const expandedTableIdsByEnv = useDatabaseStore(s => s.expandedTableIds)
+   const activeTableIdByEnv = useDatabaseStore(s => s.activeTableId)
+   const keyboardFocusedIndexByEnv = useDatabaseStore(s => s.keyboardFocusedIndex)
    const fetchTables = useDatabaseStore(s => s.fetchTables)
    const fetchColumns = useDatabaseStore(s => s.fetchColumns)
    const setExpanded = useDatabaseStore(s => s.setExpanded)
    const setActiveTable = useDatabaseStore(s => s.setActiveTable)
    const setKeyboardFocusedIndex = useDatabaseStore(s => s.setKeyboardFocusedIndex)
    const reset = useDatabaseStore(s => s.reset)
+
+   const tables = selectedEnvironmentId ? (tablesByEnv[selectedEnvironmentId] ?? []) : []
+   const tableColumns = selectedEnvironmentId ? (tableColumnsByEnv[selectedEnvironmentId] ?? {}) : {}
+   const schemaLoading = selectedEnvironmentId ? (schemaLoadingByEnv[selectedEnvironmentId] ?? false) : false
+   const schemaError = selectedEnvironmentId ? (schemaErrorByEnv[selectedEnvironmentId] ?? null) : null
+   const loadingColumnIds = selectedEnvironmentId ? (loadingColumnIdsByEnv[selectedEnvironmentId] ?? []) : []
+   const expandedTableIds = selectedEnvironmentId ? (expandedTableIdsByEnv[selectedEnvironmentId] ?? []) : []
+   const activeTableId = selectedEnvironmentId ? (activeTableIdByEnv[selectedEnvironmentId] ?? null) : null
+   const keyboardFocusedIndex = selectedEnvironmentId ? (keyboardFocusedIndexByEnv[selectedEnvironmentId] ?? -1) : -1
 
    const [search, setSearch] = useState("")
    const [activeNav, setActiveNav] = useState<NavTab>(null)
@@ -57,11 +65,10 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
 
    useEffect(() => {
       if (!selectedEnvironmentId || !selectedEnv) {
-         reset()
          return
       }
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
-   }, [selectedEnvironmentId, selectedEnv, fetchTables, reset])
+   }, [selectedEnvironmentId, selectedEnv, fetchTables])
 
    const filteredTables = !search
       ? tables
@@ -69,11 +76,13 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
 
    const handleSelect = (id: string) => {
       selectEnvironment(id)
-      setSelectedEnvironment(id)
+      setActiveWorkspace(id)
    }
 
    const handleTableClick = (tableName: string) => {
-      setActiveTable(tableName)
+      if (selectedEnvironmentId) {
+         setActiveTable(selectedEnvironmentId, tableName)
+      }
       onOpenTable(tableName)
    }
 
@@ -81,7 +90,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       e.stopPropagation()
       e.preventDefault()
       if (!selectedEnvironmentId || !selectedEnv) return
-      setExpanded(tableName)
+      setExpanded(selectedEnvironmentId, tableName)
       if (!tableColumns[tableName]) {
          fetchColumns(selectedEnvironmentId, tableName, selectedEnv.dbType as DBType)
       }
@@ -89,7 +98,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
 
    const handleRefresh = async () => {
       if (!selectedEnvironmentId || !selectedEnv) return
-      reset()
+      reset(selectedEnvironmentId)
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
    }
 
@@ -109,12 +118,16 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
          case "ArrowDown":
             e.preventDefault()
             currentIndex = Math.min(currentIndex + 1, filteredTables.length - 1)
-            setKeyboardFocusedIndex(currentIndex)
+            if (selectedEnvironmentId) {
+               setKeyboardFocusedIndex(selectedEnvironmentId, currentIndex)
+            }
             break
          case "ArrowUp":
             e.preventDefault()
             currentIndex = Math.max(currentIndex - 1, 0)
-            setKeyboardFocusedIndex(currentIndex)
+            if (selectedEnvironmentId) {
+               setKeyboardFocusedIndex(selectedEnvironmentId, currentIndex)
+            }
             break
          case "Enter": {
             e.preventDefault()
@@ -129,7 +142,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
             const table = filteredTables[currentIndex]
             if (table && selectedEnvironmentId && selectedEnv) {
                if (!expandedTableIds.includes(table)) {
-                  setExpanded(table)
+                  setExpanded(selectedEnvironmentId, table)
                   if (!tableColumns[table]) {
                      fetchColumns(selectedEnvironmentId, table, selectedEnv.dbType as DBType)
                   }
@@ -141,7 +154,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
             e.preventDefault()
             const table = filteredTables[currentIndex]
             if (table && expandedTableIds.includes(table)) {
-               setExpanded(table)
+               setExpanded(selectedEnvironmentId!, table)
             }
             break
          }

@@ -2,7 +2,6 @@ import { useRef, useCallback } from "react"
 import { attempt, attemptSync } from "@sqlose/shared"
 import { api } from "~/lib/api"
 import { useEnvironmentStore } from "~/stores/environmentStore"
-import { useEditorStore } from "~/stores/editorStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useHistoryStore } from "~/stores/historyStore"
 import type { QueryResult } from "@sqlose/shared"
@@ -150,8 +149,9 @@ export function useQueryExecution() {
 
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const environments = useEnvironmentStore(s => s.environments)
-   const queryDraft = useEditorStore(s => s.queryDraft)
    const activeTabId = useWorkspaceStore(s => s.activeTabId)
+   const activeTab = useWorkspaceStore(s => s.tabs.find(t => t.id === s.activeTabId))
+   const queryDraft = activeTab?.query ?? ""
    const updateTab = useWorkspaceStore(s => s.updateTab)
    const addHistoryEntry = useHistoryStore(s => s.addEntry)
 
@@ -208,7 +208,7 @@ export function useQueryExecution() {
       }
 
       return true
-   }, [selectedEnvironmentId, queryDraft, activeTabId, environments, updateTab, addHistoryEntry])
+   }, [selectedEnvironmentId, queryDraft, activeTabId, activeTab, environments, updateTab, addHistoryEntry])
 
    return { execute, prevExecutionRef }
 }

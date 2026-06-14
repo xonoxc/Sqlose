@@ -13,23 +13,23 @@ export interface TableDataState {
 }
 
 interface DatabaseStore {
-   tables: string[]
-   tableColumns: Record<string, ColumnInfo[]>
-   schemaLoading: boolean
-   schemaError: string | null
-   loadingColumnIds: string[]
+   tables: Record<string, string[]>
+   tableColumns: Record<string, Record<string, ColumnInfo[]>>
+   schemaLoading: Record<string, boolean>
+   schemaError: Record<string, string | null>
+   loadingColumnIds: Record<string, string[]>
 
-   expandedTableIds: string[]
-   activeTableId: string | null
-   keyboardFocusedIndex: number
+   expandedTableIds: Record<string, string[]>
+   activeTableId: Record<string, string | null>
+   keyboardFocusedIndex: Record<string, number>
 
-   tableData: TableDataState | null
-   tableDataLoading: boolean
-   tableDataError: string | null
+   tableData: Record<string, TableDataState | null>
+   tableDataLoading: Record<string, boolean>
+   tableDataError: Record<string, string | null>
 
-   setExpanded: (tableId: string) => void
-   setActiveTable: (tableId: string | null) => void
-   setKeyboardFocusedIndex: (index: number) => void
+   setExpanded: (envId: string, tableId: string) => void
+   setActiveTable: (envId: string, tableId: string | null) => void
+   setKeyboardFocusedIndex: (envId: string, index: number) => void
    fetchTables: (envId: string, dbType: DBType) => Promise<void>
    fetchColumns: (envId: string, tableName: string, dbType: DBType) => Promise<void>
    fetchTableData: (
@@ -39,89 +39,126 @@ interface DatabaseStore {
       pageSize?: number
    ) => Promise<void>
    refreshTableData: (envId: string, tableName: string) => Promise<void>
-   reset: () => void
+   reset: (envId: string) => void
 }
 
 export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
-   tables: [],
+   tables: {},
    tableColumns: {},
-   schemaLoading: false,
-   schemaError: null,
-   loadingColumnIds: [],
+   schemaLoading: {},
+   schemaError: {},
+   loadingColumnIds: {},
 
-   expandedTableIds: [],
-   activeTableId: null,
-   keyboardFocusedIndex: -1,
+   expandedTableIds: {},
+   activeTableId: {},
+   keyboardFocusedIndex: {},
 
-   tableData: null,
-   tableDataLoading: false,
-   tableDataError: null,
+   tableData: {},
+   tableDataLoading: {},
+   tableDataError: {},
 
-   setExpanded: (tableId: string) => {
+   setExpanded: (envId: string, tableId: string) => {
       const state = get()
-      const isExpanded = state.expandedTableIds.includes(tableId)
-      if (isExpanded) {
-         set({
-            expandedTableIds: state.expandedTableIds.filter(id => id !== tableId),
-         })
-      } else {
-         set({
-            expandedTableIds: [...state.expandedTableIds, tableId],
-         })
-      }
+      const current = state.expandedTableIds[envId] ?? []
+      const isExpanded = current.includes(tableId)
+      set({
+         expandedTableIds: {
+            ...state.expandedTableIds,
+            [envId]: isExpanded
+               ? current.filter(id => id !== tableId)
+               : [...current, tableId],
+         },
+      })
    },
 
-   setActiveTable: (tableId: string | null) => {
-      set({ activeTableId: tableId })
+   setActiveTable: (envId: string, tableId: string | null) => {
+      set(state => ({
+         activeTableId: { ...state.activeTableId, [envId]: tableId },
+      }))
    },
 
-   setKeyboardFocusedIndex: (index: number) => {
-      set({ keyboardFocusedIndex: index })
+   setKeyboardFocusedIndex: (envId: string, index: number) => {
+      set(state => ({
+         keyboardFocusedIndex: { ...state.keyboardFocusedIndex, [envId]: index },
+      }))
    },
 
    fetchTables: async (envId: string, dbType: DBType) => {
-      set({ schemaLoading: true, schemaError: null })
+      set(state => ({
+         schemaLoading: { ...state.schemaLoading, [envId]: true },
+         schemaError: { ...state.schemaError, [envId]: null },
+      }))
       const result = await attempt(listTables(envId, dbType))
       result.match(
-         tables => set({ tables, schemaLoading: false }),
-         err => set({ schemaError: err.message, schemaLoading: false })
+         tables =>
+            set(state => ({
+               tables: { ...state.tables, [envId]: tables },
+               schemaLoading: { ...state.schemaLoading, [envId]: false },
+            })),
+         err =>
+            set(state => ({
+               schemaError: { ...state.schemaError, [envId]: err.message },
+               schemaLoading: { ...state.schemaLoading, [envId]: false },
+            }))
       )
    },
 
    fetchColumns: async (envId: string, tableName: string, dbType: DBType) => {
       const state = get()
-      if (state.tableColumns[tableName]) return
+      const envColumns = state.tableColumns[envId] ?? {}
+      if (envColumns[tableName]) return
 
-      set({
-         loadingColumnIds: [...state.loadingColumnIds, tableName],
-      })
+      set(state => ({
+         loadingColumnIds: {
+            ...state.loadingColumnIds,
+            [envId]: [...(state.loadingColumnIds[envId] ?? []), tableName],
+         },
+      }))
       const result = await attempt(getTableColumns(envId, tableName, dbType))
       result.match(
          columns =>
             set(state => ({
                tableColumns: {
                   ...state.tableColumns,
-                  [tableName]: columns,
+                  [envId]: {
+                     ...(state.tableColumns[envId] ?? {}),
+                     [tableName]: columns,
+                  },
                },
-               loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
+               loadingColumnIds: {
+                  ...state.loadingColumnIds,
+                  [envId]: (state.loadingColumnIds[envId] ?? []).filter(id => id !== tableName),
+               },
             })),
          () =>
             set(state => ({
                tableColumns: {
                   ...state.tableColumns,
-                  [tableName]: [],
+                  [envId]: {
+                     ...(state.tableColumns[envId] ?? {}),
+                     [tableName]: [],
+                  },
                },
-               loadingColumnIds: state.loadingColumnIds.filter(id => id !== tableName),
+               loadingColumnIds: {
+                  ...state.loadingColumnIds,
+                  [envId]: (state.loadingColumnIds[envId] ?? []).filter(id => id !== tableName),
+               },
             }))
       )
    },
 
    fetchTableData: async (envId: string, tableName: string, page = 1, pageSize = 100) => {
-      set({ tableDataLoading: true, tableDataError: null })
+      set(state => ({
+         tableDataLoading: { ...state.tableDataLoading, [envId]: true },
+         tableDataError: { ...state.tableDataError, [envId]: null },
+      }))
       const offset = (page - 1) * pageSize
       const safeName = tableName.replace(/[^a-zA-Z0-9_.]/g, "")
       if (safeName !== tableName) {
-         set({ tableDataError: "Invalid table name", tableDataLoading: false })
+         set(state => ({
+            tableDataError: { ...state.tableDataError, [envId]: "Invalid table name" },
+            tableDataLoading: { ...state.tableDataLoading, [envId]: false },
+         }))
          return
       }
 
@@ -137,46 +174,49 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
 
       dataResult.match(
          qr => {
-            set({
+            set(state => ({
                tableData: {
-                  columns: qr.columns,
-                  rows: qr.rows as Record<string, unknown>[],
-                  totalCount,
-                  page,
-                  pageSize,
+                  ...state.tableData,
+                  [envId]: {
+                     columns: qr.columns,
+                     rows: qr.rows as Record<string, unknown>[],
+                     totalCount,
+                     page,
+                     pageSize,
+                  },
                },
-               tableDataLoading: false,
-            })
+               tableDataLoading: { ...state.tableDataLoading, [envId]: false },
+            }))
          },
          err => {
-            set({
-               tableDataError: err.message,
-               tableDataLoading: false,
-            })
+            set(state => ({
+               tableDataError: { ...state.tableDataError, [envId]: err.message },
+               tableDataLoading: { ...state.tableDataLoading, [envId]: false },
+            }))
          }
       )
    },
 
    refreshTableData: async (envId: string, tableName: string) => {
       const state = get()
-      const currentPage = state.tableData?.page ?? 1
-      const pageSize = state.tableData?.pageSize ?? 100
+      const currentPage = state.tableData[envId]?.page ?? 1
+      const pageSize = state.tableData[envId]?.pageSize ?? 100
       await get().fetchTableData(envId, tableName, currentPage, pageSize)
    },
 
-   reset: () => {
-      set({
-         tables: [],
-         tableColumns: {},
-         schemaLoading: false,
-         schemaError: null,
-         loadingColumnIds: [],
-         expandedTableIds: [],
-         activeTableId: null,
-         keyboardFocusedIndex: -1,
-         tableData: null,
-         tableDataLoading: false,
-         tableDataError: null,
-      })
+   reset: (envId: string) => {
+      set(state => ({
+         tables: { ...state.tables, [envId]: [] },
+         tableColumns: { ...state.tableColumns, [envId]: {} },
+         schemaLoading: { ...state.schemaLoading, [envId]: false },
+         schemaError: { ...state.schemaError, [envId]: null },
+         loadingColumnIds: { ...state.loadingColumnIds, [envId]: [] },
+         expandedTableIds: { ...state.expandedTableIds, [envId]: [] },
+         activeTableId: { ...state.activeTableId, [envId]: null },
+         keyboardFocusedIndex: { ...state.keyboardFocusedIndex, [envId]: -1 },
+         tableData: { ...state.tableData, [envId]: null },
+         tableDataLoading: { ...state.tableDataLoading, [envId]: false },
+         tableDataError: { ...state.tableDataError, [envId]: null },
+      }))
    },
 }))

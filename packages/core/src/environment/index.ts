@@ -15,9 +15,21 @@ export async function createEnvironmentRecord(
    name?: string
 ): AsyncAppResult<Environment> {
    try {
+      const finalName = name ?? `${dbType}-${envCounter}`
+      const existing = loadEnvironments()
+      const isDuplicate = existing.some(e => e.name === finalName)
+      if (isDuplicate) {
+         return err(
+            new EnvironmentError(
+               "env:duplicate_name",
+               `An environment named "${finalName}" already exists`
+            )
+         )
+      }
+
       const env: Environment = {
          id: generateId(),
-         name: name ?? `${dbType}-${envCounter}`,
+         name: finalName,
          dbType,
          status: "creating",
          port: 0,

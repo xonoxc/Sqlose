@@ -10,6 +10,7 @@ import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useEditorStore } from "~/stores/editorStore"
 import { useSettingsStore } from "~/stores/settingsStore"
+import { createDefaultPaneSizes, createTab } from "~/lib/types"
 
 import { TabBar } from "~/components/TabBar"
 import { EnvironmentActions } from "~/components/EnvironmentActions"
@@ -67,6 +68,15 @@ function getMockApi() {
    return (window as unknown as { sqlose: MockApi }).sqlose
 }
 
+function createWorkspaceData(tabsOverrides?: Partial<{ tabs: import("~/lib/types").Tab[]; activeTabId: string | null }>) {
+   const tab = createTab()
+   return {
+      tabs: tabsOverrides?.tabs ?? [tab],
+      activeTabId: tabsOverrides?.activeTabId ?? tab.id,
+      paneSizes: createDefaultPaneSizes(),
+   }
+}
+
 beforeEach(() => {
    queryClient.clear()
    useEnvironmentStore.setState({
@@ -76,14 +86,14 @@ beforeEach(() => {
       error: null,
    })
    useWorkspaceStore.setState({
+      workspaces: {},
+      activeWorkspaceId: null,
       tabs: [],
       activeTabId: null,
-      paneSizes: { sidebarWidth: 280, editorHeight: 300, resultsHeight: 300 },
+      paneSizes: createDefaultPaneSizes(),
    })
    useEditorStore.setState({
       vimMode: "normal",
-      queryDraft: "",
-      selectedEnvironmentId: null,
    })
    useSettingsStore.setState({
       vimModeEnabled: false,
@@ -171,7 +181,15 @@ describe("Workflow: Query Execution", () => {
       const queryResult = makeQueryResult()
       api.query.execute.mockResolvedValue({ success: true, data: queryResult })
 
-      const tabResult = useWorkspaceStore.getState().openTab("env-1")
+      const wData = createWorkspaceData()
+      useWorkspaceStore.setState({
+         workspaces: { "env-1": wData },
+         activeWorkspaceId: "env-1",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
+      })
+
+      const tabResult = useWorkspaceStore.getState().openTab()
       expect(tabResult.isOk()).toBe(true)
       const tab = tabResult._unsafeUnwrap()
 
@@ -366,113 +384,64 @@ describe("Workflow: Vim Mode Toggle", () => {
 
 describe("Workflow: Tab Management", () => {
    it("5a. opens new tabs", () => {
+      const wData = createWorkspaceData()
+      useWorkspaceStore.setState({
+         workspaces: { "env-test": wData },
+         activeWorkspaceId: "env-test",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
+      })
+
       const result = useWorkspaceStore.getState().openTab()
       expect(result.isOk()).toBe(true)
-      expect(useWorkspaceStore.getState().tabs).toHaveLength(1)
+      expect(useWorkspaceStore.getState().tabs).toHaveLength(2)
    })
 
    it("5b. switches active tab", () => {
+      const tab1 = createTab()
+      const tab2 = createTab()
+      const wData = createWorkspaceData({ tabs: [tab1, tab2], activeTabId: tab1.id })
       useWorkspaceStore.setState({
-         tabs: [
-            {
-               id: "tab-1",
-               type: "query",
-               title: "Q1",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "",
-            },
-            {
-               id: "tab-2",
-               type: "query",
-               title: "Q2",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "",
-            },
-         ],
-         activeTabId: "tab-1",
+         workspaces: { "env-test": wData },
+         activeWorkspaceId: "env-test",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
       })
 
-      useWorkspaceStore.getState().setActiveTab("tab-2")
-      expect(useWorkspaceStore.getState().activeTabId).toBe("tab-2")
+      useWorkspaceStore.getState().setActiveTab(tab2.id)
+      expect(useWorkspaceStore.getState().activeTabId).toBe(tab2.id)
    })
 
    it("5c. closes tab and activates next", () => {
+      const tab1 = createTab()
+      const tab2 = createTab()
+      const wData = createWorkspaceData({ tabs: [tab1, tab2], activeTabId: tab1.id })
       useWorkspaceStore.setState({
-         tabs: [
-            {
-               id: "tab-1",
-               type: "query",
-               title: "Q1",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "",
-            },
-            {
-               id: "tab-2",
-               type: "query",
-               title: "Q2",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "",
-            },
-         ],
-         activeTabId: "tab-1",
+         workspaces: { "env-test": wData },
+         activeWorkspaceId: "env-test",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
       })
 
-      const result = useWorkspaceStore.getState().closeTab("tab-1")
+      const result = useWorkspaceStore.getState().closeTab(tab1.id)
       expect(result.isOk()).toBe(true)
       const state = useWorkspaceStore.getState()
       expect(state.tabs).toHaveLength(1)
-      expect(state.tabs[0].id).toBe("tab-2")
+      expect(state.tabs[0].id).toBe(tab2.id)
    })
 
    it("5d. renders tabs in TabBar", () => {
+      const tab1 = createTab()
+      tab1.title = "Query Alpha"
+      const tab2 = createTab()
+      tab2.title = "Query Beta"
+      tab2.isDirty = true
+      const wData = createWorkspaceData({ tabs: [tab1, tab2], activeTabId: tab1.id })
       useWorkspaceStore.setState({
-         tabs: [
-            {
-               id: "tab-1",
-               type: "query",
-               title: "Query Alpha",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "2024-01-01T00:00:00Z",
-            },
-            {
-               id: "tab-2",
-               type: "query",
-               title: "Query Beta",
-               environmentId: null,
-               isDirty: true,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "2024-01-01T00:00:00Z",
-            },
-         ],
-         activeTabId: "tab-1",
+         workspaces: { "env-test": wData },
+         activeWorkspaceId: "env-test",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
       })
 
       render(<TabBar />)
@@ -482,22 +451,14 @@ describe("Workflow: Tab Management", () => {
 
    it("5e. closes tab via TabBar close button", async () => {
       const user = userEvent.setup()
+      const tab1 = createTab()
+      tab1.title = "Q1"
+      const wData = createWorkspaceData({ tabs: [tab1], activeTabId: tab1.id })
       useWorkspaceStore.setState({
-         tabs: [
-            {
-               id: "tab-1",
-               type: "query",
-               title: "Q1",
-               environmentId: null,
-               isDirty: false,
-               isExecuting: false,
-               query: "",
-               result: null,
-               error: null,
-               createdAt: "2024-01-01T00:00:00Z",
-            },
-         ],
-         activeTabId: "tab-1",
+         workspaces: { "env-test": wData },
+         activeWorkspaceId: "env-test",
+         tabs: wData.tabs,
+         activeTabId: wData.activeTabId,
       })
 
       render(<TabBar />)

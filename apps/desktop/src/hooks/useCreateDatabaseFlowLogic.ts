@@ -28,6 +28,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
    const provisionStarted = useRef(false)
 
    const createEnvironment = useEnvironmentStore(s => s.createEnvironment)
+   const syncEnvironment = useEnvironmentStore(s => s.syncEnvironment)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const resetWorkspace = useWorkspaceStore(s => s.resetWorkspace)
 
@@ -103,8 +104,10 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
             updateStepStatus("start", "error", containerResult.error.message)
             setProvisioningError(containerResult.error.message)
             toast.error(containerResult.error.message)
+            await syncEnvironment(env.id)
             return
          }
+         await syncEnvironment(env.id)
          updateStepStatus("start", "done")
       }
 
@@ -122,7 +125,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
 
       updateStepStatus("connect", "in-progress")
       await new Promise(r => setTimeout(r, 300))
-      resetWorkspace()
+      resetWorkspace(env.id)
       selectEnvironment(env.id)
       updateStepStatus("connect", "done")
    }

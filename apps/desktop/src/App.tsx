@@ -49,6 +49,7 @@ function AppContent() {
    const vimMode = useEditorStore(s => s.vimMode)
    const paneSizes = useWorkspaceStore(s => s.paneSizes)
    const updatePaneSizes = useWorkspaceStore(s => s.updatePaneSizes)
+   const setActiveWorkspace = useWorkspaceStore(s => s.setActiveWorkspace)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const fetchEnvironments = useEnvironmentStore(s => s.fetchEnvironments)
@@ -69,6 +70,7 @@ function AppContent() {
       setIsNuking(false)
       if (result.isOk()) {
          envStore.selectEnvironment(null)
+         setActiveWorkspace(null)
          toast.success("Environment has been nuked")
          ui.closeNukeConfirm()
       } else {
@@ -119,15 +121,20 @@ function AppContent() {
    }, [fetchEnvironments, loadHistory, loadQueries])
 
    useEffect(() => {
-      if (workspace.activeTab) {
-         if (workspace.activeTab.tableName) {
-            clearActiveTable(workspace.activeTab.tableName)
-         } else {
-            clearActiveTable(null)
-            workspace.setQueryDraft(workspace.activeTab.query)
-         }
+      if (selectedEnvironmentId) {
+         setActiveWorkspace(selectedEnvironmentId)
+      } else {
+         setActiveWorkspace(null)
       }
-   }, [workspace.activeTabId])
+   }, [selectedEnvironmentId, setActiveWorkspace])
+
+   useEffect(() => {
+      if (workspace.activeTab && workspace.activeTab.tableName && selectedEnvironmentId) {
+         clearActiveTable(selectedEnvironmentId, workspace.activeTab.tableName)
+      } else if (selectedEnvironmentId) {
+         clearActiveTable(selectedEnvironmentId, null)
+      }
+   }, [workspace.activeTabId, selectedEnvironmentId, clearActiveTable])
 
    return (
       <div className="h-screen w-screen overflow-hidden bg-bg-primary">
@@ -160,9 +167,12 @@ function AppContent() {
                      <div className="flex flex-col h-full bg-bg-primary w-full relative py-1">
                         <TopBar
                            onOpenPalette={ui.openPalette}
-                           onBackToDashboard={() => selectEnvironment(null)}
+                           onBackToDashboard={() => {
+                              selectEnvironment(null)
+                              setActiveWorkspace(null)
+                           }}
                            onOpenDiagram={() => {
-                              useWorkspaceStore.getState().openTab(undefined, {
+                              useWorkspaceStore.getState().openTab({
                                  type: "diagram",
                                  title: "Diagram: main",
                               })
