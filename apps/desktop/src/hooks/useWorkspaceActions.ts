@@ -51,13 +51,9 @@ export function useWorkspaceActions() {
 
    const handleOpenTable = useCallback(
       (tableName: string) => {
-         const result = openTab({ tableName, title: tableName })
-         if (result.isOk()) {
-            const tab = result.value
-            setActiveTab(tab.id)
-         }
+         openTab({ tableName, title: tableName })
       },
-      [openTab, setActiveTab]
+      [openTab]
    )
 
    const handleOpenQuery = useCallback(

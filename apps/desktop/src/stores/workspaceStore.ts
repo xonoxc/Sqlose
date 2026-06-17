@@ -106,31 +106,50 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             })
          },
 
-         openTab: (overrides?: Partial<Tab>) => {
-            const state = get()
-            const envId = state.activeWorkspaceId
-            if (!envId) {
-               return err(new AppError("env:not_found", "No active workspace"))
-            }
-            const workspace = state.workspaces[envId]
-            if (!workspace) {
-               return err(new AppError("env:not_found", `Workspace ${envId} not found`))
-            }
-            const newTab = createTab(envId, overrides?.tableName)
-            const merged = { ...newTab, ...overrides }
-            const newTabs = [...workspace.tabs, merged]
-            const updatedWorkspace: WorkspaceData = {
-               ...workspace,
-               tabs: newTabs,
-               activeTabId: merged.id,
-            }
-            set(state => ({
-               workspaces: { ...state.workspaces, [envId]: updatedWorkspace },
-               tabs: newTabs,
-               activeTabId: merged.id,
-            }))
-            return ok(merged)
-         },
+          openTab: (overrides?: Partial<Tab>) => {
+             const state = get()
+             const envId = state.activeWorkspaceId
+             if (!envId) {
+                return err(new AppError("env:not_found", "No active workspace"))
+             }
+             const workspace = state.workspaces[envId]
+             if (!workspace) {
+                return err(new AppError("env:not_found", `Workspace ${envId} not found`))
+             }
+
+             if (overrides?.tableName) {
+                const existing = workspace.tabs.find(
+                   t => t.tableName === overrides.tableName
+                )
+                if (existing) {
+                   const updatedWorkspace: WorkspaceData = {
+                      ...workspace,
+                      activeTabId: existing.id,
+                   }
+                   set(state => ({
+                      workspaces: { ...state.workspaces, [envId]: updatedWorkspace },
+                      tabs: workspace.tabs,
+                      activeTabId: existing.id,
+                   }))
+                   return ok(existing)
+                }
+             }
+
+             const newTab = createTab(envId, overrides?.tableName)
+             const merged = { ...newTab, ...overrides }
+             const newTabs = [...workspace.tabs, merged]
+             const updatedWorkspace: WorkspaceData = {
+                ...workspace,
+                tabs: newTabs,
+                activeTabId: merged.id,
+             }
+             set(state => ({
+                workspaces: { ...state.workspaces, [envId]: updatedWorkspace },
+                tabs: newTabs,
+                activeTabId: merged.id,
+             }))
+             return ok(merged)
+          },
 
          closeTab: (tabId: string) => {
             const state = get()
