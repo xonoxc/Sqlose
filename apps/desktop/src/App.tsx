@@ -14,7 +14,7 @@ import {
    ContainerHaltedDialog,
    ErrorBoundary,
    EditorWorkspace,
-   NukeConfirmDialog,
+   ConfirmDialog,
 } from "~/components"
 import { attempt } from "@sqlose/shared"
 import {
@@ -235,12 +235,14 @@ function AppContent() {
                onNuke={handleExitAndNuke}
             />
          )}
-         <NukeConfirmDialog
-            open={ui.nukeConfirmOpen}
-            onCancel={ui.closeNukeConfirm}
-            onConfirm={handleNukeConfirm}
-            isLoading={isNuking}
-         />
+          <ConfirmDialog
+             open={ui.nukeConfirmOpen}
+             onCancel={ui.closeNukeConfirm}
+             onConfirm={handleNukeConfirm}
+             isLoading={isNuking}
+             title="Nuke Environment"
+             confirmText="Nuke"
+          />
          <Toaster
             theme="dark"
             position="bottom-right"

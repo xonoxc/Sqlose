@@ -1,8 +1,8 @@
 import { IconDatabase, IconPlus, IconServer, IconCircleFilled, IconTrash, IconLoader2 } from "@tabler/icons-react"
 import { motion, AnimatePresence } from "motion/react"
-import { Button } from "@sqlose/ui"
 import { useDashboardState } from "~/hooks/useDashboardState"
 import { CreateDatabaseFlow } from "~/components/CreateDatabaseFlow"
+import { ConfirmDialog } from "~/components/ConfirmDialog"
 
 export function Dashboard() {
    const {
@@ -161,59 +161,21 @@ export function Dashboard() {
                </motion.div>
             )}
          </AnimatePresence>
-         {destroyTarget && (
-            <div
-               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-               onClick={() => setDestroyTarget(null)}
-            >
-               <div
-                  className="w-full max-w-md rounded-xl border border-border bg-bg-secondary p-8 shadow-2xl"
-                  onClick={e => e.stopPropagation()}
-               >
-                  <div className="flex flex-col items-center text-center">
-                     <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border-2 border-red-500/25 bg-red-500/15">
-                        <IconTrash className="h-6 w-6 text-red-400" />
-                     </div>
-                     <h2 className="mb-2 text-lg font-semibold text-text-primary">
-                        Delete Workspace
-                     </h2>
-                     <p className="mb-6 text-sm text-text-muted">
-                        Are you sure you want to delete{" "}
-                        <strong>
-                           {environments.find(e => e.id === destroyTarget)?.name ||
-                              "this workspace"}
-                        </strong>
-                        ? This will remove the container and all data. This action cannot be undone.
-                     </p>
-                     <div className="flex w-full gap-3">
-                        <Button
-                           variant="secondary"
-                           size="default"
-                           onClick={() => setDestroyTarget(null)}
-                           disabled={isLoading}
-                           className="flex flex-1 items-center justify-center gap-2"
-                        >
-                           Cancel
-                        </Button>
-                        <Button
-                           variant="destructive"
-                           size="default"
-                           onClick={confirmDestroy}
-                           disabled={isLoading}
-                           className="flex flex-1 items-center justify-center gap-2"
-                        >
-                           {isLoading ? (
-                              <IconLoader2 className="h-4 w-4 animate-spin" />
-                           ) : (
-                              <IconTrash className="h-4 w-4" />
-                           )}
-                           {isLoading ? "Deleting..." : "Delete"}
-                        </Button>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
+          <ConfirmDialog
+             open={!!destroyTarget}
+             onCancel={() => setDestroyTarget(null)}
+             onConfirm={confirmDestroy}
+             title="Delete Workspace"
+             description={
+               <>
+                  Are you sure you want to delete{" "}
+                  <strong>
+                     {environments.find(e => e.id === destroyTarget)?.name || "this workspace"}
+                  </strong>
+                  ? This will remove the container and all data. This action cannot be undone.
+               </>
+             }
+          />
       </div>
    )
 }
