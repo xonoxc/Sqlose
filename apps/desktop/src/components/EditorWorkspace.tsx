@@ -126,7 +126,7 @@ export function EditorWorkspace({
                      "flex flex-col relative z-20 transition-all duration-200",
                      isResultsMaximized
                         ? "flex-1 h-full border-t-0"
-                        : "shrink-0 bg-bg-primary shadow-[0_-4px_10px_rgba(0,0,0,0.35)] border-t border-border/60",
+                        : "shrink-0 bg-bg-results shadow-[0_-4px_10px_rgba(0,0,0,0.35)] border-t border-border/60",
                      resultsCollapsed && !isResultsMaximized && "overflow-hidden"
                   )}
                   style={{

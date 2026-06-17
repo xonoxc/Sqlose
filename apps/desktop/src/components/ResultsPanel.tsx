@@ -44,7 +44,7 @@ export function ResultsPanel({
    }
 
    return (
-      <div className="h-full bg-bg-primary flex flex-col">
+      <div className="h-full bg-bg-results flex flex-col">
          <div className="flex-1 min-h-0 overflow-hidden">{tabContent()}</div>
       </div>
    )
@@ -65,7 +65,7 @@ function ResultsTab({
 
    if (isExecuting) {
       return (
-         <div className="flex items-center justify-center h-full bg-bg-primary">
+         <div className="flex items-center justify-center h-full bg-bg-results">
             <div className="flex flex-col items-center justify-center gap-3 text-text-muted/60">
                <div className="h-6 w-6 rounded-full border-2 border-accent/20 border-t-accent animate-spin" />
                <span className="text-[12px] font-medium">Processing your query...</span>
@@ -79,7 +79,7 @@ function ResultsTab({
          <motion.div
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col p-6 bg-bg-primary h-full max-w-4xl mx-auto"
+            className="flex flex-col p-6 bg-bg-results h-full max-w-4xl mx-auto"
          >
             <div className="flex items-center gap-3 mb-4 text-error/90">
                <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-error/10 border border-error/20">
@@ -98,7 +98,7 @@ function ResultsTab({
 
    if (!result) {
       return (
-         <div className="flex items-center justify-center h-full bg-bg-primary translate-y-[-10%]">
+         <div className="flex items-center justify-center h-full bg-bg-results translate-y-[-10%]">
             <div className="flex flex-col items-center justify-center gap-5">
                <div className="relative group">
                   <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
@@ -151,7 +151,7 @@ function ResultsTab({
    }
 
    return (
-      <div className="h-full bg-bg-primary overflow-hidden flex flex-col pt-0.5">
+      <div className="h-full bg-bg-results overflow-hidden flex flex-col pt-0.5">
          <div className="flex-1 min-h-0">
             <ResultsTable
                data={result.rows as Record<string, unknown>[]}
