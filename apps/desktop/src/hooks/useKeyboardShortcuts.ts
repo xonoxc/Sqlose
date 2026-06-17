@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
+import { useEnvironmentStore } from "~/stores/environmentStore"
 import { isMac } from "~/lib/types"
 
 interface ShortcutActions {
@@ -18,7 +19,10 @@ export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute }: Shor
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
+         const envId = useEnvironmentStore.getState().selectedEnvironmentId
+
          if (e.key === "?" && !e.metaKey && !e.ctrlKey) {
+            if (!envId) return
             e.preventDefault()
             onShortcutsRef.current()
             return
@@ -28,6 +32,7 @@ export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute }: Shor
          if (!mod) return
 
          if (e.key === "k") {
+            if (!envId) return
             e.preventDefault()
             onPaletteRef.current()
             return

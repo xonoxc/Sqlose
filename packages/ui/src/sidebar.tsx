@@ -45,7 +45,7 @@ function SidebarItemRow({
                onSelect?.(item.id)
             }}
             className={cn(
-               "flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-[14px] font-medium transition-all outline-none",
+               "flex w-full items-center gap-2.5 rounded-md px-3 py-1.5 text-[16px] font-medium transition-all outline-none",
                "text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40",
                isSelected && "bg-bg-quaternary text-accent shadow-sm"
             )}

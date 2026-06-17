@@ -31,12 +31,12 @@ interface WorkspaceStore {
    removeWorkspace: (environmentId: string) => void
 }
 
-function createDefaultWorkspace(): WorkspaceData {
+function createDefaultWorkspace(paneSizes?: PaneSizes): WorkspaceData {
    const tab = createTab()
    return {
       tabs: [tab],
       activeTabId: tab.id,
-      paneSizes: createDefaultPaneSizes(),
+      paneSizes: paneSizes ?? createDefaultPaneSizes(),
    }
 }
 
@@ -69,7 +69,10 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             const state = get()
             let workspace = state.workspaces[environmentId]
             if (!workspace) {
-               workspace = createDefaultWorkspace()
+               const currentPaneSizes = state.activeWorkspaceId
+                  ? state.workspaces[state.activeWorkspaceId]?.paneSizes
+                  : undefined
+               workspace = createDefaultWorkspace(currentPaneSizes ?? state.paneSizes)
                set(state => ({
                   workspaces: { ...state.workspaces, [environmentId]: workspace },
                }))
@@ -81,10 +84,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
          },
 
          resetWorkspace: (environmentId: string) => {
-            const fresh = createDefaultWorkspace()
-            set(state => ({
-               workspaces: { ...state.workspaces, [environmentId]: fresh },
-               ...(state.activeWorkspaceId === environmentId ? mirrorWorkspace(fresh) : {}),
+            const state = get()
+            const existing = state.workspaces[environmentId]
+            const fresh = createDefaultWorkspace(existing?.paneSizes)
+            set(s => ({
+               workspaces: { ...s.workspaces, [environmentId]: fresh },
+               ...(s.activeWorkspaceId === environmentId ? mirrorWorkspace(fresh) : {}),
             }))
          },
 

@@ -19,7 +19,7 @@ export const defaultTheme: Theme = {
       warning: "#c28938",
       error: "#c94a4a",
       accent: "#2d7d6f",
-      editorBackground: "#0a0a0a",
+      editorBackground: "#101414",
       editorSelection: "#2f3d5e",
       editorCursor: "#c0caf5",
       resultGrid: "#0d0d0d",
