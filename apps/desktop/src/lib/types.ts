@@ -149,7 +149,7 @@ export function createDefaultPaneSizes(): PaneSizes {
    return {
       sidebarWidth: 280,
       editorHeight: 300,
-      resultsHeight: 300,
+      resultsHeight: 580,
    }
 }
 

@@ -38,7 +38,7 @@ describe("types utilities", () => {
          const sizes = createDefaultPaneSizes()
          expect(sizes.sidebarWidth).toBe(280)
          expect(sizes.editorHeight).toBe(300)
-         expect(sizes.resultsHeight).toBe(300)
+         expect(sizes.resultsHeight).toBe(580)
       })
    })
 
