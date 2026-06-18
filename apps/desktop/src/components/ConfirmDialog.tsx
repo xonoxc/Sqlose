@@ -75,7 +75,7 @@ export function ConfirmDialog({
                   variant="destructive"
                   disabled={isLoading}
                   onClick={onConfirm}
-                  className="h-11 gap-2 rounded-xl text-[13px] font-semibold"
+                  className="h-11 gap-2 rounded-xl text-[13px] font-semibold flex items-center justify-center gap-2"
                >
                   {isLoading && <IconLoader2 className="h-4 w-4 animate-spin" />}
                   {isLoading ? `${confirmText}ing...` : confirmText}
