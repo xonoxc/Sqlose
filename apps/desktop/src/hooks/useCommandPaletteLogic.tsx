@@ -34,7 +34,7 @@ interface PaletteAction {
    onSelect: () => void
 }
 
-export type PaletteMode = "default" | "themes"
+export type PaletteMode = "default" | "themes" | "databases"
 
 export function useCommandPaletteLogic(
    isOpen: boolean,
@@ -50,16 +50,16 @@ export function useCommandPaletteLogic(
    const [selectedIndex, setSelectedIndex] = useState(0)
    const [mode, setMode] = useState<PaletteMode>("default")
    const inputRef = useRef<HTMLInputElement>(null)
-   const previousThemeIdRef = useRef<string | null>(null)
+    const previousThemeIdRef = useRef<string | null>(null)
+    const previousEnvIdRef = useRef<string | null>(null)
 
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const openTab = useWorkspaceStore(s => s.openTab)
    const tabs = useWorkspaceStore(s => s.tabs)
-   const activeTabId = useWorkspaceStore(s => s.activeTabId)
-   const activeTab = tabs.find(t => t.id === activeTabId)
-   const setActiveTab = useWorkspaceStore(s => s.setActiveTab)
+    const activeTabId = useWorkspaceStore(s => s.activeTabId)
+    const setActiveTab = useWorkspaceStore(s => s.setActiveTab)
    const setActiveWorkspace = useWorkspaceStore(s => s.setActiveWorkspace)
    const vimModeEnabled = useSettingsStore(s => s.vimModeEnabled)
    const setVimModeEnabled = useSettingsStore(s => s.setVimModeEnabled)
@@ -113,7 +113,36 @@ export function useCommandPaletteLogic(
       setQuery("")
    }
 
-   const filteredThemes = !query
+   const enterDatabaseMode = () => {
+   previousEnvIdRef.current = selectedEnvironmentId
+   setMode("databases")
+   setQuery("")
+   const currentIdx = environments.findIndex(e => e.id === selectedEnvironmentId)
+   setSelectedIndex(currentIdx >= 0 ? currentIdx : 0)
+}
+
+const handleDatabaseSelect = (id: string) => {
+   previousEnvIdRef.current = null
+   handleSelectEnvironment(id)
+   setMode("default")
+   setQuery("")
+}
+
+const exitDatabaseMode = () => {
+   previousEnvIdRef.current = null
+   setMode("default")
+   setQuery("")
+}
+
+const filteredEnvironments = !query
+   ? environments
+   : environments.filter(
+        e =>
+           e.name.toLowerCase().includes(query.toLowerCase()) ||
+           e.dbType.toLowerCase().includes(query.toLowerCase())
+     )
+
+const filteredThemes = !query
       ? themes
       : themes.filter(
            t =>
@@ -191,18 +220,12 @@ export function useCommandPaletteLogic(
          onSelect: () => openTab({ type: "diagram", title: "Diagram: main" }),
       },
       {
-         id: "switch-db",
-         label: "Switch Database",
-         description: "Change active database connection",
-         icon: <IconArrowLeftRight className="h-4 w-4" />,
-         category: "action",
-         onSelect: () => {
-            if (environments.length > 0) {
-               const currentIdx = environments.findIndex(e => e.id === activeTab?.environmentId)
-               const nextIdx = (currentIdx + 1) % environments.length
-               handleSelectEnvironment(environments[nextIdx].id)
-            }
-         },
+          id: "switch-db",
+          label: "Switch Database",
+          description: "Change active database connection",
+          icon: <IconArrowLeftRight className="h-4 w-4" />,
+          category: "action",
+          onSelect: () => enterDatabaseMode(),
       },
       {
          id: "toggle-vim",
@@ -324,15 +347,15 @@ export function useCommandPaletteLogic(
       ...groupedItems.history,
    ]
 
-   useEffect(() => {
-      if (isOpen) {
-         if (mode !== "themes") {
-            setQuery("")
-            setSelectedIndex(0)
-         }
-         setTimeout(() => inputRef.current?.focus(), 50)
-      }
-   }, [isOpen, mode])
+    useEffect(() => {
+       if (isOpen) {
+          if (mode !== "themes" && mode !== "databases") {
+             setQuery("")
+             setSelectedIndex(0)
+          }
+          setTimeout(() => inputRef.current?.focus(), 50)
+       }
+    }, [isOpen, mode])
 
    useEffect(() => {
       if (mode === "themes") {
@@ -344,22 +367,26 @@ export function useCommandPaletteLogic(
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
          if (!isOpen) return
-         if (e.key === "Escape") {
-            e.preventDefault()
-            if (mode === "themes") {
-               exitThemeMode()
-            } else {
-               onClose()
-            }
-            return
-         }
-         const next = () => {
-            const visible =
-               mode === "themes"
-                  ? Math.min(filteredThemes.length, 10)
-                  : Math.min(flatFiltered.length, 7)
-            setSelectedIndex(p => Math.min(p + 1, visible - 1))
-         }
+          if (e.key === "Escape") {
+             e.preventDefault()
+             if (mode === "themes") {
+                exitThemeMode()
+             } else if (mode === "databases") {
+                exitDatabaseMode()
+             } else {
+                onClose()
+             }
+             return
+          }
+          const next = () => {
+             const visible =
+                mode === "themes"
+                   ? Math.min(filteredThemes.length, 10)
+                   : mode === "databases"
+                     ? Math.min(filteredEnvironments.length, 10)
+                     : Math.min(flatFiltered.length, 7)
+             setSelectedIndex(p => Math.min(p + 1, visible - 1))
+          }
          const prev = () => {
             setSelectedIndex(p => Math.max(p - 1, 0))
          }
@@ -373,57 +400,72 @@ export function useCommandPaletteLogic(
             prev()
             return
          }
-         if (e.key === "Enter") {
-            if (mode === "themes") {
-               if (filteredThemes[selectedIndex]) {
-                  e.preventDefault()
-                  handleThemeSelect(filteredThemes[selectedIndex].id)
-                  onClose()
-                  return
-               }
-               return
-            }
-            if (flatFiltered[selectedIndex]) {
-               e.preventDefault()
-               const action = flatFiltered[selectedIndex]
-               action.onSelect()
-               if (action.id !== "switch-theme") {
-                  onClose()
-               }
-               return
-            }
-         }
+          if (e.key === "Enter") {
+             if (mode === "themes") {
+                if (filteredThemes[selectedIndex]) {
+                   e.preventDefault()
+                   handleThemeSelect(filteredThemes[selectedIndex].id)
+                   onClose()
+                   return
+                }
+                return
+             }
+             if (mode === "databases") {
+                if (filteredEnvironments[selectedIndex]) {
+                   e.preventDefault()
+                   handleDatabaseSelect(filteredEnvironments[selectedIndex].id)
+                   onClose()
+                   return
+                }
+                return
+             }
+             if (flatFiltered[selectedIndex]) {
+                e.preventDefault()
+                const action = flatFiltered[selectedIndex]
+                action.onSelect()
+                if (action.id !== "switch-theme" && action.id !== "switch-db") {
+                   onClose()
+                }
+                return
+             }
+          }
       }
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
-   }, [
-      isOpen,
-      onClose,
-      selectedIndex,
-      flatFiltered,
-      mode,
-      filteredThemes,
-      exitThemeMode,
-      handleThemeSelect,
-      vimModeEnabled,
-   ])
+    }, [
+       isOpen,
+       onClose,
+       selectedIndex,
+       flatFiltered,
+       mode,
+       filteredThemes,
+       filteredEnvironments,
+       exitThemeMode,
+       exitDatabaseMode,
+       handleThemeSelect,
+       handleDatabaseSelect,
+       vimModeEnabled,
+    ])
 
-   return {
-      query,
-      setQuery,
-      selectedIndex,
-      setSelectedIndex,
-      inputRef,
-      groupedItems,
-      flatFiltered,
-      activeTabId,
-      mode,
-      setMode,
-      exitThemeMode,
-      themes,
-      filteredThemes,
-      themeId,
-      handleThemeHover,
-      handleThemeSelect,
-   }
+    return {
+       query,
+       setQuery,
+       selectedIndex,
+       setSelectedIndex,
+       inputRef,
+       groupedItems,
+       flatFiltered,
+       activeTabId,
+       mode,
+       setMode,
+       exitThemeMode,
+       themes,
+       filteredThemes,
+       themeId,
+       handleThemeHover,
+       handleThemeSelect,
+       filteredEnvironments,
+       handleDatabaseSelect,
+       exitDatabaseMode,
+    }
 }
