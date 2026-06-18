@@ -1,6 +1,6 @@
 import type { QueryResult } from "@sqlose/shared"
 
-export type TabType = "query" | "import" | "dataset" | "diagram"
+export type TabType = "query" | "import" | "dataset" | "diagram" | "saved" | "history"
 
 export interface Tab {
    id: string

@@ -148,13 +148,12 @@ function AppContent() {
                         style={{ width: ui.sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
                         className="flex flex-col h-full bg-bg-secondary border-r border-border/80 overflow-hidden shrink-0 transition-all duration-150"
                      >
-                        <AppSidebar
-                           onSettingsOpen={ui.openSettings}
-                           onOpenTable={workspace.handleOpenTable}
-                           onOpenQuery={workspace.handleOpenQuery}
-                           collapsed={ui.sidebarCollapsed}
-                           onToggleCollapse={ui.toggleSidebarCollapse}
-                        />
+                         <AppSidebar
+                            onSettingsOpen={ui.openSettings}
+                            onOpenTable={workspace.handleOpenTable}
+                            collapsed={ui.sidebarCollapsed}
+                            onToggleCollapse={ui.toggleSidebarCollapse}
+                         />
                      </div>
                   )}
                   {ui.sidebarOpen && !ui.sidebarCollapsed && (

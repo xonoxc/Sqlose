@@ -9,11 +9,8 @@ import {
    IconHistory,
    IconBookmark,
    IconCode,
-   IconFileCode,
    IconLayoutSidebarLeftCollapse,
    IconSettings,
-   IconClock,
-   IconStar,
    IconCircleDot,
 } from "@tabler/icons-react"
 import { useSidebarState } from "~/hooks/useSidebarState"
@@ -23,7 +20,6 @@ import type { Environment } from "@sqlose/shared"
 interface AppSidebarProps {
    onSettingsOpen: () => void
    onOpenTable: (tableName: string) => void
-   onOpenQuery: (sql: string, savedQueryId?: string, savedQueryName?: string) => void
    collapsed: boolean
    onToggleCollapse: () => void
 }
@@ -31,7 +27,6 @@ interface AppSidebarProps {
 export function AppSidebar({
    onSettingsOpen,
    onOpenTable,
-   onOpenQuery,
    collapsed,
    onToggleCollapse,
 }: AppSidebarProps) {
@@ -39,7 +34,6 @@ export function AppSidebar({
       environments,
       selectedEnvironmentId,
       savedQueries,
-      savedQueryNamesBySql,
       historyEntries,
       tables,
       tableColumns,
@@ -52,8 +46,6 @@ export function AppSidebar({
       filteredTables,
       search,
       setSearch,
-      activeNav,
-      setActiveNav,
       tableTreeExpanded,
       setTableTreeExpanded,
       tableListRef,
@@ -64,7 +56,6 @@ export function AppSidebar({
       handleNavClick,
       handleKeyDown,
       handleTableDoubleClick,
-      openTab,
    } = useSidebarState(onOpenTable)
 
    const tableColumnPreview = useSettingsStore(s => s.tableColumnPreview)
@@ -82,37 +73,22 @@ export function AppSidebar({
             <div className="w-6 h-px bg-border/60 my-1" />
 
             <button
-               onClick={() => setActiveNav("playground")}
-               className={cn(
-                  "h-8 w-8 rounded flex items-center justify-center transition-colors",
-                  activeNav === "playground"
-                     ? "text-white bg-white/10"
-                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
-               )}
-               aria-label="Playground"
+               onClick={() => handleNavClick("playground")}
+               className="h-8 w-8 rounded flex items-center justify-center text-white/65 hover:text-white hover:bg-bg-quaternary transition-colors"
+               aria-label="New Query"
             >
                <IconCode className="h-4 w-4" />
             </button>
             <button
-               onClick={() => setActiveNav("saved")}
-               className={cn(
-                  "h-8 w-8 rounded flex items-center justify-center transition-colors",
-                  activeNav === "saved"
-                     ? "text-white bg-white/10"
-                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
-               )}
+               onClick={() => handleNavClick("saved")}
+               className="h-8 w-8 rounded flex items-center justify-center text-white/65 hover:text-white hover:bg-bg-quaternary transition-colors"
                aria-label="Saved Queries"
             >
                <IconBookmark className="h-4 w-4" />
             </button>
             <button
-               onClick={() => setActiveNav("history")}
-               className={cn(
-                  "h-8 w-8 rounded flex items-center justify-center transition-colors",
-                  activeNav === "history"
-                     ? "text-white bg-white/10"
-                     : "text-white/65 hover:text-white hover:bg-bg-quaternary"
-               )}
+               onClick={() => handleNavClick("history")}
+               className="h-8 w-8 rounded flex items-center justify-center text-white/65 hover:text-white hover:bg-bg-quaternary transition-colors"
                aria-label="History"
             >
                <IconHistory className="h-4 w-4" />
@@ -188,112 +164,23 @@ export function AppSidebar({
                <div className="flex flex-col gap-0.5">
                   <NavItem
                      icon={<IconCode className="h-3.5 w-3.5" />}
-                     label="Playground"
-                     active={activeNav === "playground"}
+                     label="New Query"
                      onClick={() => handleNavClick("playground")}
                   />
                   <NavItem
                      icon={<IconBookmark className="h-3.5 w-3.5" />}
                      label="Saved Queries"
                      badge={savedQueries.length > 0 ? String(savedQueries.length) : undefined}
-                     active={activeNav === "saved"}
                      onClick={() => handleNavClick("saved")}
                   />
                   <NavItem
                      icon={<IconHistory className="h-3.5 w-3.5" />}
                      label="History"
                      badge={historyEntries.length > 0 ? String(historyEntries.length) : undefined}
-                     active={activeNav === "history"}
                      onClick={() => handleNavClick("history")}
                   />
                </div>
             </div>
-
-            {/* Active nav panel */}
-            {activeNav === "playground" && (
-               <div className="mx-3 mb-2 p-2 rounded-md bg-bg-tertiary/50 border border-border/40">
-                  <button
-                     onClick={() => {
-                        openTab()
-                        setActiveNav(null)
-                     }}
-                     className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/50 transition-colors"
-                  >
-                     <IconFileCode className="h-3.5 w-3.5" />
-                     <span>New Query</span>
-                  </button>
-               </div>
-            )}
-
-            {activeNav === "saved" && (
-               <div className="mx-3 mb-2 max-h-48 overflow-y-auto custom-scrollbar">
-                  {savedQueries.length === 0 ? (
-                     <div className="px-2 py-4 text-center">
-                        <IconBookmark className="h-5 w-5 text-text-muted/30 mx-auto mb-1" />
-                        <p className="text-[11px] text-text-muted/60">No saved queries yet</p>
-                     </div>
-                  ) : (
-                     savedQueries.map(q => (
-                         <button
-                            key={q.id}
-                            onClick={() => {
-                               onOpenQuery(q.sql, q.id, q.name)
-                               setActiveNav(null)
-                            }}
-                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
-                        >
-                           <IconStar className="h-3 w-3 text-warning shrink-0" />
-                           <span className="truncate flex-1">{q.name}</span>
-                           {q.tags.length > 0 && (
-                              <span className="text-[10px] text-text-muted/60 font-mono">
-                                 {q.tags[0]}
-                              </span>
-                           )}
-                        </button>
-                     ))
-                  )}
-               </div>
-            )}
-
-            {activeNav === "history" && (
-               <div className="mx-3 mb-2 max-h-48 overflow-y-auto custom-scrollbar">
-                  {historyEntries.length === 0 ? (
-                     <div className="px-2 py-4 text-center">
-                        <IconClock className="h-5 w-5 text-text-muted/30 mx-auto mb-1" />
-                        <p className="text-[11px] text-text-muted/60">No query history yet</p>
-                     </div>
-                  ) : (
-                     historyEntries.slice(0, 15).map(entry => (
-                        <button
-                           key={entry.id}
-                           onClick={() => {
-                              onOpenQuery(entry.sql)
-                              setActiveNav(null)
-                           }}
-                           className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
-                        >
-                           <div
-                              className={cn(
-                                 "h-1.5 w-1.5 rounded-full shrink-0",
-                                 entry.status === "success" ? "bg-success" : "bg-error"
-                              )}
-                           />
-                           <span className="truncate flex-1">
-                              {savedQueryNamesBySql.get(entry.sql.trim()) ?? (
-                                 <span className="font-mono text-[11px]">
-                                    {entry.sql.slice(0, 40)}
-                                    {entry.sql.length > 40 ? "..." : ""}
-                                 </span>
-                              )}
-                           </span>
-                           <span className="text-[10px] text-text-muted/60 font-mono shrink-0">
-                              {entry.duration}ms
-                           </span>
-                        </button>
-                     ))
-                  )}
-               </div>
-            )}
 
             {/* DATABASE Section */}
             <div className="flex-1 flex flex-col min-h-0 border-t border-border/40 mt-1">
@@ -315,15 +202,15 @@ export function AppSidebar({
                   {tableTreeExpanded && (
                      <div className="flex items-center gap-0.5">
                         <button
-                           onClick={handleRefresh}
-                           disabled={schemaLoading}
-                           className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
-                           aria-label="Refresh tables"
-                        >
-                           <IconRefresh
-                              className={cn("h-3 w-3", schemaLoading && "animate-spin")}
-                           />
-                        </button>
+                            onClick={handleRefresh}
+                            disabled={schemaLoading}
+                            className="h-8 w-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
+                            aria-label="Refresh tables"
+                         >
+                            <IconRefresh
+                               className={cn("h-4 w-4", schemaLoading && "animate-spin")}
+                            />
+                         </button>
                      </div>
                   )}
                </div>
@@ -524,26 +411,19 @@ function NavItem({
    icon,
    label,
    badge,
-   active,
    onClick,
 }: {
    icon: React.ReactNode
    label: string
    badge?: string
-   active?: boolean
    onClick: () => void
 }) {
    return (
       <button
          onClick={onClick}
-         className={cn(
-            "flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all outline-none focus-visible:ring-1 focus-visible:ring-white/40",
-            active
-               ? "bg-white/10 text-white"
-               : "text-white/65 hover:text-white hover:bg-bg-quaternary/40"
-         )}
+         className="flex w-full items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium text-white/65 hover:text-white hover:bg-bg-quaternary/40 transition-all outline-none focus-visible:ring-1 focus-visible:ring-white/40"
       >
-         <span className={cn("shrink-0", active ? "text-white" : "text-text-muted")}>{icon}</span>
+         <span className="shrink-0 text-text-muted">{icon}</span>
          <span className="truncate flex-1 text-left">{label}</span>
          {badge && (
             <span className="text-[10px] font-mono text-text-muted bg-bg-tertiary px-1.5 py-0.5 rounded">

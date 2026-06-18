@@ -7,6 +7,8 @@ import {
    EmptyWorkspace,
    SchemaDiagram,
    TableBrowser,
+   SavedQueriesView,
+   HistoryView,
 } from "."
 import type { Tab } from "~/lib/types"
 import type { ResultsTab } from "~/hooks/useAppUIState"
@@ -68,6 +70,28 @@ export function EditorWorkspace({
                className="h-full z-10 relative"
             >
                <SchemaDiagram />
+            </motion.div>
+         ) : activeTab?.type === "saved" ? (
+            <motion.div
+               key="saved-queries"
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               transition={{ duration: 0.1 }}
+               className="h-full"
+            >
+               <SavedQueriesView />
+            </motion.div>
+         ) : activeTab?.type === "history" ? (
+            <motion.div
+               key="query-history"
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               transition={{ duration: 0.1 }}
+               className="h-full"
+            >
+               <HistoryView />
             </motion.div>
          ) : activeTab?.tableName ? (
             <motion.div

@@ -171,7 +171,7 @@ export function useCommandPaletteLogic(
          description: "Browse saved queries",
          icon: <IconBookmark className="h-4 w-4" />,
          category: "action",
-         onSelect: () => {},
+         onSelect: () => openTab({ type: "saved", title: "Saved Queries" }),
       },
       {
          id: "open-history",
@@ -179,7 +179,7 @@ export function useCommandPaletteLogic(
          description: "Browse past query executions",
          icon: <IconHistory className="h-4 w-4" />,
          category: "action",
-         onSelect: () => {},
+         onSelect: () => openTab({ type: "history", title: "History" }),
       },
       {
          id: "view-diagram",

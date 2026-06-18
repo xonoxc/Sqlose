@@ -6,14 +6,11 @@ import { useHistoryStore } from "~/stores/historyStore"
 import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
 import { useDatabaseStore } from "~/stores/databaseStore"
 
-type NavTab = "playground" | "saved" | "history" | null
-
 export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const setActiveWorkspace = useWorkspaceStore(s => s.setActiveWorkspace)
-   const openTab = useWorkspaceStore(s => s.openTab)
    const historyEntries = useHistoryStore(s => s.entries)
    const savedQueries = useSavedQueriesStore(s => s.queries)
 
@@ -54,7 +51,6 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const keyboardFocusedIndex = selectedEnvironmentId ? (keyboardFocusedIndexByEnv[selectedEnvironmentId] ?? -1) : -1
 
    const [search, setSearch] = useState("")
-   const [activeNav, setActiveNav] = useState<NavTab>(null)
    const [tableTreeExpanded, setTableTreeExpanded] = useState(true)
 
    const tableListRef = useRef<HTMLDivElement>(null)
@@ -102,8 +98,14 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
    }
 
-   const handleNavClick = (tab: NavTab) => {
-      setActiveNav(prev => (prev === tab ? null : tab))
+   const handleNavClick = (type: "playground" | "saved" | "history") => {
+      if (type === "playground") {
+         useWorkspaceStore.getState().openTab()
+      } else if (type === "saved") {
+         useWorkspaceStore.getState().openTab({ type: "saved", title: "Saved Queries" })
+      } else if (type === "history") {
+         useWorkspaceStore.getState().openTab({ type: "history", title: "History" })
+      }
    }
 
    const filteredIndex = activeTableId ? filteredTables.indexOf(activeTableId) : -1
@@ -184,8 +186,6 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       filteredIndex,
       search,
       setSearch,
-      activeNav,
-      setActiveNav,
       tableTreeExpanded,
       setTableTreeExpanded,
       tableListRef,
@@ -196,6 +196,5 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       handleNavClick,
       handleKeyDown,
       handleTableDoubleClick,
-      openTab,
    }
 }
