@@ -123,15 +123,15 @@ export function Dashboard() {
                                  </div>
                               </motion.button>
                            ))
-                        ) : isLoading ? (
-                           <div className="flex items-center justify-center py-12">
-                              <IconLoader2 className="h-6 w-6 text-text-muted animate-spin" />
-                           </div>
-                        ) : (
-                           <div className="text-center py-12 px-6 rounded-2xl border border-dashed border-border bg-bg-secondary/30">
-                              <p className="text-[13px] text-text-muted">No databases found.</p>
-                           </div>
-                        )}
+                         ) : isLoading ? (
+                            <div className="flex items-center justify-center">
+                               <IconLoader2 className="h-5 w-5 text-white/60 animate-spin" />
+                            </div>
+                         ) : (
+                            <div className="text-center py-12 px-6">
+                               <p className="text-[13px] text-white/60">No databases found.</p>
+                            </div>
+                         )}
                      </AnimatePresence>
 
                      {/* Create Action */}
