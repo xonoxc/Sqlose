@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import {
    useReactTable,
    getCoreRowModel,
@@ -23,6 +23,8 @@ import {
    IconClock,
 } from "@tabler/icons-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./table"
+
+const MAX_ROWS = 100_000
 
 type ColumnType = "int" | "float" | "bool" | "uuid" | "date" | "timestamp" | "text"
 
@@ -147,16 +149,20 @@ export function ResultsTable<T extends Record<string, unknown>>({
    const parentRef = useRef<HTMLDivElement>(null)
    const resizeRef = useRef<{ colId: string; startX: number; startPct: number } | null>(null)
 
+   const totalRowCount = data.length
+   const displayData = useMemo(() => data.slice(0, MAX_ROWS), [data])
+   const isTruncated = totalRowCount > MAX_ROWS
+
    const columnMeta = (() => {
-      if (data.length === 0)
+      if (displayData.length === 0)
          return { types: {} as Record<string, ColumnType>, widths: {} as Record<string, string> }
-      const keys = Object.keys(data[0])
+      const keys = Object.keys(displayData[0])
       const types: Record<string, ColumnType> = {}
       let totalWeight = 0
       const weights: Record<string, number> = {}
 
       keys.forEach(key => {
-         const values = data.slice(0, 15).map(r => r[key])
+         const values = displayData.slice(0, 15).map(r => r[key])
          const type = detectColumnType(values)
          types[key] = type
          const w = getColumnWeight(type)
@@ -174,9 +180,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
    })()
 
    const columns: ColumnDef<T>[] =
-      data.length === 0
+      displayData.length === 0
          ? []
-         : Object.keys(data[0]).map(key => {
+         : Object.keys(displayData[0]).map(key => {
               const colType = columnMeta.types[key] ?? "text"
               return {
                  id: key,
@@ -197,7 +203,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
               }
            })
 
-   const dataKey = data.length === 0 ? "" : Object.keys(data[0]).join(",")
+   const dataKey = displayData.length === 0 ? "" : Object.keys(displayData[0]).join(",")
 
    useEffect(() => {
       setResizeOverrides({})
@@ -208,7 +214,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
    }
 
    const table = useReactTable({
-      data: data as T[],
+      data: displayData as T[],
       columns,
       state: { sorting },
       onSortingChange: setSorting,
@@ -224,6 +230,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
       estimateSize: () => rowHeight,
       overscan: 15,
    })
+
+   const virtualRows = virtualizer.getVirtualItems()
+   const totalSize = virtualizer.getTotalSize()
 
    const handleContextMenu = (e: React.MouseEvent, row?: Row<T>, colName?: string) => {
       e.preventDefault()
@@ -262,7 +271,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
       setCtxMenu(prev => ({ ...prev, visible: false }))
    }
 
-   const columnNames = data.length === 0 ? [] : Object.keys(data[0])
+   const columnNames = displayData.length === 0 ? [] : Object.keys(displayData[0])
 
    const handleResizeStart = (e: React.MouseEvent, colId: string) => {
       e.preventDefault()
@@ -340,12 +349,12 @@ export function ResultsTable<T extends Record<string, unknown>>({
 
    return (
       <div
-         className={cn("overflow-hidden w-full h-full relative", className)}
+         className={cn("overflow-hidden w-full h-full relative flex flex-col", className)}
          onClick={closeCtxMenu}
       >
          <div
             ref={parentRef}
-            className="h-full overflow-auto custom-scrollbar relative bg-bg-primary"
+            className="flex-1 overflow-auto custom-scrollbar relative bg-bg-primary"
             style={fontSize ? { fontSize } : undefined}
          >
             <Table className="text-left border-collapse border-spacing-0">
@@ -403,72 +412,98 @@ export function ResultsTable<T extends Record<string, unknown>>({
                </TableHeader>
                <TableBody>
                   {rows.length ? (
-                     virtualizer.getVirtualItems().map(virtualRow => {
-                        const row = rows[virtualRow.index]
-                        const isRowSelected = selectedRow === row.id
-                        return (
-                           <TableRow
-                              key={row.id}
-                              className={cn(
-                                 "group transition-colors duration-100",
-                                 isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
-                                 alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
-                              )}
-                              style={{ height: virtualRow.size }}
-                              onContextMenu={e => handleContextMenu(e, row)}
-                              onClick={() => setSelectedRow(row.id)}
-                           >
-                              {row.getVisibleCells().map(cell => {
-                                 const isCellSelected =
-                                    selectedCell?.rowId === row.id &&
-                                    selectedCell?.colId === cell.column.id
-                                 const width = getColumnWidth(cell.column.id)
-                                 const colType = columnMeta.types[cell.column.id] ?? "text"
-                                 const isNumeric = colType === "int" || colType === "float"
-                                 return (
-                                    <TableCell
-                                       key={cell.id}
-                                       className={cn(
-                                          "cursor-default relative",
-                                          isNumeric && "text-right tabular-nums",
-                                          isCellSelected &&
-                                             "after:absolute after:inset-0 after:border-[1.5px] after:border-accent after:ring-1 after:ring-accent/20 after:z-10 bg-accent/5"
-                                       )}
-                                       style={{ width }}
-                                       onClick={e => {
-                                          e.stopPropagation()
-                                          setSelectedCell({ rowId: row.id, colId: cell.column.id })
-                                          setSelectedRow(row.id)
-                                       }}
-                                       onDoubleClick={() => {
-                                          const val = cell.getValue()
-                                          copyToClipboard(val === null ? "NULL" : String(val))
-                                       }}
-                                       onContextMenu={e => {
-                                          e.stopPropagation()
-                                          const val = cell.getValue()
-                                          setSelectedCell({ rowId: row.id, colId: cell.column.id })
-                                          setSelectedRow(row.id)
-                                          setCtxMenu({
-                                             visible: true,
-                                             x: e.clientX,
-                                             y: e.clientY,
-                                             type: "cell",
-                                             value: val === null ? "NULL" : String(val),
-                                             rowIndex: row.index,
-                                             columnName: cell.column.id,
-                                          })
-                                          e.preventDefault()
-                                       }}
-                                       title="Double click to copy"
-                                    >
-                                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                    </TableCell>
-                                 )
-                              })}
+                     <>
+                        {virtualRows.length > 0 && (
+                           <TableRow>
+                              <TableCell
+                                 colSpan={columns.length}
+                                 style={{
+                                    height: Math.max(0, virtualRows[0].start),
+                                    padding: 0,
+                                    border: "none",
+                                 }}
+                              />
                            </TableRow>
-                        )
-                     })
+                        )}
+                        {virtualRows.map(virtualRow => {
+                           const row = rows[virtualRow.index]
+                           const isRowSelected = selectedRow === row.id
+                           return (
+                              <TableRow
+                                 key={row.id}
+                                 className={cn(
+                                    "group transition-colors duration-100",
+                                    isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
+                                    alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
+                                 )}
+                                 style={{ height: rowHeight }}
+                                 onContextMenu={e => handleContextMenu(e, row)}
+                                 onClick={() => setSelectedRow(row.id)}
+                              >
+                                 {row.getVisibleCells().map(cell => {
+                                    const isCellSelected =
+                                       selectedCell?.rowId === row.id &&
+                                       selectedCell?.colId === cell.column.id
+                                    const width = getColumnWidth(cell.column.id)
+                                    const colType = columnMeta.types[cell.column.id] ?? "text"
+                                    const isNumeric = colType === "int" || colType === "float"
+                                    return (
+                                       <TableCell
+                                          key={cell.id}
+                                          className={cn(
+                                             "cursor-default relative",
+                                             isNumeric && "text-right tabular-nums",
+                                             isCellSelected &&
+                                                "after:absolute after:inset-0 after:border-[1.5px] after:border-accent after:ring-1 after:ring-accent/20 after:z-10 bg-accent/5"
+                                          )}
+                                          style={{ width }}
+                                          onClick={e => {
+                                             e.stopPropagation()
+                                             setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                             setSelectedRow(row.id)
+                                          }}
+                                          onDoubleClick={() => {
+                                             const val = cell.getValue()
+                                             copyToClipboard(val === null ? "NULL" : String(val))
+                                          }}
+                                          onContextMenu={e => {
+                                             e.stopPropagation()
+                                             const val = cell.getValue()
+                                             setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                             setSelectedRow(row.id)
+                                             setCtxMenu({
+                                                visible: true,
+                                                x: e.clientX,
+                                                y: e.clientY,
+                                                type: "cell",
+                                                value: val === null ? "NULL" : String(val),
+                                                rowIndex: row.index,
+                                                columnName: cell.column.id,
+                                             })
+                                             e.preventDefault()
+                                          }}
+                                          title="Double click to copy"
+                                       >
+                                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                       </TableCell>
+                                    )
+                                 })}
+                              </TableRow>
+                           )
+                        })}
+                        {virtualRows.length > 0 && (
+                           <TableRow>
+                              <TableCell
+                                 colSpan={columns.length}
+                                 style={{
+                                    height: Math.max(0, totalSize - virtualRows[virtualRows.length - 1].end),
+                                    padding: 0,
+                                    border: "none",
+                                 }}
+                              />
+                           </TableRow>
+                        )}
+                     </>
                   ) : (
                      <TableRow>
                         <TableCell
@@ -482,6 +517,13 @@ export function ResultsTable<T extends Record<string, unknown>>({
                </TableBody>
             </Table>
          </div>
+
+         {isTruncated && (
+            <div className="shrink-0 flex items-center gap-2 px-4 py-1.5 border-t border-border/40 bg-bg-secondary/80 text-[11px] text-text-muted/70">
+               <IconHash className="h-3 w-3" />
+               Showing {MAX_ROWS.toLocaleString()} of {totalRowCount.toLocaleString()} rows
+            </div>
+         )}
 
          {ctxMenu.visible && (
             <div
@@ -543,12 +585,12 @@ export function ResultsTable<T extends Record<string, unknown>>({
                <button
                   className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                   onClick={() => {
-                     copyToClipboard(formatAllRows(data as Record<string, unknown>[], columnNames))
+                     copyToClipboard(formatAllRows(displayData as Record<string, unknown>[], columnNames))
                      closeCtxMenu()
                   }}
                >
                   <IconCopy className="h-3.5 w-3.5" />
-                  Copy All ({data.length} rows)
+                  Copy All ({displayData.length} rows)
                </button>
                <button
                   className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
@@ -556,7 +598,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
                      const header = columnNames.join("\t")
                      const full = [
                         header,
-                        ...data.map(r => formatRow(r as Record<string, unknown>, columnNames)),
+                        ...displayData.map(r => formatRow(r as Record<string, unknown>, columnNames)),
                      ].join("\n")
                      copyToClipboard(full)
                      closeCtxMenu()
