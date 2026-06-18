@@ -70,10 +70,11 @@ const api = {
          name: string,
          sql: string,
          tags: string[],
-         environmentId: string | null
-      ) => dbInvoke<void>("db:save-query", id, name, sql, tags, environmentId),
-      updateQuery: (id: string, name: string, sql: string, tags: string[]) =>
-         dbInvoke<boolean>("db:update-query", id, name, sql, tags),
+         environmentId: string | null,
+         result: string | null
+      ) => dbInvoke<void>("db:save-query", id, name, sql, tags, environmentId, result),
+      updateQuery: (id: string, name: string, sql: string, tags: string[], result: string | null) =>
+         dbInvoke<boolean>("db:update-query", id, name, sql, tags, result),
       deleteQuery: (id: string) => dbInvoke<void>("db:delete-query", id),
       getHistory: (environmentId?: string | null, limit?: number) =>
          dbInvoke<HistoryEntry[]>("db:get-history", environmentId, limit),
@@ -86,7 +87,8 @@ const api = {
          rowCount: number,
          status: string,
          error: string | null,
-         executedAt: string
+         executedAt: string,
+         result: string | null
       ) =>
          dbInvoke<void>(
             "db:add-history-entry",
@@ -98,7 +100,8 @@ const api = {
             rowCount,
             status,
             error,
-            executedAt
+            executedAt,
+            result
          ),
       deleteHistoryEntry: (id: string) => dbInvoke<void>("db:delete-history-entry", id),
       clearHistory: () => dbInvoke<void>("db:clear-history"),

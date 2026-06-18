@@ -3,6 +3,7 @@ import { cn } from "@sqlose/ui"
 import { useHistoryStore } from "~/stores/historyStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
+import type { QueryResult } from "@sqlose/shared"
 
 export function HistoryView() {
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
@@ -11,11 +12,14 @@ export function HistoryView() {
       ? allEntries.filter(h => h.environmentId === selectedEnvironmentId)
       : allEntries
 
-   const handleOpen = (sql: string) => {
-      const result = useWorkspaceStore.getState().openTab()
-      if (result.isOk()) {
-         const tab = result.value
-         useWorkspaceStore.getState().updateTab(tab.id, { query: sql })
+   const handleOpen = (sql: string, result?: QueryResult | null) => {
+      const res = useWorkspaceStore.getState().openTab()
+      if (res.isOk()) {
+         const tab = res.value
+         useWorkspaceStore.getState().updateTab(tab.id, {
+            query: sql,
+            ...(result ? { result } : {}),
+         })
          useWorkspaceStore.getState().setActiveTab(tab.id)
       }
    }
@@ -62,11 +66,11 @@ export function HistoryView() {
             ) : (
                <div className="p-4 space-y-1">
                   {entries.map(entry => (
-                     <div
-                        key={entry.id}
-                        className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
-                        onClick={() => handleOpen(entry.sql)}
-                     >
+                      <div
+                         key={entry.id}
+                         className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
+                         onClick={() => handleOpen(entry.sql, entry.result)}
+                      >
                         <div
                            className={cn(
                               "h-2 w-2 rounded-full shrink-0",
@@ -83,11 +87,11 @@ export function HistoryView() {
                               <span className="text-[11px] text-text-muted/60">{formatTime(entry.executedAt)}</span>
                            </div>
                         </div>
-                        <button
-                           onClick={e => {
-                              e.stopPropagation()
-                              handleOpen(entry.sql)
-                           }}
+                         <button
+                            onClick={e => {
+                               e.stopPropagation()
+                               handleOpen(entry.sql, entry.result)
+                            }}
                            className="h-7 w-7 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors shrink-0 opacity-0 group-hover:opacity-100"
                            title="Open in new tab"
                         >

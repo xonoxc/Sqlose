@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { ok, type Result } from "neverthrow"
 import { AppError } from "@sqlose/shared"
+import type { QueryResult } from "@sqlose/shared"
 import type { HistoryEntry } from "~/lib/types"
 
 interface HistoryStore {
@@ -14,7 +15,8 @@ interface HistoryStore {
       duration: number,
       rowCount: number,
       status: "success" | "error",
-      error: string | null
+      error: string | null,
+      result?: QueryResult | null
    ) => Promise<Result<HistoryEntry, AppError>>
    clearHistory: () => Promise<Result<void, AppError>>
    removeEntry: (id: string) => Promise<Result<void, AppError>>
@@ -28,7 +30,8 @@ function createHistoryEntry(
    duration: number,
    rowCount: number,
    status: "success" | "error",
-   error: string | null
+   error: string | null,
+   result: QueryResult | null = null
 ): HistoryEntry {
    const id = `hist-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
    return {
@@ -41,6 +44,7 @@ function createHistoryEntry(
       status,
       error,
       executedAt: new Date().toISOString(),
+      result,
    }
 }
 
@@ -54,7 +58,7 @@ export const useHistoryStore = create<HistoryStore>()((set, get) => ({
       }
    },
 
-   addEntry: async (sql, environmentId, dbType, duration, rowCount, status, error) => {
+   addEntry: async (sql, environmentId, dbType, duration, rowCount, status, error, result = null) => {
       const entry = createHistoryEntry(
          sql,
          environmentId,
@@ -62,9 +66,10 @@ export const useHistoryStore = create<HistoryStore>()((set, get) => ({
          duration,
          rowCount,
          status,
-         error
+         error,
+         result
       )
-      const result = await window.sqlose.db.addHistoryEntry(
+      const dbResult = await window.sqlose.db.addHistoryEntry(
          entry.id,
          entry.sql,
          entry.environmentId,
@@ -73,9 +78,10 @@ export const useHistoryStore = create<HistoryStore>()((set, get) => ({
          entry.rowCount,
          entry.status,
          entry.error,
-         entry.executedAt
+         entry.executedAt,
+         entry.result ? JSON.stringify(entry.result) : null
       )
-      if (!result.success) {
+      if (!dbResult.success) {
          return ok(entry)
       }
       set(state => ({

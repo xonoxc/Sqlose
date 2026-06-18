@@ -187,7 +187,8 @@ export function useQueryExecution() {
             elapsed,
             qr.rowCount,
             "success",
-            null
+            null,
+            qr
          )
       } else {
          updateTab(activeTabId, {
@@ -203,7 +204,8 @@ export function useQueryExecution() {
             elapsed,
             0,
             "error",
-            result.error.message
+            result.error.message,
+            null
          )
       }
 

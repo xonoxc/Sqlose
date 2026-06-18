@@ -57,6 +57,7 @@ export function registerDbHandlers(): void {
                environmentId: r.environment_id,
                createdAt: r.created_at,
                updatedAt: r.updated_at,
+               result: r.result ? JSON.parse(r.result) : null,
             }))
          })
          if (result.isOk()) return ok(result.value)
@@ -72,20 +73,28 @@ export function registerDbHandlers(): void {
          name: string,
          sql: string,
          tags: string[],
-         environmentId: string | null
+         environmentId: string | null,
+         result: string | null
       ): HandlerResult<void> => {
-         const result = attemptSync(() => saveQuery(id, name, sql, tags, environmentId))
-         if (result.isOk()) return ok(undefined)
-         return err(String(result.error))
+         const r = attemptSync(() => saveQuery(id, name, sql, tags, environmentId, result))
+         if (r.isOk()) return ok(undefined)
+         return err(String(r.error))
       }
    )
 
    ipcMain.handle(
       "db:update-query",
-      (_event, id: string, name: string, sql: string, tags: string[]): HandlerResult<boolean> => {
-         const result = attemptSync(() => updateSavedQuery(id, name, sql, tags))
-         if (result.isOk()) return ok(result.value)
-         return err(String(result.error))
+      (
+         _event,
+         id: string,
+         name: string,
+         sql: string,
+         tags: string[],
+         result: string | null
+      ): HandlerResult<boolean> => {
+         const r = attemptSync(() => updateSavedQuery(id, name, sql, tags, result))
+         if (r.isOk()) return ok(r.value)
+         return err(String(r.error))
       }
    )
 
@@ -110,6 +119,7 @@ export function registerDbHandlers(): void {
                status: r.status as "success" | "error",
                error: r.error_text,
                executedAt: r.executed_at,
+               result: r.result ? JSON.parse(r.result) : null,
             }))
          })
          if (result.isOk()) return ok(result.value)
@@ -129,9 +139,10 @@ export function registerDbHandlers(): void {
          rowCount: number,
          status: string,
          error: string | null,
-         executedAt: string
+         executedAt: string,
+         result: string | null
       ): HandlerResult<void> => {
-         const result = attemptSync(() =>
+         const r = attemptSync(() =>
             addHistoryEntry(
                id,
                sql,
@@ -141,11 +152,12 @@ export function registerDbHandlers(): void {
                rowCount,
                status,
                error,
-               executedAt
+               executedAt,
+               result
             )
          )
-         if (result.isOk()) return ok(undefined)
-         return err(String(result.error))
+         if (r.isOk()) return ok(undefined)
+         return err(String(r.error))
       }
    )
 

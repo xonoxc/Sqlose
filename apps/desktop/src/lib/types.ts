@@ -43,6 +43,7 @@ export interface SavedQuery {
    environmentId: string | null
    createdAt: string
    updatedAt: string
+   result: QueryResult | null
 }
 
 export interface HistoryEntry {
@@ -55,6 +56,7 @@ export interface HistoryEntry {
    status: "success" | "error"
    error: string | null
    executedAt: string
+   result: QueryResult | null
 }
 
 function extractTableName(sql: string): string {
@@ -117,11 +119,12 @@ export function createSavedQuery(
    name: string,
    sql: string,
    tags: string[] = [],
-   environmentId: string | null = null
+   environmentId: string | null = null,
+   result: QueryResult | null = null
 ): SavedQuery {
    const id = `sq-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
    const now = new Date().toISOString()
-   return { id, name, sql, tags, environmentId, createdAt: now, updatedAt: now }
+   return { id, name, sql, tags, environmentId, createdAt: now, updatedAt: now, result }
 }
 
 export function createHistoryEntry(
@@ -131,7 +134,8 @@ export function createHistoryEntry(
    duration: number,
    rowCount: number,
    status: "success" | "error",
-   error: string | null
+   error: string | null,
+   result: QueryResult | null = null
 ): HistoryEntry {
    return {
       id: `hist-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -143,6 +147,7 @@ export function createHistoryEntry(
       status,
       error,
       executedAt: new Date().toISOString(),
+      result,
    }
 }
 

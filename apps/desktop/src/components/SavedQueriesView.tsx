@@ -14,14 +14,15 @@ export function SavedQueriesView() {
       : allQueries
    const [deletingId, setDeletingId] = useState<string | null>(null)
 
-   const handleOpen = (sql: string, id?: string, name?: string) => {
+   const handleOpen = (entry: { sql: string; id?: string; name?: string; result?: import("@sqlose/shared").QueryResult | null }) => {
       const result = useWorkspaceStore.getState().openTab()
       if (result.isOk()) {
          const tab = result.value
          useWorkspaceStore.getState().updateTab(tab.id, {
-            query: sql,
-            ...(name ? { title: name } : {}),
-            ...(id ? { savedQueryId: id } : {}),
+            query: entry.sql,
+            ...(entry.name ? { title: entry.name } : {}),
+            ...(entry.id ? { savedQueryId: entry.id } : {}),
+            ...(entry.result ? { result: entry.result } : {}),
          })
          useWorkspaceStore.getState().setActiveTab(tab.id)
       }
@@ -64,31 +65,31 @@ export function SavedQueriesView() {
             ) : (
                <div className="p-4 space-y-1">
                   {queries.map(q => (
-                     <div
-                        key={q.id}
-                        className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
-                        onClick={() => handleOpen(q.sql, q.id, q.name)}
-                     >
-                        <IconStar className="h-4 w-4 text-warning shrink-0" />
-                        <div className="flex-1 min-w-0">
-                           <div className="text-[13px] font-medium text-text-primary truncate">
-                              {q.name}
-                           </div>
-                           <div className="text-[11px] font-mono text-text-muted/60 truncate mt-0.5">
-                              {q.sql}
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                           <button
-                              onClick={e => {
-                                 e.stopPropagation()
-                                 handleOpen(q.sql, q.id, q.name)
-                              }}
-                              className="h-7 w-7 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                              title="Open in new tab"
-                           >
-                              <IconFileCode size={15} stroke={1.5} />
-                           </button>
+                      <div
+                         key={q.id}
+                         className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
+                         onClick={() => handleOpen({ sql: q.sql, id: q.id, name: q.name, result: q.result })}
+                      >
+                         <IconStar className="h-4 w-4 text-warning shrink-0" />
+                         <div className="flex-1 min-w-0">
+                            <div className="text-[13px] font-medium text-text-primary truncate">
+                               {q.name}
+                            </div>
+                            <div className="text-[11px] font-mono text-text-muted/60 truncate mt-0.5">
+                               {q.sql}
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                               onClick={e => {
+                                  e.stopPropagation()
+                                  handleOpen({ sql: q.sql, id: q.id, name: q.name, result: q.result })
+                               }}
+                               className="h-7 w-7 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                               title="Open in new tab"
+                            >
+                               <IconFileCode size={15} stroke={1.5} />
+                            </button>
                            <button
                               onClick={e => {
                                  e.stopPropagation()

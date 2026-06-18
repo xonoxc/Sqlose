@@ -57,7 +57,7 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
             const state = useWorkspaceStore.getState()
             const activeTab = state.tabs.find(t => t.id === state.activeTabId)
             const sql = activeTab?.query ?? ""
-            const result = await saveQuery(name.trim(), sql, [], selectedEnvironmentId)
+            const result = await saveQuery(name.trim(), sql, [], selectedEnvironmentId, activeTab?.result ?? null)
             if (result.isOk()) {
                const saved = result.value
                if (activeTab) {
