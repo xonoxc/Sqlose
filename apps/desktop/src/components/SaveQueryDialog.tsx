@@ -27,11 +27,22 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
    useEffect(() => {
       if (open) {
          overlayRef.current?.focus()
-         if (mode === "rename" && queries.length > 0) {
-            setSelectedId(queries[0].id)
-            setName(queries[0].name)
+         if (mode === "rename") {
+            const activeTab = useWorkspaceStore.getState().tabs.find(
+               t => t.id === useWorkspaceStore.getState().activeTabId
+            )
+            const matchId = activeTab?.savedQueryId
+            const match = matchId ? queries.find(q => q.id === matchId) : null
+            const initial = match ?? queries[0] ?? null
+            setSelectedId(initial?.id ?? "")
+            setName(initial?.name ?? "")
          } else {
-            setName("")
+            const activeTab = useWorkspaceStore.getState().tabs.find(
+               t => t.id === useWorkspaceStore.getState().activeTabId
+            )
+            const matchId = activeTab?.savedQueryId
+            const match = matchId ? queries.find(q => q.id === matchId) : null
+            setName(match?.name ?? "")
             setSelectedId("")
          }
          setTimeout(() => inputRef.current?.focus(), 50)
@@ -104,13 +115,13 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
             <div className="flex flex-col items-center px-10 py-8 text-center">
                <div
                   className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl ${
-                     mode === "save"
-                        ? "bg-accent/10 text-accent"
-                        : "bg-amber-500/10 text-amber-400"
+                      mode === "save"
+                         ? "bg-accent/15 text-white/60"
+                         : "bg-amber-500/10 text-amber-400"
                   }`}
                >
                   {mode === "save" ? (
-                     <IconDeviceFloppy size={28} stroke={2} />
+                     <IconDeviceFloppy size={34} stroke={1.5} />
                   ) : (
                      <IconPencil size={28} stroke={2} />
                   )}
