@@ -22,6 +22,7 @@ interface EditorWorkspaceProps {
    onPaletteOpen: () => void
    onNewQuery: () => void
    onClearResults: () => void
+   onSaveQuery?: () => void
    isResultsMaximized: boolean
    resultsCollapsed: boolean
    resultsActiveTab: ResultsTab
@@ -44,6 +45,7 @@ export function EditorWorkspace({
    onPaletteOpen,
    onNewQuery,
    onClearResults,
+   onSaveQuery,
    isResultsMaximized,
    resultsCollapsed,
    resultsActiveTab,
@@ -89,15 +91,16 @@ export function EditorWorkspace({
             >
                {!isResultsMaximized && (
                   <div className="flex-1 flex flex-col min-h-0">
-                     <SQLEditor
-                        value={queryDraft}
-                        onChange={onQueryChange}
-                        onExecute={onExecute}
-                        onSettingsOpen={onSettingsOpen}
-                        onCommandMode={onPaletteOpen}
-                        isExecuting={isExecuting}
-                        executionTimeMs={activeTab?.executionTimeMs || null}
-                     />
+                      <SQLEditor
+                         value={queryDraft}
+                         onChange={onQueryChange}
+                         onExecute={onExecute}
+                         onSettingsOpen={onSettingsOpen}
+                         onCommandMode={onPaletteOpen}
+                         onSaveQuery={onSaveQuery}
+                         isExecuting={isExecuting}
+                         executionTimeMs={activeTab?.executionTimeMs || null}
+                      />
                   </div>
                )}
 

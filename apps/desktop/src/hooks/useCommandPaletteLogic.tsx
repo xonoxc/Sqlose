@@ -21,6 +21,7 @@ import {
    IconBookmark,
    IconStar,
    IconPalette,
+   IconPencil,
 } from "@tabler/icons-react"
 
 interface PaletteAction {
@@ -40,8 +41,10 @@ export function useCommandPaletteLogic(
    onClose: () => void,
    onExecuteQuery?: () => void,
    onClearResults?: () => void,
-   onOpenQuery?: (sql: string) => void,
-   onNukeConfirm?: () => void
+   onOpenQuery?: (sql: string, savedQueryId?: string, savedQueryName?: string) => void,
+   onNukeConfirm?: () => void,
+   onSaveQuery?: () => void,
+   onRenameQuery?: () => void
 ) {
    const [query, setQuery] = useState("")
    const [selectedIndex, setSelectedIndex] = useState(0)
@@ -144,7 +147,15 @@ export function useCommandPaletteLogic(
          icon: <IconDeviceFloppy className="h-4 w-4" />,
          shortcut: isMac() ? "⌘S" : "Ctrl+S",
          category: "action",
-         onSelect: () => {},
+         onSelect: () => onSaveQuery?.(),
+      },
+      {
+         id: "rename-query",
+         label: "Rename Query",
+         description: "Rename a saved query",
+         icon: <IconPencil className="h-4 w-4" />,
+         category: "action",
+         onSelect: () => onRenameQuery?.(),
       },
       {
          id: "clear-results",
@@ -252,9 +263,9 @@ export function useCommandPaletteLogic(
          icon: <IconStar className="h-4 w-4 text-warning" />,
          shortcut: undefined as string | undefined,
          category: "saved" as const,
-         onSelect: () => onOpenQuery?.(q.sql),
-      })),
-      ...historyEntries.slice(0, 10).map(entry => ({
+          onSelect: () => onOpenQuery?.(q.sql, q.id, q.name),
+       })),
+       ...historyEntries.slice(0, 10).map(entry => ({
          id: `hist-${entry.id}` as const,
          label: entry.sql.slice(0, 40) + (entry.sql.length > 40 ? "..." : ""),
          description: `${entry.dbType} · ${entry.duration}ms · ${entry.status}`,

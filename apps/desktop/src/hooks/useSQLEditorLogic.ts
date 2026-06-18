@@ -1,10 +1,9 @@
-import { useRef, useEffect, useState, useCallback } from "react"
+import { useRef, useEffect, useCallback } from "react"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useSettingsStore } from "~/stores/settingsStore"
 import { useEditorStore } from "~/stores/editorStore"
 import { useThemeStore } from "~/stores/theme-store"
 import { themes } from "~/themes"
-import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
 import type { VimMode } from "~/lib/types"
 import type { editor, IDisposable } from "monaco-editor"
 
@@ -31,7 +30,6 @@ function parseVimMode(text: string): VimMode | null {
 }
 
 export function useSQLEditorLogic(
-   value: string,
    onChange: (value: string) => void,
    onCommandMode?: () => void
 ) {
@@ -42,14 +40,11 @@ export function useSQLEditorLogic(
    const vimStatusRef = useRef<HTMLDivElement>(null)
    const onChangeRef = useRef(onChange)
    const contentChangeDisposableRef = useRef<IDisposable | null>(null)
-   const [saveDialogOpen, setSaveDialogOpen] = useState(false)
-   const [saveName, setSaveName] = useState("")
 
    onChangeRef.current = onChange
 
    const vimEnabled = useSettingsStore(s => s.vimModeEnabled)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
-   const saveQuery = useSavedQueriesStore(s => s.saveQuery)
    const themeId = useThemeStore(s => s.themeId)
 
    function setupVimObserver() {
@@ -239,25 +234,12 @@ export function useSQLEditorLogic(
       }
    }, [])
 
-   const handleSaveSubmit = () => {
-      if (saveName.trim()) {
-         saveQuery(saveName.trim(), value, [], selectedEnvironmentId)
-         setSaveDialogOpen(false)
-         setSaveName("")
-      }
-   }
-
    return {
       editorRef,
       vimStatusRef,
       vimEnabled,
-      saveDialogOpen,
-      setSaveDialogOpen,
-      saveName,
-      setSaveName,
       selectedEnvironmentId,
       handleEditorMount,
       handleChange,
-      handleSaveSubmit,
    }
 }

@@ -235,12 +235,12 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             const current = workspace.tabs[tabIndex]
             const merged = { ...current, ...updates }
 
-            if (updates.query !== undefined && updates.query !== current.query) {
-               const newTitle = generateTabTitle(updates.query)
-               if (newTitle !== current.title) {
-                  merged.title = newTitle
-               }
-            }
+             if (updates.query !== undefined && updates.query !== current.query && updates.title === undefined) {
+                const newTitle = generateTabTitle(updates.query)
+                if (newTitle !== current.title) {
+                   merged.title = newTitle
+                }
+             }
 
             const newTabs = [...workspace.tabs]
             newTabs[tabIndex] = merged

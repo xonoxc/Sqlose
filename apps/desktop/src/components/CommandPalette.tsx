@@ -17,6 +17,8 @@ interface CommandPaletteProps {
    onOpenTable?: (tableName: string) => void
    onOpenQuery?: (sql: string) => void
    onNukeConfirm?: () => void
+   onSaveQuery?: () => void
+   onRenameQuery?: () => void
 }
 
 export function CommandPalette({
@@ -26,6 +28,8 @@ export function CommandPalette({
    onClearResults,
    onOpenQuery,
    onNukeConfirm,
+   onSaveQuery,
+   onRenameQuery,
 }: CommandPaletteProps) {
    const {
       query,
@@ -46,7 +50,9 @@ export function CommandPalette({
       onExecuteQuery,
       onClearResults,
       onOpenQuery,
-      onNukeConfirm
+      onNukeConfirm,
+      onSaveQuery,
+      onRenameQuery
    )
 
    const limitedItems = flatFiltered.slice(0, 7)
@@ -317,6 +323,7 @@ const getIconStyles = (id: string) => {
    if (id === "toggle-vim") return "bg-violet-500/10 text-violet-400"
    if (id === "switch-theme") return "bg-pink-500/10 text-pink-400"
    if (id === "nuke-env") return "bg-orange-500/10 text-orange-400"
+   if (id === "rename-query") return "bg-amber-500/10 text-amber-400"
    if (id.startsWith("env-")) return "bg-zinc-500/10 text-zinc-400"
    if (id.startsWith("tab-")) return "bg-indigo-500/10 text-indigo-400"
    if (id.startsWith("sq-")) return "bg-amber-500/10 text-amber-400"

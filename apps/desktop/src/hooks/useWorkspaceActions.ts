@@ -2,6 +2,7 @@ import { useCallback } from "react"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useQueryExecution } from "~/hooks/useQueryExecution"
+import type { Tab } from "~/lib/types"
 
 export function useWorkspaceActions() {
    const environments = useEnvironmentStore(s => s.environments)
@@ -57,11 +58,18 @@ export function useWorkspaceActions() {
    )
 
    const handleOpenQuery = useCallback(
-      (sql: string) => {
+      (sql: string, savedQueryId?: string, savedQueryName?: string) => {
          const result = openTab()
          if (result.isOk()) {
             const tab = result.value
-            updateTab(tab.id, { query: sql })
+            const updates: Partial<Tab> = { query: sql }
+            if (savedQueryName) {
+               updates.title = savedQueryName
+            }
+            if (savedQueryId) {
+               updates.savedQueryId = savedQueryId
+            }
+            updateTab(tab.id, updates)
             setActiveTab(tab.id)
          }
       },

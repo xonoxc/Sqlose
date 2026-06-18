@@ -15,6 +15,7 @@ export interface Tab {
    executionTimeMs?: number
    createdAt: string
    tableName?: string
+   savedQueryId?: string
 }
 
 export interface PaneSizes {

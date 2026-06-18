@@ -14,6 +14,7 @@ interface SQLEditorProps {
    onExecute: () => void
    onSettingsOpen: () => void
    onCommandMode?: () => void
+   onSaveQuery?: () => void
    isExecuting: boolean
    executionTimeMs: number | null
 }
@@ -24,6 +25,7 @@ export function SQLEditor({
    onExecute,
    onSettingsOpen,
    onCommandMode,
+   onSaveQuery,
    isExecuting,
    executionTimeMs,
 }: SQLEditorProps) {
@@ -33,15 +35,10 @@ export function SQLEditor({
    const {
       vimStatusRef,
       vimEnabled,
-      saveDialogOpen,
-      setSaveDialogOpen,
-      saveName,
-      setSaveName,
       selectedEnvironmentId,
       handleEditorMount,
       handleChange,
-      handleSaveSubmit,
-   } = useSQLEditorLogic(value, onChange, onCommandMode)
+   } = useSQLEditorLogic(onChange, onCommandMode)
 
    return (
       <div className="flex flex-col h-full bg-bg-primary w-full">
@@ -84,43 +81,14 @@ export function SQLEditor({
                )}
 
                <div className="flex items-center gap-1 ml-2 border-l border-border pl-3">
-                  <div className="relative">
-                     <button
-                        onClick={() => {
-                           setSaveName("")
-                           setSaveDialogOpen(!saveDialogOpen)
-                        }}
-                        className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                        aria-label="Save query"
-                     >
-                        <IconDeviceFloppy className="h-3.5 w-3.5" />
-                     </button>
-                     {saveDialogOpen && (
-                        <div className="absolute top-full left-0 mt-1 z-50 flex items-center gap-1 bg-bg-secondary border border-border rounded-md p-1.5 shadow-xl">
-                           <input
-                              autoFocus
-                              type="text"
-                              value={saveName}
-                              onChange={e => setSaveName(e.target.value)}
-                              onKeyDown={e => {
-                                 if (e.key === "Enter") handleSaveSubmit()
-                                 if (e.key === "Escape") {
-                                    setSaveDialogOpen(false)
-                                    setSaveName("")
-                                 }
-                              }}
-                              placeholder="Query name..."
-                              className="bg-bg-tertiary text-[12px] text-text-primary px-2 py-1 rounded border border-border outline-none w-36"
-                           />
-                           <button
-                              onClick={handleSaveSubmit}
-                              className="text-[11px] font-medium text-accent hover:text-accent-light px-1.5 py-1"
-                           >
-                              Save
-                           </button>
-                        </div>
-                     )}
-                  </div>
+                  <button
+                     onClick={() => onSaveQuery?.()}
+                     className="h-6 w-6 flex items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
+                     aria-label="Save query"
+                     title="Save query"
+                  >
+                     <IconDeviceFloppy className="h-3.5 w-3.5" />
+                  </button>
                </div>
             </div>
 

@@ -7,15 +7,18 @@ interface ShortcutActions {
    onShortcuts: () => void
    onPalette: () => void
    onExecute: () => void
+   onSaveQuery?: () => void
 }
 
-export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute }: ShortcutActions) {
+export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute, onSaveQuery }: ShortcutActions) {
    const onShortcutsRef = useRef(onShortcuts)
    const onPaletteRef = useRef(onPalette)
    const onExecuteRef = useRef(onExecute)
+   const onSaveQueryRef = useRef(onSaveQuery)
    onShortcutsRef.current = onShortcuts
    onPaletteRef.current = onPalette
    onExecuteRef.current = onExecute
+   onSaveQueryRef.current = onSaveQuery
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -44,13 +47,19 @@ export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute }: Shor
             return
          }
 
-         if (!e.shiftKey && e.key === "n") {
-            e.preventDefault()
-            useWorkspaceStore.getState().openTab()
-            return
-         }
+          if (!e.shiftKey && e.key === "n") {
+             e.preventDefault()
+             useWorkspaceStore.getState().openTab()
+             return
+          }
 
-         if (e.key === "w") {
+          if (e.key === "s" && !e.shiftKey) {
+             e.preventDefault()
+             onSaveQueryRef.current?.()
+             return
+          }
+
+          if (e.key === "w") {
             e.preventDefault()
             const id = useWorkspaceStore.getState().activeTabId
             if (id) {

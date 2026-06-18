@@ -15,6 +15,7 @@ import {
    ErrorBoundary,
    EditorWorkspace,
    ConfirmDialog,
+   SaveQueryDialog,
 } from "~/components"
 import { attempt } from "@sqlose/shared"
 import {
@@ -112,6 +113,7 @@ function AppContent() {
       onShortcuts: ui.openShortcuts,
       onPalette: ui.openPalette,
       onExecute: workspace.execute,
+      onSaveQuery: ui.openSaveQuery,
    })
 
    useEffect(() => {
@@ -182,29 +184,30 @@ function AppContent() {
                            <TabBar />
                         </div>
                         <div className="flex-1 min-h-0 overflow-hidden">
-                           <EditorWorkspace
-                              activeTabId={workspace.activeTabId}
-                              activeTab={workspace.activeTab}
-                              queryDraft={workspace.queryDraft}
-                              isExecuting={workspace.isExecuting}
-                              onQueryChange={workspace.handleQueryChange}
-                              onExecute={workspace.execute}
-                              onSettingsOpen={ui.openSettings}
-                              onPaletteOpen={ui.openPalette}
-                              onNewQuery={workspace.handleNewQuery}
-                              onClearResults={workspace.handleClearResults}
-                              isResultsMaximized={ui.isResultsMaximized}
-                              resultsCollapsed={ui.resultsCollapsed}
-                              resultsActiveTab={ui.resultsActiveTab}
-                              onResultsActiveTabChange={ui.setResultsActiveTab}
-                              onToggleResultsCollapse={ui.toggleResultsCollapse}
-                              onToggleResultsMaximize={ui.toggleResultsMaximize}
-                              resultsHeight={paneSizes.resultsHeight}
-                              resultsMinHeight={RESULTS_MIN_HEIGHT}
-                              onResultsDividerMouseDown={e =>
-                                 resultsResize.handleMouseDown(e, paneSizes.resultsHeight)
-                              }
-                           />
+                            <EditorWorkspace
+                               activeTabId={workspace.activeTabId}
+                               activeTab={workspace.activeTab}
+                               queryDraft={workspace.queryDraft}
+                               isExecuting={workspace.isExecuting}
+                               onQueryChange={workspace.handleQueryChange}
+                               onExecute={workspace.execute}
+                               onSettingsOpen={ui.openSettings}
+                               onPaletteOpen={ui.openPalette}
+                               onNewQuery={workspace.handleNewQuery}
+                               onClearResults={workspace.handleClearResults}
+                               onSaveQuery={ui.openSaveQuery}
+                               isResultsMaximized={ui.isResultsMaximized}
+                               resultsCollapsed={ui.resultsCollapsed}
+                               resultsActiveTab={ui.resultsActiveTab}
+                               onResultsActiveTabChange={ui.setResultsActiveTab}
+                               onToggleResultsCollapse={ui.toggleResultsCollapse}
+                               onToggleResultsMaximize={ui.toggleResultsMaximize}
+                               resultsHeight={paneSizes.resultsHeight}
+                               resultsMinHeight={RESULTS_MIN_HEIGHT}
+                               onResultsDividerMouseDown={e =>
+                                  resultsResize.handleMouseDown(e, paneSizes.resultsHeight)
+                               }
+                            />
                         </div>
                         <StatusBar
                            vimMode={vimEnabled ? vimMode : undefined}
@@ -217,15 +220,17 @@ function AppContent() {
          ) : (
             <Dashboard />
          )}
-         <CommandPalette
-            isOpen={ui.paletteOpen}
-            onClose={ui.closePalette}
-            onExecuteQuery={workspace.execute}
-            onClearResults={workspace.handleClearResults}
-            onOpenTable={workspace.handleOpenTable}
-            onOpenQuery={workspace.handleOpenQuery}
-            onNukeConfirm={ui.openNukeConfirm}
-         />
+          <CommandPalette
+             isOpen={ui.paletteOpen}
+             onClose={ui.closePalette}
+             onExecuteQuery={workspace.execute}
+             onClearResults={workspace.handleClearResults}
+             onOpenTable={workspace.handleOpenTable}
+             onOpenQuery={workspace.handleOpenQuery}
+             onNukeConfirm={ui.openNukeConfirm}
+             onSaveQuery={ui.openSaveQuery}
+             onRenameQuery={ui.openRenameQuery}
+          />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />
          {stuckEnvId && (
@@ -235,15 +240,25 @@ function AppContent() {
                onNuke={handleExitAndNuke}
             />
          )}
-          <ConfirmDialog
-             open={ui.nukeConfirmOpen}
-             onCancel={ui.closeNukeConfirm}
-             onConfirm={handleNukeConfirm}
-             isLoading={isNuking}
-             title="Nuke Environment"
-             confirmText="Nuke"
-          />
-         <Toaster
+           <ConfirmDialog
+              open={ui.nukeConfirmOpen}
+              onCancel={ui.closeNukeConfirm}
+              onConfirm={handleNukeConfirm}
+              isLoading={isNuking}
+              title="Nuke Environment"
+              confirmText="Nuke"
+           />
+           <SaveQueryDialog
+              open={ui.saveQueryOpen}
+              mode="save"
+              onClose={ui.closeSaveQuery}
+           />
+           <SaveQueryDialog
+              open={ui.renameQueryOpen}
+              mode="rename"
+              onClose={ui.closeRenameQuery}
+           />
+          <Toaster
             theme="dark"
             position="bottom-right"
             toastOptions={{

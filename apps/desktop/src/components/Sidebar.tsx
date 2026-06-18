@@ -23,7 +23,7 @@ import type { Environment } from "@sqlose/shared"
 interface AppSidebarProps {
    onSettingsOpen: () => void
    onOpenTable: (tableName: string) => void
-   onOpenQuery: (sql: string) => void
+   onOpenQuery: (sql: string, savedQueryId?: string, savedQueryName?: string) => void
    collapsed: boolean
    onToggleCollapse: () => void
 }
@@ -234,12 +234,12 @@ export function AppSidebar({
                      </div>
                   ) : (
                      savedQueries.map(q => (
-                        <button
-                           key={q.id}
-                           onClick={() => {
-                              onOpenQuery(q.sql)
-                              setActiveNav(null)
-                           }}
+                         <button
+                            key={q.id}
+                            onClick={() => {
+                               onOpenQuery(q.sql, q.id, q.name)
+                               setActiveNav(null)
+                            }}
                            className="flex w-full items-center gap-2 px-2 py-1.5 rounded text-[12px] text-text-secondary hover:text-text-primary hover:bg-bg-quaternary/40 transition-colors text-left"
                         >
                            <IconStar className="h-3 w-3 text-warning shrink-0" />

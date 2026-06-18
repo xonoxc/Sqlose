@@ -12,6 +12,8 @@ export function useAppUIState() {
    const [resultsActiveTab, setResultsActiveTab] = useState<ResultsTab>("results")
    const [isResultsMaximized, setIsResultsMaximized] = useState(false)
    const [nukeConfirmOpen, setNukeConfirmOpen] = useState(false)
+   const [saveQueryOpen, setSaveQueryOpen] = useState(false)
+   const [renameQueryOpen, setRenameQueryOpen] = useState(false)
 
    return {
       sidebarOpen,
@@ -36,5 +38,11 @@ export function useAppUIState() {
       nukeConfirmOpen,
       openNukeConfirm: () => setNukeConfirmOpen(true),
       closeNukeConfirm: () => setNukeConfirmOpen(false),
+      saveQueryOpen,
+      openSaveQuery: () => setSaveQueryOpen(true),
+      closeSaveQuery: () => setSaveQueryOpen(false),
+      renameQueryOpen,
+      openRenameQuery: () => setRenameQueryOpen(true),
+      closeRenameQuery: () => setRenameQueryOpen(false),
    }
 }
