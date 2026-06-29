@@ -79,7 +79,9 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
    platformKeybindings.push(...agnostic)
    const seen = new Set<string>()
    const deduped = platformKeybindings.filter(kb => {
-      if (seen.has(kb.action)) return false
+      if (seen.has(kb.action)) {
+         return false
+      }
       seen.add(kb.action)
       return true
    })

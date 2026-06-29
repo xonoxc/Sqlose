@@ -28,19 +28,25 @@ function err(msg: string): HandlerResult<never> {
 export function registerDbHandlers(): void {
    ipcMain.handle("db:get", (_event, key: string): HandlerResult<string | null> => {
       const result = attemptSync(() => storeGet(key))
-      if (result.isOk()) return ok(result.value ?? null)
+      if (result.isOk()) {
+         return ok(result.value ?? null)
+      }
       return err(String(result.error))
    })
 
    ipcMain.handle("db:set", (_event, key: string, value: string): HandlerResult<void> => {
       const result = attemptSync(() => storeSet(key, value))
-      if (result.isOk()) return ok(undefined)
+      if (result.isOk()) {
+         return ok(undefined)
+      }
       return err(String(result.error))
    })
 
    ipcMain.handle("db:delete", (_event, key: string): HandlerResult<void> => {
       const result = attemptSync(() => storeDelete(key))
-      if (result.isOk()) return ok(undefined)
+      if (result.isOk()) {
+         return ok(undefined)
+      }
       return err(String(result.error))
    })
 
@@ -60,7 +66,9 @@ export function registerDbHandlers(): void {
                result: r.result ? JSON.parse(r.result) : null,
             }))
          })
-         if (result.isOk()) return ok(result.value)
+         if (result.isOk()) {
+            return ok(result.value)
+         }
          return err(String(result.error))
       }
    )
@@ -77,7 +85,9 @@ export function registerDbHandlers(): void {
          result: string | null
       ): HandlerResult<void> => {
          const r = attemptSync(() => saveQuery(id, name, sql, tags, environmentId, result))
-         if (r.isOk()) return ok(undefined)
+         if (r.isOk()) {
+            return ok(undefined)
+         }
          return err(String(r.error))
       }
    )
@@ -93,14 +103,18 @@ export function registerDbHandlers(): void {
          result: string | null
       ): HandlerResult<boolean> => {
          const r = attemptSync(() => updateSavedQuery(id, name, sql, tags, result))
-         if (r.isOk()) return ok(r.value)
+         if (r.isOk()) {
+            return ok(r.value)
+         }
          return err(String(r.error))
       }
    )
 
    ipcMain.handle("db:delete-query", (_event, id: string): HandlerResult<void> => {
       const result = attemptSync(() => deleteSavedQuery(id))
-      if (result.isOk()) return ok(undefined)
+      if (result.isOk()) {
+         return ok(undefined)
+      }
       return err(String(result.error))
    })
 
@@ -122,7 +136,9 @@ export function registerDbHandlers(): void {
                result: r.result ? JSON.parse(r.result) : null,
             }))
          })
-         if (result.isOk()) return ok(result.value)
+         if (result.isOk()) {
+            return ok(result.value)
+         }
          return err(String(result.error))
       }
    )
@@ -156,20 +172,26 @@ export function registerDbHandlers(): void {
                result
             )
          )
-         if (r.isOk()) return ok(undefined)
+         if (r.isOk()) {
+            return ok(undefined)
+         }
          return err(String(r.error))
       }
    )
 
    ipcMain.handle("db:delete-history-entry", (_event, id: string): HandlerResult<void> => {
       const result = attemptSync(() => deleteHistoryEntry(id))
-      if (result.isOk()) return ok(undefined)
+      if (result.isOk()) {
+         return ok(undefined)
+      }
       return err(String(result.error))
    })
 
    ipcMain.handle("db:clear-history", (_event): HandlerResult<void> => {
       const result = attemptSync(() => clearHistory())
-      if (result.isOk()) return ok(undefined)
+      if (result.isOk()) {
+         return ok(undefined)
+      }
       return err(String(result.error))
    })
 }

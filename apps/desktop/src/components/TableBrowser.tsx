@@ -25,7 +25,9 @@ export function TableBrowser() {
       handleNextPage,
    } = useTableBrowserState()
 
-   if (!displayTableName) return null
+   if (!displayTableName) {
+      return null
+   }
 
    return (
       <div className="flex flex-col h-full bg-bg-primary overflow-hidden">

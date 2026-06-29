@@ -65,8 +65,12 @@ function getDocker(): Docker {
 }
 
 function parseDockerHost(host: string): Record<string, unknown> {
-   if (host.startsWith("unix://")) return { socketPath: host.slice(7) }
-   if (host.startsWith("npipe://")) return { socketPath: host.slice(8) }
+   if (host.startsWith("unix://")) {
+      return { socketPath: host.slice(7) }
+   }
+   if (host.startsWith("npipe://")) {
+      return { socketPath: host.slice(8) }
+   }
    if (host.startsWith("tcp://")) {
       const rest = host.slice(6)
       const i = rest.lastIndexOf(":")
@@ -137,7 +141,9 @@ export async function pullImage(
    onProgress?: (percentage: number) => void
 ): AsyncAppResult<void> {
    const config = DB_IMAGE_MAP[dbType]
-   if (!config.image) return okResult(undefined)
+   if (!config.image) {
+      return okResult(undefined)
+   }
 
    const docker = getDocker()
 
@@ -158,13 +164,17 @@ export async function pullImage(
       )
    }
 
-   if (listResult.value.length > 0) return okResult(undefined)
+   if (listResult.value.length > 0) {
+      return okResult(undefined)
+   }
 
    const pullResult = await attempt(
       withTimeout(
          new Promise<void>((resolve, reject) => {
             docker.pull(config.image, {}, (err: Error | null, stream: unknown) => {
-               if (err) return reject(err)
+               if (err) {
+                  return reject(err)
+               }
 
                const layers: Record<string, { current: number; total: number }> = {}
 
@@ -217,7 +227,9 @@ export async function waitForDatabaseReady(
    dbType: DBType,
    connectionString: string
 ): AsyncAppResult<void> {
-   if (dbType === "sqlite") return okResult(undefined)
+   if (dbType === "sqlite") {
+      return okResult(undefined)
+   }
 
    let pollAttempt = 0
 
@@ -418,7 +430,9 @@ export async function healthCheck(
 }
 
 export async function destroyContainer(containerId: string): AsyncAppResult<void> {
-   if (!containerId) return okResult(undefined)
+   if (!containerId) {
+      return okResult(undefined)
+   }
 
    const docker = getDocker()
    const container = docker.getContainer(containerId)

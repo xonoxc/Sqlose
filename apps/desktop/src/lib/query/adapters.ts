@@ -23,9 +23,13 @@ export class QueryError extends Error {
    }
 
    static fromError(error: unknown): QueryError {
-      if (error instanceof AppError) return new QueryError(error)
+      if (error instanceof AppError) {
+         return new QueryError(error)
+      }
 
-      if (error instanceof QueryError) return error
+      if (error instanceof QueryError) {
+         return error
+      }
       if (error instanceof Error)
          return new QueryError(new AppError("ipc:invalid_payload", error.message))
 

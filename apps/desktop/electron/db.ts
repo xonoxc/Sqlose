@@ -162,7 +162,9 @@ export function updateSavedQuery(
    const existing = db!.prepare("SELECT id FROM saved_queries WHERE id = ?")
    existing.bind([id])
    const found = rowToValue<{ id: string }>(existing) !== null
-   if (!found) return false
+   if (!found) {
+      return false
+   }
    const now = new Date().toISOString()
    db!.run(
       "UPDATE saved_queries SET name = ?, sql_text = ?, tags = ?, result = ?, updated_at = ? WHERE id = ?",

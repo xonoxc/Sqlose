@@ -49,7 +49,9 @@ function serializeErr<T>(error: AppError): IPCSerializedResult<T> {
 }
 
 function serializeResult<T>(result: Result<T, AppError>): IPCSerializedResult<T> {
-   if (result.isOk()) return serializeOk(result.value)
+   if (result.isOk()) {
+      return serializeOk(result.value)
+   }
    return serializeErr(result.error)
 }
 
@@ -61,7 +63,9 @@ function invalidPayload(detail: string): IPCSerializedResult<never> {
 }
 
 function requireString(val: unknown, field: string): string | null {
-   if (typeof val !== "string" || val.length === 0) return `${field} must be a non-empty string`
+   if (typeof val !== "string" || val.length === 0) {
+      return `${field} must be a non-empty string`
+   }
    return null
 }
 
@@ -76,7 +80,9 @@ function validateRequest(
       const val = (payload as Record<string, unknown>)[field]
       if (type === "string") {
          const errMsg = requireString(val, field)
-         if (errMsg) return invalidPayload(errMsg)
+         if (errMsg) {
+            return invalidPayload(errMsg)
+         }
       }
    }
    return null
@@ -85,7 +91,9 @@ function validateRequest(
 export function registerAllHandlers(): void {
    ipcMain.handle("docker:start-env", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"docker:start-env">
       const env = loadEnvironment(environmentId)
@@ -97,17 +105,27 @@ export function registerAllHandlers(): void {
       if (env.dbType === "sqlite") {
          _event.sender.send("docker:restore-progress", { progress: 100, label: "Restore complete" })
          const updated = await updateEnvironment(environmentId, { status: "running" })
-         if (updated.isErr()) return serializeErr(updated.error)
+         if (updated.isErr()) {
+            return serializeErr(updated.error)
+         }
          return serializeOk({ environmentId, port: 0, connectionString: env.connectionString })
       }
 
-      _event.sender.send("docker:restore-progress", { progress: 10, label: "Starting database container..." })
+      _event.sender.send("docker:restore-progress", {
+         progress: 10,
+         label: "Starting database container...",
+      })
       const startResult = await dockerStartEnvironment(env.containerId ?? "")
-      if (startResult.isErr()) return serializeErr(startResult.error)
+      if (startResult.isErr()) {
+         return serializeErr(startResult.error)
+      }
 
       _event.sender.send("docker:restore-progress", { progress: 40, label: "Container started" })
       await new Promise(resolve => setTimeout(resolve, 300))
-      _event.sender.send("docker:restore-progress", { progress: 60, label: "Waiting for database to be ready..." })
+      _event.sender.send("docker:restore-progress", {
+         progress: 60,
+         label: "Waiting for database to be ready...",
+      })
       const healthResult = await dockerHealthCheck(env.containerId ?? "")
       const uptime = healthResult.isOk() ? healthResult.value.uptime : 0
 
@@ -125,7 +143,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("docker:stop-env", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"docker:stop-env">
       const env = loadEnvironment(environmentId)
@@ -140,7 +160,9 @@ export function registerAllHandlers(): void {
       }
 
       const result = await dockerStopEnvironment(env.containerId ?? "")
-      if (result.isErr()) return serializeErr(result.error)
+      if (result.isErr()) {
+         return serializeErr(result.error)
+      }
 
       await updateEnvironment(environmentId, { status: "stopped", uptime: null })
       return serializeOk({ environmentId })
@@ -148,7 +170,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("docker:restart-env", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"docker:restart-env">
       const env = loadEnvironment(environmentId)
@@ -163,7 +187,9 @@ export function registerAllHandlers(): void {
       }
 
       const result = await dockerRestartEnvironment(env.containerId ?? "")
-      if (result.isErr()) return serializeErr(result.error)
+      if (result.isErr()) {
+         return serializeErr(result.error)
+      }
 
       await updateEnvironment(environmentId, { status: "running" })
       return serializeOk({ environmentId })
@@ -171,7 +197,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("docker:health", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"docker:health">
       const env = loadEnvironment(environmentId)
@@ -190,7 +218,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("docker:cleanup", async () => {
       const result = await dockerStopOrphanedContainers()
-      if (result.isErr()) return serializeErr(result.error)
+      if (result.isErr()) {
+         return serializeErr(result.error)
+      }
       return serializeOk({ cleaned: result.value })
    })
 
@@ -204,7 +234,9 @@ export function registerAllHandlers(): void {
       const result = await dockerPullImage(dbType as DBType, percentage => {
          _event.sender.send("docker:pull-progress", { dbType, percentage })
       })
-      if (result.isErr()) return serializeErr(result.error)
+      if (result.isErr()) {
+         return serializeErr(result.error)
+      }
       return serializeOk({ image: dbType })
    })
 
@@ -221,14 +253,18 @@ export function registerAllHandlers(): void {
 
       const typedPayload = payload as IPCRequest<"env:create">
       const envResult = await createEnvironmentRecord(typedPayload.dbType, typedPayload.name)
-      if (envResult.isErr()) return serializeErr(envResult.error)
+      if (envResult.isErr()) {
+         return serializeErr(envResult.error)
+      }
 
       const env = envResult.value
 
       if (typedPayload.dbType === "sqlite") {
          const connectionString = getSqliteDbPath(env.id)
          const updated = await updateEnvironment(env.id, { connectionString, status: "running" })
-         if (updated.isErr()) return serializeErr(updated.error)
+         if (updated.isErr()) {
+            return serializeErr(updated.error)
+         }
          return serializeOk(updated.value)
       }
 
@@ -266,14 +302,18 @@ export function registerAllHandlers(): void {
          status: "running",
          uptime,
       })
-      if (updated.isErr()) return serializeErr(updated.error)
+      if (updated.isErr()) {
+         return serializeErr(updated.error)
+      }
 
       return serializeOk(updated.value)
    })
 
    ipcMain.handle("env:destroy", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"env:destroy">
       const env = loadEnvironment(environmentId)
@@ -305,7 +345,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("env:get", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"env:get">
       const result = await getEnvironment(environmentId)
@@ -314,7 +356,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("env:duplicate", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"env:duplicate">
       const env = loadEnvironment(environmentId)
@@ -324,7 +368,9 @@ export function registerAllHandlers(): void {
          )
 
       const result = await duplicateEnvironmentRecord(environmentId)
-      if (result.isErr()) return serializeErr(result.error)
+      if (result.isErr()) {
+         return serializeErr(result.error)
+      }
 
       if (env.dbType === "sqlite") {
          const dup = result.value
@@ -335,7 +381,9 @@ export function registerAllHandlers(): void {
             connectionString: dstPath,
             status: "running",
          })
-         if (updated.isErr()) return serializeErr(updated.error)
+         if (updated.isErr()) {
+            return serializeErr(updated.error)
+         }
          return serializeOk(updated.value)
       }
 
@@ -344,7 +392,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("env:reset", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"env:reset">
       const env = loadEnvironment(environmentId)
@@ -363,7 +413,9 @@ export function registerAllHandlers(): void {
 
    ipcMain.handle("env:nuke", async (_event, payload: unknown) => {
       const validationError = validateRequest(payload, { environmentId: "string" })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId } = payload as IPCRequest<"env:nuke">
       const env = loadEnvironment(environmentId)
@@ -391,7 +443,9 @@ export function registerAllHandlers(): void {
          environmentId: "string",
          sql: "string",
       })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { environmentId, sql } = payload as IPCRequest<"query:execute">
       const result = await executeQuery(environmentId, sql)
@@ -406,7 +460,9 @@ export function registerAllHandlers(): void {
          requireString(p.environmentId, "environmentId") ??
          requireString(p.fileName, "fileName") ??
          requireString(p.content, "content")
-      if (envErr) return invalidPayload(envErr)
+      if (envErr) {
+         return invalidPayload(envErr)
+      }
 
       const { fileName, content, tableName } = payload as IPCRequest<"import:csv">
       const name = tableName ?? fileName.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_]/g, "_")
@@ -419,11 +475,15 @@ export function registerAllHandlers(): void {
          return invalidPayload("expected an object")
       const p = payload as Record<string, unknown>
       const envErr = requireString(p.fileName, "fileName") ?? requireString(p.content, "content")
-      if (envErr) return invalidPayload(envErr)
+      if (envErr) {
+         return invalidPayload(envErr)
+      }
 
       const { content } = payload as { content: string }
       const parseResult = await parseSQLDump(content)
-      if (parseResult.isErr()) return serializeErr(parseResult.error)
+      if (parseResult.isErr()) {
+         return serializeErr(parseResult.error)
+      }
 
       const tables = extractTableNames(parseResult.value)
       return serializeOk({ tablesCreated: tables })
@@ -434,7 +494,9 @@ export function registerAllHandlers(): void {
          return invalidPayload("expected an object")
       const p = payload as Record<string, unknown>
       const errMsg = requireString(p.content, "content")
-      if (errMsg) return invalidPayload(errMsg)
+      if (errMsg) {
+         return invalidPayload(errMsg)
+      }
 
       const { content } = payload as IPCRequest<"import:preview-csv">
       const result = await previewCSV(content)
@@ -451,12 +513,16 @@ export function registerAllHandlers(): void {
          datasetId: "string",
          environmentId: "string",
       })
-      if (validationError) return validationError
+      if (validationError) {
+         return validationError
+      }
 
       const { datasetId, environmentId } = payload as IPCRequest<"dataset:import">
 
       const sqlResult = await getDatasetSQL(datasetId)
-      if (sqlResult.isErr()) return serializeErr(sqlResult.error)
+      if (sqlResult.isErr()) {
+         return serializeErr(sqlResult.error)
+      }
 
       const env = loadEnvironment(environmentId)
       if (!env)
@@ -465,13 +531,17 @@ export function registerAllHandlers(): void {
          )
 
       const parseResult = await parseSQLDump(sqlResult.value)
-      if (parseResult.isErr()) return serializeErr(parseResult.error)
+      if (parseResult.isErr()) {
+         return serializeErr(parseResult.error)
+      }
 
       const tables = extractTableNames(parseResult.value)
 
       for (const stmt of parseResult.value) {
          const queryResult = await executeQuery(environmentId, stmt.sql)
-         if (queryResult.isErr()) return serializeErr(queryResult.error)
+         if (queryResult.isErr()) {
+            return serializeErr(queryResult.error)
+         }
       }
 
       return serializeOk({ tablesCreated: tables })

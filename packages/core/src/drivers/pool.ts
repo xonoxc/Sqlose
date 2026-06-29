@@ -12,7 +12,9 @@ function isPgPool(pool: Pool): pool is pg.Pool {
 
 export function getPool(connectionString: string, dbType: DBType): Pool {
    const existing = pools.get(connectionString)
-   if (existing) return existing
+   if (existing) {
+      return existing
+   }
 
    let pool: Pool
    if (dbType === "postgres") {
@@ -41,8 +43,9 @@ export function getPool(connectionString: string, dbType: DBType): Pool {
 
 export async function destroyPool(connectionString: string): Promise<void> {
    const pool = pools.get(connectionString)
-   if (!pool) return
-
+   if (!pool) {
+      return 
+   }
    pools.delete(connectionString)
 
    if (isPgPool(pool)) {

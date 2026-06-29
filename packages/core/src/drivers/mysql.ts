@@ -48,7 +48,9 @@ export async function testMySQLConnection(connectionString: string): AsyncAppRes
    const pool = getPool(connectionString, "mysql") as mysql.Pool
 
    const connResult = await attempt<mysql.PoolConnection>(pool.getConnection())
-   if (connResult.isErr()) return ok(false)
+   if (connResult.isErr()) {
+      return ok(false)
+   }
 
    const conn = connResult.value
    const queryResult = await attempt(conn.query("SELECT 1"))

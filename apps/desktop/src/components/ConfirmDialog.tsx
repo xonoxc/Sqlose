@@ -29,7 +29,9 @@ export function ConfirmDialog({
       }
    }, [open])
 
-   if (!open) return null
+   if (!open) {
+      return null
+   }
 
    return (
       <div

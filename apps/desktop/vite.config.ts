@@ -39,9 +39,13 @@ export default defineConfig({
                   rollupOptions: {
                      external: (id: string) => {
                         // Externalize native packages and their subpaths (e.g. "sqlite3/lib/...")
-                        if (id.endsWith(".node")) return true
+                        if (id.endsWith(".node")) {
+                           return true
+                        }
                         for (const ext of NATIVE_EXTERNALS) {
-                           if (id === ext || id.startsWith(ext + "/")) return true
+                           if (id === ext || id.startsWith(ext + "/")) {
+                              return true
+                           }
                         }
                         return false
                      },

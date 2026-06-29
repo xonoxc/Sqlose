@@ -314,15 +314,27 @@ const filteredThemes = !query
       const score = (item: PaletteAction): number => {
          const label = item.label.toLowerCase()
          const desc = item.description.toLowerCase()
-         if (label === q) return 100
-         if (label.startsWith(q)) return 90
-         if (label.includes(q)) return 70
-         if (desc.includes(q)) return 40
+         if (label === q) {
+            return 100
+         }
+         if (label.startsWith(q)) {
+            return 90
+         }
+         if (label.includes(q)) {
+            return 70
+         }
+         if (desc.includes(q)) {
+            return 40
+         }
 
          const words = q.split(/\s+/)
          const allWordsMatch = words.every(w => label.includes(w) || desc.includes(w))
-         if (allWordsMatch && words.length > 1) return 50
-         if (words.some(w => label.includes(w))) return 30
+         if (allWordsMatch && words.length > 1) {
+            return 50
+         }
+         if (words.some(w => label.includes(w))) {
+            return 30
+         }
 
          return 0
       }
@@ -366,8 +378,9 @@ const filteredThemes = !query
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
-         if (!isOpen) return
-          if (e.key === "Escape") {
+         if (!isOpen) {
+            return 
+         }          if (e.key === "Escape") {
              e.preventDefault()
              if (mode === "themes") {
                 exitThemeMode()

@@ -65,7 +65,9 @@ function extractTableName(sql: string): string {
 
    if (upper.startsWith("SELECT")) {
       const fromMatch = cleaned.match(/\bFROM\s+[`"']?(\w+)[`"']?/i)
-      if (fromMatch) return `SELECT * FROM ${fromMatch[1]}`
+      if (fromMatch) {
+         return `SELECT * FROM ${fromMatch[1]}`
+      }
       const selectMatch = cleaned.match(/SELECT\s+(.*?)\s+FROM/i)
       if (selectMatch) {
          const cols =
@@ -74,7 +76,9 @@ function extractTableName(sql: string): string {
       }
       return "SELECT..."
    }
-   if (upper.startsWith("INSERT")) return "INSERT"
+   if (upper.startsWith("INSERT")) {
+      return "INSERT"
+   }
    if (upper.startsWith("UPDATE")) {
       const tableMatch = cleaned.match(/UPDATE\s+[`"']?(\w+)[`"']?/i)
       return tableMatch ? `UPDATE ${tableMatch[1]}` : "UPDATE"
@@ -83,18 +87,32 @@ function extractTableName(sql: string): string {
       const tableMatch = cleaned.match(/DELETE\s+FROM\s+[`"']?(\w+)[`"']?/i)
       return tableMatch ? `DELETE FROM ${tableMatch[1]}` : "DELETE"
    }
-   if (upper.startsWith("CREATE")) return "CREATE"
-   if (upper.startsWith("ALTER")) return "ALTER"
-   if (upper.startsWith("DROP")) return "DROP"
-   if (upper.startsWith("WITH")) return "CTE Query"
-   if (upper.startsWith("EXPLAIN")) return "EXPLAIN"
-   if (upper.startsWith("--") || upper.startsWith("/*")) return "Comment"
+   if (upper.startsWith("CREATE")) {
+      return "CREATE"
+   }
+   if (upper.startsWith("ALTER")) {
+      return "ALTER"
+   }
+   if (upper.startsWith("DROP")) {
+      return "DROP"
+   }
+   if (upper.startsWith("WITH")) {
+      return "CTE Query"
+   }
+   if (upper.startsWith("EXPLAIN")) {
+      return "EXPLAIN"
+   }
+   if (upper.startsWith("--") || upper.startsWith("/*")) {
+      return "Comment"
+   }
 
    return cleaned.length > 32 ? cleaned.slice(0, 32) + "..." : cleaned
 }
 
 export function generateTabTitle(query: string): string {
-   if (!query || !query.trim()) return "New Query"
+   if (!query || !query.trim()) {
+      return "New Query"
+   }
    return extractTableName(query)
 }
 

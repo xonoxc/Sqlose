@@ -50,8 +50,9 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
    }, [open, mode, queries])
 
    const handleConfirm = async () => {
-      if (!name.trim()) return
-      setIsLoading(true)
+      if (!name.trim()) {
+         return 
+      }      setIsLoading(true)
       try {
          if (mode === "save") {
             const state = useWorkspaceStore.getState()
@@ -73,8 +74,9 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
                toast.error("Failed to save query")
             }
          } else {
-            if (!selectedId) return
-            const result = await updateQuery(selectedId, { name: name.trim() })
+            if (!selectedId) {
+               return 
+            }            const result = await updateQuery(selectedId, { name: name.trim() })
             if (result.isOk()) {
                const state = useWorkspaceStore.getState()
                const tab = state.tabs.find(t => t.savedQueryId === selectedId)
@@ -94,7 +96,9 @@ export function SaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps) {
       }
    }
 
-   if (!open) return null
+   if (!open) {
+      return null
+   }
 
    return (
       <div

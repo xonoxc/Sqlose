@@ -50,13 +50,21 @@ interface ContextMenuState {
 function detectColumnType(values: unknown[]): ColumnType {
    for (const v of values) {
       if (v == null) continue
-      if (typeof v === "boolean") return "bool"
-      if (typeof v === "number") return Number.isInteger(v) ? "int" : "float"
+      if (typeof v === "boolean") {
+         return "bool"
+      }
+      if (typeof v === "number") {
+         return Number.isInteger(v) ? "int" : "float"
+      }
       if (typeof v === "string") {
          if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))
             return "uuid"
-         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return "date"
-         if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v)) return "timestamp"
+         if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+            return "date"
+         }
+         if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(v)) {
+            return "timestamp"
+         }
       }
    }
    return "text"
@@ -195,8 +203,12 @@ export function ResultsTable<T extends Record<string, unknown>>({
                  ),
                  cell: info => {
                     const value = info.getValue()
-                    if (value === null) return <span className="text-text-muted italic">NULL</span>
-                    if (typeof value === "object") return JSON.stringify(value)
+                    if (value === null) {
+                       return <span className="text-text-muted italic">NULL</span>
+                    }
+                    if (typeof value === "object") {
+                       return JSON.stringify(value)
+                    }
                     return String(value)
                  },
                  enableSorting: true,
@@ -281,12 +293,15 @@ export function ResultsTable<T extends Record<string, unknown>>({
       resizeRef.current = { colId, startX, startPct: currentPct }
 
       const handleMouseMove = (moveE: MouseEvent) => {
-         if (!resizeRef.current) return
-         const container = parentRef.current
-         if (!container) return
-         const containerWidth = container.clientWidth
-         if (containerWidth <= 0) return
-
+         if (!resizeRef.current) {
+            return 
+         }         const container = parentRef.current
+         if (!container) {
+            return 
+         }         const containerWidth = container.clientWidth
+         if (containerWidth <= 0) {
+            return 
+         }
          const { colId, startX, startPct } = resizeRef.current
          const delta = moveE.clientX - startX
          const deltaPct = (delta / containerWidth) * 100
@@ -303,8 +318,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
             otherTotal += pct
          })
 
-         if (otherTotal <= 0) return
-
+         if (otherTotal <= 0) {
+            return 
+         }
          const oldColPct = startPct
          const deltaTotal = newPct - oldColPct
 

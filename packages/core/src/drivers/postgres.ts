@@ -46,7 +46,9 @@ export async function testPostgresConnection(connectionString: string): AsyncApp
    const pool = getPool(connectionString, "postgres") as pg.Pool
 
    const clientResult = await attempt<pg.PoolClient>(pool.connect())
-   if (clientResult.isErr()) return ok(false)
+   if (clientResult.isErr()) {
+      return ok(false)
+   }
 
    const client = clientResult.value
    const queryResult = await attempt(client.query("SELECT 1"))

@@ -14,8 +14,12 @@ function escapeCsv(value: string): string {
 }
 
 function formatCell(v: unknown): string {
-   if (v === null || v === undefined) return ""
-   if (typeof v === "object") return JSON.stringify(v)
+   if (v === null || v === undefined) {
+      return ""
+   }
+   if (typeof v === "object") {
+      return JSON.stringify(v)
+   }
    return String(v)
 }
 
@@ -35,15 +39,21 @@ function formatAsCsv(result: QueryResult, withHeaders: boolean): string {
 }
 
 function formatAsSql(result: QueryResult): string {
-   if (result.rows.length === 0) return ""
+   if (result.rows.length === 0) {
+      return ""
+   }
    const cols = result.columns
    const tableName = "results"
    return result.rows
       .map(row => {
          const values = cols.map(c => {
             const v = row[c]
-            if (v === null || v === undefined) return "NULL"
-            if (typeof v === "number") return String(v)
+            if (v === null || v === undefined) {
+               return "NULL"
+            }
+            if (typeof v === "number") {
+               return String(v)
+            }
             return `'${String(v).replace(/'/g, "''")}'`
          })
          return `INSERT INTO ${tableName} (${cols.join(", ")}) VALUES (${values.join(", ")});`
@@ -156,7 +166,9 @@ export function useQueryExecution() {
    const addHistoryEntry = useHistoryStore(s => s.addEntry)
 
    const execute = useCallback(async (): Promise<boolean> => {
-      if (!selectedEnvironmentId || !queryDraft.trim() || !activeTabId) return false
+      if (!selectedEnvironmentId || !queryDraft.trim() || !activeTabId) {
+         return false
+      }
 
       const executionId = Date.now()
       prevExecutionRef.current = executionId
@@ -167,7 +179,9 @@ export function useQueryExecution() {
       const result = await api.query.execute(selectedEnvironmentId, queryDraft)
       const elapsed = Math.round(performance.now() - startTime)
 
-      if (prevExecutionRef.current !== executionId) return false
+      if (prevExecutionRef.current !== executionId) {
+         return false
+      }
 
       const selectedEnv = environments.find(e => e.id === selectedEnvironmentId)
 

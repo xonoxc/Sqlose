@@ -21,11 +21,21 @@ export function defineMonacoTheme(monaco: typeof import("monaco-editor"), themeI
 
 function parseVimMode(text: string): VimMode | null {
    const upper = text.toUpperCase().trim()
-   if (upper.includes("INSERT")) return "insert"
-   if (upper.includes("VISUAL BLOCK")) return "visual-block"
-   if (upper.includes("VISUAL LINE")) return "visual-line"
-   if (upper.includes("VISUAL")) return "visual"
-   if (upper.includes("NORMAL")) return "normal"
+   if (upper.includes("INSERT")) {
+      return "insert"
+   }
+   if (upper.includes("VISUAL BLOCK")) {
+      return "visual-block"
+   }
+   if (upper.includes("VISUAL LINE")) {
+      return "visual-line"
+   }
+   if (upper.includes("VISUAL")) {
+      return "visual"
+   }
+   if (upper.includes("NORMAL")) {
+      return "normal"
+   }
    return null
 }
 
@@ -48,8 +58,9 @@ export function useSQLEditorLogic(
    const themeId = useThemeStore(s => s.themeId)
 
    function setupVimObserver() {
-      if (!vimStatusRef.current) return
-      vimObserverRef.current?.disconnect()
+      if (!vimStatusRef.current) {
+         return 
+      }      vimObserverRef.current?.disconnect()
       const observer = new MutationObserver(() => {
          const text = vimStatusRef.current?.textContent?.trim() ?? ""
          const mode = parseVimMode(text)
@@ -168,8 +179,9 @@ export function useSQLEditorLogic(
       })
 
       monacoEditor.onKeyDown(e => {
-         if (e.browserEvent.key !== ":") return
-         const editorState = useEditorStore.getState()
+         if (e.browserEvent.key !== ":") {
+            return 
+         }         const editorState = useEditorStore.getState()
          const vimEnabled = useSettingsStore.getState().vimModeEnabled
          if (vimEnabled && editorState.vimMode === "normal") {
             e.preventDefault()

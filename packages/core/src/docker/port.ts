@@ -32,7 +32,9 @@ export function findAvailablePort(min = 4000, max = 6000): AsyncAppResult<number
 const usedPorts = new Set<number>()
 
 export function reservePort(port: number): boolean {
-   if (usedPorts.has(port)) return false
+   if (usedPorts.has(port)) {
+      return false
+   }
    usedPorts.add(port)
    return true
 }
