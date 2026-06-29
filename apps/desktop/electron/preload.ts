@@ -37,6 +37,16 @@ const api = {
          ipcRenderer.on("docker:pull-progress", handler)
          return () => ipcRenderer.removeListener("docker:pull-progress", handler)
       },
+      onRestoreProgress: (callback: (progress: number, label: string) => void) => {
+         const handler = (
+            _event: Electron.IpcRendererEvent,
+            data: { progress: number; label: string }
+         ) => {
+            callback(data.progress, data.label)
+         }
+         ipcRenderer.on("docker:restore-progress", handler)
+         return () => ipcRenderer.removeListener("docker:restore-progress", handler)
+      },
    },
    env: {
       create: createInvoke("env:create"),

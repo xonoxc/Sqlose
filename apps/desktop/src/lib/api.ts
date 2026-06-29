@@ -82,6 +82,11 @@ export const api = {
          const api = getSqloseAPI()
          return api.docker.onPullProgress(callback)
       },
+
+      onRestoreProgress(callback: (progress: number, label: string) => void) {
+         const api = getSqloseAPI()
+         return api.docker.onRestoreProgress(callback)
+      },
    },
 
    env: {

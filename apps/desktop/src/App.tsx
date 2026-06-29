@@ -44,7 +44,7 @@ function AppContent() {
    useUpdateToast()
    const ui = useAppUIState()
    const workspace = useWorkspaceActions()
-   const { stuckEnvId, stuckEnv, handleRestoreEnv, handleExitAndNuke } = useContainerHalted()
+   const { stuckEnvId, stuckEnv, handleRestoreEnv, handleExitAndNuke, isRestoring, restoreProgress, restoreLabel } = useContainerHalted()
 
    const vimEnabled = useSettingsStore(s => s.vimModeEnabled)
    const vimMode = useEditorStore(s => s.vimMode)
@@ -232,13 +232,16 @@ function AppContent() {
           />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />
-         {stuckEnvId && (
-            <ContainerHaltedDialog
-               envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
-               onRestore={handleRestoreEnv}
-               onNuke={handleExitAndNuke}
-            />
-         )}
+          {stuckEnvId && (
+             <ContainerHaltedDialog
+                envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
+                onRestore={handleRestoreEnv}
+                onNuke={handleExitAndNuke}
+                isRestoring={isRestoring}
+                restoreProgress={restoreProgress}
+                restoreLabel={restoreLabel}
+             />
+          )}
            <ConfirmDialog
               open={ui.nukeConfirmOpen}
               onCancel={ui.closeNukeConfirm}

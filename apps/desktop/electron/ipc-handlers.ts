@@ -95,18 +95,27 @@ export function registerAllHandlers(): void {
          )
 
       if (env.dbType === "sqlite") {
+         _event.sender.send("docker:restore-progress", { progress: 100, label: "Restore complete" })
          const updated = await updateEnvironment(environmentId, { status: "running" })
          if (updated.isErr()) return serializeErr(updated.error)
          return serializeOk({ environmentId, port: 0, connectionString: env.connectionString })
       }
 
+      _event.sender.send("docker:restore-progress", { progress: 10, label: "Starting database container..." })
       const startResult = await dockerStartEnvironment(env.containerId ?? "")
       if (startResult.isErr()) return serializeErr(startResult.error)
 
+      _event.sender.send("docker:restore-progress", { progress: 40, label: "Container started" })
+      await new Promise(resolve => setTimeout(resolve, 300))
+      _event.sender.send("docker:restore-progress", { progress: 60, label: "Waiting for database to be ready..." })
       const healthResult = await dockerHealthCheck(env.containerId ?? "")
       const uptime = healthResult.isOk() ? healthResult.value.uptime : 0
 
+      _event.sender.send("docker:restore-progress", { progress: 80, label: "Database is ready" })
+      _event.sender.send("docker:restore-progress", { progress: 90, label: "Finalizing..." })
       await updateEnvironment(environmentId, { status: "running", uptime })
+
+      _event.sender.send("docker:restore-progress", { progress: 100, label: "Restore complete" })
       return serializeOk({
          environmentId,
          port: env.port,
