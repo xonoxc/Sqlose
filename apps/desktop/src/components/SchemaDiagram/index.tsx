@@ -18,7 +18,8 @@ import { useDatabaseStore } from "~/stores/databaseStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useThemeStore } from "~/stores/theme-store"
 import { api } from "~/lib/api"
-import type { ColumnInfo } from "~/lib/schema"
+import { listTables, type ColumnInfo } from "~/lib/schema"
+import type { DBType } from "@sqlose/shared"
 
 const nodeTypes = {
    tableNode: TableNode,
@@ -30,21 +31,78 @@ export interface ForeignKeyRelation {
    toCol: string
 }
 
-// Extract foreign keys since SQLite doesn't natively return them in pragma_table_info.
-// We query sqlite_master for table definitions and parse them.
-// We are doing a very simplistic fetch mechanism here for any FKs inside SQLite
-// Note: If postgres/mysql, we'd need appropriate queries, but since this is primarily sqlite, we just do a fallback logic.
-async function fetchForeignKeys(envId: string, tableName: string): Promise<ForeignKeyRelation[]> {
+// Fetch real foreign key definitions using db-type-appropriate queries.
+async function fetchForeignKeys(
+   envId: string,
+   tableName: string,
+   dbType: DBType
+): Promise<ForeignKeyRelation[]> {
    const safeTableName = tableName.replace(/'/g, "''")
-   const sql = `PRAGMA foreign_key_list('${safeTableName}')`
-   const res = await api.query.execute(envId, sql)
-   if (res.isOk()) {
-      return res.value.rows.map((r: Record<string, unknown>) => ({
-         fromCol: String(r.from),
-         toTable: String(r.table),
-         toCol: String(r.to),
-      }))
+   let sql: string
+
+   if (dbType === "sqlite") {
+      sql = `PRAGMA foreign_key_list('${safeTableName}')`
+      const res = await api.query.execute(envId, sql)
+      if (res.isOk()) {
+         return res.value.rows.map((r: Record<string, unknown>) => ({
+            fromCol: String(r.from),
+            toTable: String(r.table),
+            toCol: String(r.to),
+         }))
+      }
+      return []
    }
+
+   if (dbType === "postgres") {
+      sql = `
+         SELECT
+            kcu.column_name       AS from_col,
+            ccu.table_name        AS to_table,
+            ccu.column_name       AS to_col
+         FROM information_schema.table_constraints AS tc
+         JOIN information_schema.key_column_usage AS kcu
+           ON tc.constraint_name = kcu.constraint_name
+          AND tc.table_schema    = kcu.table_schema
+         JOIN information_schema.constraint_column_usage AS ccu
+           ON ccu.constraint_name = tc.constraint_name
+          AND ccu.table_schema    = tc.table_schema
+         WHERE tc.constraint_type = 'FOREIGN KEY'
+           AND tc.table_name      = '${safeTableName}'
+           AND tc.table_schema    = 'public'
+      `
+      const res = await api.query.execute(envId, sql)
+      if (res.isOk()) {
+         return res.value.rows.map((r: Record<string, unknown>) => ({
+            fromCol: String(r.from_col),
+            toTable: String(r.to_table),
+            toCol:   String(r.to_col),
+         }))
+      }
+      return []
+   }
+
+   if (dbType === "mysql") {
+      sql = `
+         SELECT
+            COLUMN_NAME           AS from_col,
+            REFERENCED_TABLE_NAME AS to_table,
+            REFERENCED_COLUMN_NAME AS to_col
+         FROM information_schema.KEY_COLUMN_USAGE
+         WHERE TABLE_NAME = '${safeTableName}'
+           AND TABLE_SCHEMA = DATABASE()
+           AND REFERENCED_TABLE_NAME IS NOT NULL
+      `
+      const res = await api.query.execute(envId, sql)
+      if (res.isOk()) {
+         return res.value.rows.map((r: Record<string, unknown>) => ({
+            fromCol: String(r.from_col),
+            toTable: String(r.to_table),
+            toCol:   String(r.to_col),
+         }))
+      }
+      return []
+   }
+
    return []
 }
 
@@ -188,27 +246,23 @@ export function SchemaDiagram() {
             await fetchTables(envId, dbType)
          }
 
-         const dbTablesRes = await api.query.execute(
-            envId,
-            dbType === "sqlite"
-               ? "SELECT name FROM sqlite_master WHERE type='table'"
-               : "SELECT table_name FROM information_schema.tables"
-         )
-         const myTables = dbTablesRes.isOk()
-            ? dbTablesRes.value?.rows?.map(
-                 (r: Record<string, unknown>) => r.name || r.table_name
-              ) || []
-            : []
+         // Use listTables from schema.ts — it has the correct db-type-aware query
+         // with proper WHERE filters (e.g. table_schema='public' for postgres),
+         // so system tables like pg_timezone_abbrevs are never included.
+         let myTables: string[] = []
+         try {
+            myTables = await listTables(envId, dbType)
+         } catch {
+            setLoading(false)
+            return
+         }
 
          const newNodes: Node[] = []
          const newEdges: Edge[] = []
          const allTableNames: string[] = []
          const allTableColumns: Record<string, ColumnInfo[]> = {}
 
-         for (const t of myTables) {
-            const tName = String(t)
-            if (tName.startsWith("sqlite_")) continue
-
+         for (const tName of myTables) {
             await fetchColumns(envId, tName, dbType)
             const cols: ColumnInfo[] = (useDatabaseStore.getState().tableColumns[envId]?.[tName]) || []
 
@@ -224,7 +278,8 @@ export function SchemaDiagram() {
          }
 
          for (const tName of allTableNames) {
-            const explicitFks = await fetchForeignKeys(envId, tName)
+            // Use db-type-aware FK fetching (PRAGMA for sqlite, information_schema for pg/mysql)
+            const explicitFks = await fetchForeignKeys(envId, tName, dbType)
             for (const fk of explicitFks) {
                newEdges.push(
                   buildForeignKeyEdge(tName, fk, currentTheme.colors.accent, currentTheme.colors.surface)
@@ -270,6 +325,7 @@ export function SchemaDiagram() {
                stroke: currentTheme.colors.accent,
             },
             markerEnd: {
+               type: MarkerType.ArrowClosed,
                ...(typeof edge.markerEnd === "object" && edge.markerEnd ? edge.markerEnd : {}),
                color: currentTheme.colors.accent,
             },
