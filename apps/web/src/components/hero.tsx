@@ -15,13 +15,13 @@ export function HeroSection() {
                   "group mx-auto flex w-fit items-center gap-3 rounded-sm border border-neutral-50/10 bg-card p-1 shadow",
                   "fade-in slide-in-from-bottom-10 animate-in fill-mode-backwards transition-all delay-500 duration-500 ease-out"
                )}
-               href="#link"
+               href="https://github.com/xonoxc/Sqlose/releases"
             >
                <span className="block h-5" />
 
                <GitHub className="w-3.5 h-3.5" />
                <span className="text-xs flex items-center gap-2 text-shadow-accent">
-                  v0.1.2 · Latest
+                  v0.1.5 · Latest
                </span>
                <span className="block h-5 border-l border-neutral-500/40" />
 
@@ -60,8 +60,10 @@ export function HeroSection() {
                      GitHub
                   </a>
                </Button>
-               <Button style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }}>
-                  Get app <ArrowRightIcon data-icon="inline-end" />
+               <Button style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }} asChild>
+                  <a href="https://github.com/xonoxc/Sqlose/releases" target="_blank" rel="noreferrer">
+                     Get app <ArrowRightIcon data-icon="inline-end" />
+                  </a>
                </Button>
             </div>
 
