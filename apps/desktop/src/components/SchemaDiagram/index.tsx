@@ -351,15 +351,19 @@ export function SchemaDiagram() {
    }
 
    return (
-      <div className="h-full w-full react-diagram-wrapper bg-black/20">
+      <div className="h-full w-full react-diagram-wrapper bg-bg-primary">
          <style>{`
             .react-diagram-wrapper {
+               --xy-background-color: transparent;
                --xy-controls-button-background-color: ${currentTheme.colors.surface};
                --xy-controls-button-background-color-hover: ${currentTheme.colors.surface2};
                --xy-controls-button-color: ${currentTheme.colors.text};
                --xy-controls-button-color-hover: ${currentTheme.colors.text};
                --xy-controls-button-border-color: ${currentTheme.colors.border};
                --xy-minimap-background-color: ${currentTheme.colors.surface};
+            }
+            .react-diagram-wrapper .react-flow {
+               background-color: transparent !important;
             }
             .react-diagram-wrapper .react-flow__minimap {
                background-color: ${currentTheme.colors.surface};

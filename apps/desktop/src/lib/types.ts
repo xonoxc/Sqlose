@@ -171,9 +171,9 @@ export function createHistoryEntry(
 
 export function createDefaultPaneSizes(): PaneSizes {
    return {
-      sidebarWidth: 280,
+      sidebarWidth: 350,
       editorHeight: 300,
-      resultsHeight: 580,
+      resultsHeight: 550,
    }
 }
 
