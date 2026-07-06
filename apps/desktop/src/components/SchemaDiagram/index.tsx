@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import {
    ReactFlow,
    Background,
@@ -7,13 +7,13 @@ import {
    useNodesState,
    useEdgesState,
    MarkerType,
-   Position,
    type Node,
    type Edge,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import dagre from "dagre"
 import { TableNode } from "~/components/SchemaDiagram/TableNode"
+import { ForeignKeyEdge } from "~/components/SchemaDiagram/ForeignKeyEdge"
+import { computeLayout } from "~/components/SchemaDiagram/layoutEngine"
 import { useDatabaseStore } from "~/stores/databaseStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useThemeStore } from "~/stores/theme-store"
@@ -25,13 +25,16 @@ const nodeTypes = {
    tableNode: TableNode,
 }
 
+const edgeTypes = {
+   foreignKey: ForeignKeyEdge,
+}
+
 export interface ForeignKeyRelation {
    fromCol: string
    toTable: string
    toCol: string
 }
 
-// Fetch real foreign key definitions using db-type-appropriate queries.
 async function fetchForeignKeys(
    envId: string,
    tableName: string,
@@ -151,6 +154,11 @@ function inferForeignKeys(
    return relations
 }
 
+/**
+ * Build a foreign key edge.
+ * Direction: source = parent PK table (right handle), target = child FK table (left handle).
+ * This means the arrow flows from the referenced table → the table with the FK column.
+ */
 export function buildForeignKeyEdge(
    tableName: string,
    foreignKey: ForeignKeyRelation,
@@ -159,18 +167,18 @@ export function buildForeignKeyEdge(
 ): Edge {
    return {
       id: `e-${tableName}-${foreignKey.fromCol}->${foreignKey.toTable}-${foreignKey.toCol}`,
-      source: tableName,
-      sourceHandle: `source-${foreignKey.fromCol}`,
-      target: foreignKey.toTable,
-      targetHandle: `target-${foreignKey.toCol}`,
-      type: "step",
+      source: foreignKey.toTable,
+      sourceHandle: `source-${foreignKey.toCol}`,
+      target: tableName,
+      targetHandle: `target-${foreignKey.fromCol}`,
+      type: "foreignKey",
       animated: false,
       label: `FK: ${foreignKey.fromCol}`,
       labelBgStyle: {
          fill: surfaceColor,
          fillOpacity: 0.95,
       },
-      labelBgPadding: [6, 3],
+      labelBgPadding: [6, 3] as [number, number],
       labelBgBorderRadius: 6,
       labelStyle: {
          fill: accentColor,
@@ -186,46 +194,19 @@ export function buildForeignKeyEdge(
    }
 }
 
-const getLayoutedElements = (nodes: Node[], edges: Edge[], direction = "TB") => {
-   const dagreGraph = new dagre.graphlib.Graph()
-   dagreGraph.setDefaultEdgeLabel(() => ({}))
+type LoadingPhase = "analyzing" | "cleaning" | "done"
 
-   // Node dimensions based roughly on our TableNode styling class w-64
-   const nodeWidth = 260
-   // A guess for nodeHeight based on rows, we can just use 300 to space them out
-   const nodeHeight = 350
-
-   dagreGraph.setGraph({ rankdir: direction, ranksep: 100, nodesep: 150 })
-
-   nodes.forEach(node => {
-      dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight })
-   })
-
-   edges.forEach(edge => {
-      dagreGraph.setEdge(edge.source, edge.target)
-   })
-
-   dagre.layout(dagreGraph)
-
-   nodes.forEach(node => {
-      const nodeWithPosition = dagreGraph.node(node.id)
-      node.targetPosition = direction === "LR" ? Position.Left : Position.Top
-      node.sourcePosition = direction === "LR" ? Position.Right : Position.Bottom
-
-      // Shift slightly to center
-      node.position = {
-         x: nodeWithPosition.x - nodeWidth / 2,
-         y: nodeWithPosition.y - nodeHeight / 2,
-      }
-   })
-
-   return { nodes, edges }
+const LOADING_MESSAGES: Record<Exclude<LoadingPhase, "done">, string> = {
+   analyzing: "Analyzing schema...",
+   cleaning: "Laying out diagram...",
 }
 
 export function SchemaDiagram() {
    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
-   const [loading, setLoading] = useState(true)
+   const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>("analyzing")
+   const [reactFlowInstance, setReactFlowInstance] =
+      useState<{ fitView: (opts?: { duration?: number; padding?: number }) => void } | null>(null)
 
    const envId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const dbType = useEnvironmentStore(s => s.environments.find(e => e.id === envId)?.dbType)
@@ -235,86 +216,90 @@ export function SchemaDiagram() {
    const { currentTheme } = useThemeStore()
    const tables = envId ? (tablesByEnv[envId] ?? []) : []
 
-   // Load schemas and calculate nodes
-   useEffect(() => {
+   const initializeDiagram = useCallback(async () => {
       if (!envId || !dbType) return
 
-      const initializeDiagram = async () => {
-         setLoading(true)
+      setLoadingPhase("analyzing")
 
-         if (tables.length === 0) {
-            await fetchTables(envId, dbType)
-         }
-
-         // Use listTables from schema.ts — it has the correct db-type-aware query
-         // with proper WHERE filters (e.g. table_schema='public' for postgres),
-         // so system tables like pg_timezone_abbrevs are never included.
-         let myTables: string[] = []
-         try {
-            myTables = await listTables(envId, dbType)
-         } catch {
-            setLoading(false)
-            return
-         }
-
-         const newNodes: Node[] = []
-         const newEdges: Edge[] = []
-         const allTableNames: string[] = []
-         const allTableColumns: Record<string, ColumnInfo[]> = {}
-
-         for (const tName of myTables) {
-            await fetchColumns(envId, tName, dbType)
-            const cols: ColumnInfo[] = (useDatabaseStore.getState().tableColumns[envId]?.[tName]) || []
-
-            allTableNames.push(tName)
-            allTableColumns[tName] = cols
-
-            newNodes.push({
-               id: tName,
-               type: "tableNode",
-               position: { x: 0, y: 0 },
-               data: { label: tName, columns: cols },
-            })
-         }
-
-         for (const tName of allTableNames) {
-            // Use db-type-aware FK fetching (PRAGMA for sqlite, information_schema for pg/mysql)
-            const explicitFks = await fetchForeignKeys(envId, tName, dbType)
-            for (const fk of explicitFks) {
-               newEdges.push(
-                  buildForeignKeyEdge(tName, fk, currentTheme.colors.accent, currentTheme.colors.surface)
-               )
-            }
-
-            const inferredFks = inferForeignKeys(tName, allTableColumns[tName], allTableNames, allTableColumns)
-            for (const fk of inferredFks) {
-               const isDuplicate = newEdges.some(
-                  edge =>
-                     edge.source === tName &&
-                     edge.sourceHandle === `source-${fk.fromCol}` &&
-                     edge.target === fk.toTable
-               )
-               if (!isDuplicate) {
-                  newEdges.push(
-                     buildForeignKeyEdge(tName, fk, currentTheme.colors.accent, currentTheme.colors.surface)
-                  )
-               }
-            }
-         }
-
-         const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-            newNodes,
-            newEdges,
-            "LR"
-         )
-         setNodes(layoutedNodes)
-         setEdges(layoutedEdges)
-
-         setLoading(false)
+      if (tables.length === 0) {
+         await fetchTables(envId, dbType)
       }
 
-      initializeDiagram()
+      let myTables: string[] = []
+      try {
+         myTables = await listTables(envId, dbType)
+      } catch {
+         setLoadingPhase("done")
+         return
+      }
+
+      const newNodes: Node[] = []
+      const newEdges: Edge[] = []
+      const allTableNames: string[] = []
+      const allTableColumns: Record<string, ColumnInfo[]> = {}
+
+      for (const tName of myTables) {
+         await fetchColumns(envId, tName, dbType)
+         const cols: ColumnInfo[] =
+            (useDatabaseStore.getState().tableColumns[envId]?.[tName]) || []
+
+         allTableNames.push(tName)
+         allTableColumns[tName] = cols
+
+         newNodes.push({
+            id: tName,
+            type: "tableNode",
+            position: { x: 0, y: 0 },
+            data: { label: tName, columns: cols },
+         })
+      }
+
+      for (const tName of allTableNames) {
+         const explicitFks = await fetchForeignKeys(envId, tName, dbType)
+         for (const fk of explicitFks) {
+            newEdges.push(
+               buildForeignKeyEdge(
+                  tName, fk, currentTheme.colors.accent, currentTheme.colors.surface
+               )
+            )
+         }
+
+         const inferredFks = inferForeignKeys(
+            tName, allTableColumns[tName], allTableNames, allTableColumns
+         )
+         for (const fk of inferredFks) {
+            const isDuplicate = newEdges.some(
+               edge =>
+                  edge.source === fk.toTable &&
+                  edge.sourceHandle === `source-${fk.toCol}` &&
+                  edge.target === tName
+            )
+            if (!isDuplicate) {
+               newEdges.push(
+                  buildForeignKeyEdge(
+                     tName, fk, currentTheme.colors.accent, currentTheme.colors.surface
+                  )
+               )
+            }
+         }
+      }
+
+      setLoadingPhase("cleaning")
+
+      const { nodes: layoutedNodes, edges: layoutedEdges } = await computeLayout(
+         newNodes,
+         newEdges
+      )
+
+      setNodes(layoutedNodes)
+      setEdges(layoutedEdges)
+
+      setLoadingPhase("done")
    }, [envId, dbType])
+
+   useEffect(() => {
+      initializeDiagram()
+   }, [initializeDiagram])
 
    useEffect(() => {
       setEdges(prevEdges =>
@@ -341,17 +326,31 @@ export function SchemaDiagram() {
       )
    }, [currentTheme, setEdges])
 
-   if (loading) {
+   const handleRelayout = useCallback(async () => {
+      if (nodes.length === 0) return
+      setLoadingPhase("cleaning")
+      const { nodes: layoutedNodes, edges: layoutedEdges } = await computeLayout(nodes, edges)
+      setNodes(layoutedNodes)
+      setEdges(layoutedEdges)
+      setTimeout(() => {
+         reactFlowInstance?.fitView({ duration: 300, padding: 0.15 })
+      }, 50)
+      setLoadingPhase("done")
+   }, [nodes, edges, reactFlowInstance])
+
+   if (loadingPhase !== "done") {
       return (
          <div className="flex h-full items-center justify-center bg-bg-primary">
             <div className="h-6 w-6 rounded-full border-[3px] border-accent/30 border-t-accent animate-spin" />
-            <span className="ml-3 text-text-muted">Analyzing Schema...</span>
+            <span className="ml-3 text-text-muted">
+               {LOADING_MESSAGES[loadingPhase]}
+            </span>
          </div>
       )
    }
 
    return (
-      <div className="h-full w-full react-diagram-wrapper bg-bg-primary">
+      <div className="relative h-full w-full react-diagram-wrapper bg-bg-primary">
          <style>{`
             .react-diagram-wrapper {
                --xy-background-color: transparent;
@@ -378,6 +377,9 @@ export function SchemaDiagram() {
             .react-diagram-wrapper .react-flow__controls-button:hover {
                background-color: ${currentTheme.colors.surface2};
             }
+            .react-flow__node {
+               transition: transform 0.3s ease;
+            }
          `}</style>
          <ReactFlow
             nodes={nodes}
@@ -385,10 +387,12 @@ export function SchemaDiagram() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             colorMode={currentTheme.monaco.base === "vs-dark" ? "dark" : "light"}
             style={{ backgroundColor: "transparent" }}
             fitView
             minZoom={0.1}
+            onInit={setReactFlowInstance}
          >
             <Background color={currentTheme.colors.border} gap={24} />
             <Controls className="bg-bg-secondary border border-border" />
@@ -398,6 +402,18 @@ export function SchemaDiagram() {
                maskColor="rgba(0,0,0,0.4)"
             />
          </ReactFlow>
+         <button
+            onClick={handleRelayout}
+            className="absolute bottom-4 right-4 z-50 rounded-lg border px-3 py-1.5 text-xs font-medium shadow-md transition-colors hover:bg-accent/10"
+            style={{
+               backgroundColor: currentTheme.colors.surface,
+               borderColor: currentTheme.colors.border,
+               color: currentTheme.colors.text,
+            }}
+            title="Re-run layout"
+         >
+            Re-layout
+         </button>
       </div>
    )
 }
