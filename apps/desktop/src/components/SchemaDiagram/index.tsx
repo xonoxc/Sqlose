@@ -159,6 +159,7 @@ function inferForeignKeys(
  * Direction: source = parent PK table (right handle), target = child FK table (left handle).
  * This means the arrow flows from the referenced table → the table with the FK column.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function buildForeignKeyEdge(
    tableName: string,
    foreignKey: ForeignKeyRelation,
@@ -225,7 +226,7 @@ export function SchemaDiagram() {
          await fetchTables(envId, dbType)
       }
 
-      let myTables: string[] = []
+      let myTables: string[]
       try {
          myTables = await listTables(envId, dbType)
       } catch {

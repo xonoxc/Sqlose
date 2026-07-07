@@ -20,7 +20,7 @@ function getOrthogonalPoints(
       return points
    }
 
-   let cx = sourceX
+   let cx: number
    let cy = sourceY
 
    // 1. First segment leaves EAST, so move horizontally first.

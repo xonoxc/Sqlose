@@ -27,7 +27,7 @@ export function useResizeHandler({ axis, min, max, onResize }: ResizeHandlerOpti
          const handleMouseUp = () => {
             document.removeEventListener("mousemove", handleMouseMove)
             document.removeEventListener("mouseup", handleMouseUp)
-            document.body.style.cursor = ""
+            document.body.style.cursor = "" // eslint-disable-line react-compiler/react-compiler
             document.body.style.userSelect = ""
          }
 

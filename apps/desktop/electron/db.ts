@@ -65,10 +65,12 @@ function migrate(): void {
    try {
       db!.run("ALTER TABLE saved_queries ADD COLUMN result TEXT")
    } catch {
+      /* column may already exist */
    }
    try {
       db!.run("ALTER TABLE history ADD COLUMN result TEXT")
    } catch {
+      /* column may already exist */
    }
 }
 

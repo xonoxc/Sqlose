@@ -1,5 +1,5 @@
 import type { Node, Edge } from "@xyflow/react"
-import type { ElkNode, ElkExtendedEdge, ElkPoint } from "elkjs/lib/elk-api"
+import type { ElkNode, ElkPort, ElkExtendedEdge, ElkPoint } from "elkjs/lib/elk-api"
 import { HEADER_HEIGHT, ROW_HEIGHT, NODE_WIDTH, type SpacingConfig } from "./spacing"
 
 export interface LayoutResult {
@@ -38,9 +38,9 @@ export function toElkGraph(
       },
       children: nodes.map(n => {
          const cols = (n.data as { columns?: { name: string }[] }).columns ?? []
-         const ports = []
+          const ports: (ElkPort & { properties: Record<string, string> })[] = []
 
-         cols.forEach((col, idx) => {
+          cols.forEach((col, idx) => {
             const yOffset = HEADER_HEIGHT + idx * ROW_HEIGHT + ROW_HEIGHT / 2
 
             // Target (incoming from parent, on the Left / WEST)

@@ -47,6 +47,7 @@ export function TestimonialAvatar({ className, ...props }: ComponentProps<"div">
 
 export function TestimonialAvatarImg({ className, src, alt, ...props }: ComponentProps<"img">) {
    return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
          data-slot="testimonial-avatar-img"
          className={cn("size-8 rounded-full select-none", className)}

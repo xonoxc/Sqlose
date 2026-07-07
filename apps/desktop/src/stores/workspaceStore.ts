@@ -95,7 +95,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
          removeWorkspace: (environmentId: string) => {
             set(state => {
-               const { [environmentId]: _, ...rest } = state.workspaces
+               const rest = { ...state.workspaces }
+               delete rest[environmentId]
                const update: Partial<WorkspaceStore> = { workspaces: rest }
                if (state.activeWorkspaceId === environmentId) {
                   update.activeWorkspaceId = null
