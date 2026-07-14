@@ -17,6 +17,14 @@ function dbInvoke<T>(channel: string, ...args: unknown[]): Promise<DbResult<T>> 
 
 type UpdateAvailableInfo = UpdateInfo & { isPackageManaged: boolean }
 
+type UpdateState =
+   | { state: "idle" }
+   | { state: "checking" }
+   | { state: "available"; version: string; releaseNotes?: string }
+   | { state: "downloading"; version: string }
+   | { state: "downloaded" }
+   | { state: "error"; message: string }
+
 const api = {
    docker: {
       startEnv: createInvoke("docker:start-env"),
@@ -141,6 +149,13 @@ const api = {
       },
       downloadUpdate: () => ipcRenderer.invoke("update:download"),
       quitAndInstall: () => ipcRenderer.invoke("update:quit-and-install"),
+      getState: (): Promise<UpdateState> => ipcRenderer.invoke("update:get-state"),
+      onStateChange: (callback: (state: UpdateState) => void) => {
+         const handler = (_event: Electron.IpcRendererEvent, state: UpdateState) =>
+            callback(state)
+         ipcRenderer.on("update-state-changed", handler)
+         return () => ipcRenderer.removeListener("update-state-changed", handler)
+      },
    },
 }
 

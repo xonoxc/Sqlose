@@ -5,7 +5,25 @@ export function useUpdateToast() {
    const downloadingToastRef = useRef<string | number | null>(null)
 
    useEffect(() => {
+      // Check current state on mount
+      window.sqlose.update.getState().then(state => {
+         if (state.state === "checking") {
+            toast.loading("Checking for updates...", { id: "update-checking" })
+         } else if (state.state === "error") {
+            toast.error("Update Check Failed", {
+               description: state.message,
+               action: {
+                  label: "Retry",
+                  onClick: () => window.sqlose.update.downloadUpdate(),
+               },
+               duration: 10_000,
+            })
+         }
+      })
+
       const unsubAvailable = window.sqlose.update.onUpdateAvailable(info => {
+         toast.dismiss("update-checking")
+
          if (info.isPackageManaged) {
             toast.info("Update Available", {
                description: `Sqlose v${info.version} is available — use your package manager to upgrade.`,
@@ -56,7 +74,14 @@ export function useUpdateToast() {
 
       const unsubError = window.sqlose.update.onUpdateError(message => {
          downloadingToastRef.current = null
-         console.error("Update error:", message)
+         toast.error("Update Check Failed", {
+            description: message,
+            action: {
+               label: "Retry",
+               onClick: () => window.sqlose.update.downloadUpdate(),
+            },
+            duration: 10_000,
+         })
       })
 
       return () => {

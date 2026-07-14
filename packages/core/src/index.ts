@@ -6,6 +6,7 @@ export {
    healthCheck,
    destroyContainer,
    stopAllContainers,
+   countRunningContainers,
    stopOrphanedContainers,
    cleanupOrphans,
    reconcileEnvironmentStatuses,

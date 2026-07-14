@@ -14,6 +14,7 @@ import {
    stopOrphanedContainers,
    reconcileEnvironmentStatuses,
    stopAllContainers,
+   countRunningContainers,
 } from "@sqlose/core"
 import { registerAllHandlers } from "./ipc-handlers"
 import { initDatabase, closeDatabase } from "./db"
@@ -40,6 +41,62 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null
 let dockerAvailable = false
+let updatePollingInterval: ReturnType<typeof setInterval> | null = null
+
+type UpdateState =
+   | { state: "idle" }
+   | { state: "checking" }
+   | { state: "available"; version: string; releaseNotes?: string }
+   | { state: "downloading"; version: string }
+   | { state: "downloaded" }
+   | { state: "error"; message: string }
+
+let updateState: UpdateState = { state: "idle" }
+const MAX_RETRY_ATTEMPTS = 3
+const BACKOFF_BASE_MS = 2000
+const POLL_INTERVAL_MS = 4 * 60 * 60 * 1000 // 4 hours
+
+function sendUpdateToRenderer(channel: string, ...args: unknown[]) {
+   win?.webContents?.send(channel, ...args)
+}
+
+function setUpdateState(newState: UpdateState) {
+   updateState = newState
+   sendUpdateToRenderer("update-state-changed", newState)
+}
+
+function checkForUpdatesWithRetry(attempt: number = 0) {
+   setUpdateState({ state: "checking" })
+
+   autoUpdater
+      .checkForUpdates()
+      .then(() => {
+         // Success — reset is handled by the update-available or "no update" path
+         // If no update is available, electron-updater doesn't fire update-available,
+         // so we reset to idle and start polling
+         if (updateState.state === "checking") {
+            setUpdateState({ state: "idle" })
+            startUpdatePolling()
+         }
+      })
+      .catch(err => {
+         if (attempt < MAX_RETRY_ATTEMPTS - 1) {
+            const delay = BACKOFF_BASE_MS * Math.pow(2, attempt)
+            setTimeout(() => checkForUpdatesWithRetry(attempt + 1), delay)
+         } else {
+            const message = err?.message ?? String(err)
+            setUpdateState({ state: "error", message })
+            sendUpdateToRenderer("update-error", message)
+         }
+      })
+}
+
+function startUpdatePolling() {
+   if (updatePollingInterval) return
+   updatePollingInterval = setInterval(() => {
+      checkForUpdatesWithRetry(0)
+   }, POLL_INTERVAL_MS)
+}
 
 function isDockerCliInstalled(): boolean {
    return attemptSync(() => {
@@ -144,27 +201,96 @@ autoUpdater.logger = console
 autoUpdater.autoDownload = false
 
 autoUpdater.on("update-available", info => {
-   win?.webContents?.send("update-available", { ...info, isPackageManaged })
+   setUpdateState({
+      state: "available",
+      version: info.version,
+      releaseNotes: Array.isArray(info.releaseNotes)
+         ? info.releaseNotes.map(r => r.note).join("\n")
+         : info.releaseNotes ?? undefined,
+   })
+   sendUpdateToRenderer("update-available", { ...info, isPackageManaged })
+   startUpdatePolling()
 })
 
 autoUpdater.on("download-progress", progress => {
-   win?.webContents?.send("download-progress", progress)
+   sendUpdateToRenderer("download-progress", progress)
 })
 
 autoUpdater.on("update-downloaded", () => {
-   win?.webContents?.send("update-downloaded")
+   setUpdateState({ state: "downloaded" })
+   sendUpdateToRenderer("update-downloaded")
 })
 
 autoUpdater.on("error", err => {
-   win?.webContents?.send("update-error", err?.message ?? String(err))
+   const message = err?.message ?? String(err)
+   setUpdateState({ state: "error", message })
+   sendUpdateToRenderer("update-error", message)
 })
 
 ipcMain.handle("update:download", () => {
+   if (updateState.state === "available") {
+      setUpdateState({ state: "downloading", version: updateState.version })
+   }
    autoUpdater.downloadUpdate()
 })
 
-ipcMain.handle("update:quit-and-install", () => {
+ipcMain.handle("update:quit-and-install", async () => {
+   if (updateState.state !== "downloaded") return
+
+   let activeQueries = 0
+   let runningContainers = 0
+
+   // Count running Docker containers
+   if (dockerAvailable) {
+      const containerResult = await countRunningContainers()
+      if (containerResult.isOk()) {
+         runningContainers = containerResult.value
+      }
+   }
+
+   // Ask renderer for active query count
+   if (win && !win.isDestroyed()) {
+      try {
+         activeQueries = await win.webContents.executeJavaScript(
+            `window.__SQLOSE_ACTIVE_QUERY_COUNT__ ?? 0`
+         )
+      } catch {
+         // Renderer not available, proceed without query check
+      }
+   }
+
+   if (activeQueries > 0 || runningContainers > 0) {
+      const details: string[] = []
+      if (activeQueries > 0) details.push(`${activeQueries} active quer${activeQueries > 1 ? "ies" : "y"}`)
+      if (runningContainers > 0) details.push(`${runningContainers} running container${runningContainers > 1 ? "s" : ""}`)
+
+      const result = await dialog.showMessageBox(win!, {
+         type: "warning",
+         title: "Update Ready to Install",
+         message: "There are active processes that will be interrupted:",
+         detail: details.join("\n") + "\n\nInstall update now?",
+         buttons: ["Install Now", "Cancel"],
+         defaultId: 1,
+         cancelId: 1,
+      })
+
+      if (result.response === 1) return
+
+      // Gracefully stop containers before quitting
+      if (runningContainers > 0) {
+         try {
+            await stopAllContainers()
+         } catch (e) {
+            console.error("Failed to stop containers:", e)
+         }
+      }
+   }
+
    autoUpdater.quitAndInstall()
+})
+
+ipcMain.handle("update:get-state", () => {
+   return updateState
 })
 
 app.on("window-all-closed", () => {
@@ -181,6 +307,10 @@ app.on("activate", () => {
 })
 
 app.on("will-quit", async () => {
+   if (updatePollingInterval) {
+      clearInterval(updatePollingInterval)
+      updatePollingInterval = null
+   }
    if (dockerAvailable) await stopAllContainers()
    closeDatabase()
 })
@@ -213,5 +343,5 @@ app.whenReady().then(async () => {
       })
    }
 
-   if (!VITE_DEV_SERVER_URL) autoUpdater.checkForUpdates()
+   if (!VITE_DEV_SERVER_URL) checkForUpdatesWithRetry(0)
 })

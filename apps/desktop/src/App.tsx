@@ -138,6 +138,19 @@ function AppContent() {
       }
    }, [workspace.activeTabId, selectedEnvironmentId, clearActiveTable])
 
+   // Expose active query count for the main process safe-install check
+   useEffect(() => {
+      const tabs = useWorkspaceStore.getState().tabs
+      const count = tabs.filter(t => t.isExecuting).length
+      ;(window as unknown as Record<string, unknown>).__SQLOSE_ACTIVE_QUERY_COUNT__ = count
+
+      const unsub = useWorkspaceStore.subscribe(state => {
+         const executing = state.tabs.filter(t => t.isExecuting).length
+         ;(window as unknown as Record<string, unknown>).__SQLOSE_ACTIVE_QUERY_COUNT__ = executing
+      })
+      return unsub
+   }, [])
+
    return (
       <div className="h-screen w-screen overflow-hidden bg-bg-primary">
          {selectedEnvironmentId ? (

@@ -499,6 +499,26 @@ export async function stopAllContainers(): AsyncAppResult<number> {
    return ok(acted)
 }
 
+export async function countRunningContainers(): AsyncAppResult<number> {
+   const docker = getDocker()
+
+   const listResult = await attempt(docker.listContainers({ all: true }))
+   if (listResult.isErr()) {
+      return err(
+         new DockerError(
+            "docker:list_failed",
+            listResult.error.message ?? "Failed to list containers"
+         )
+      )
+   }
+
+   const count = listResult.value.filter(
+      c => (c.Names[0] ?? "").includes("sqlose") && c.State === "running"
+   ).length
+
+   return ok(count)
+}
+
 export async function stopOrphanedContainers(): AsyncAppResult<number> {
    const docker = getDocker()
 
