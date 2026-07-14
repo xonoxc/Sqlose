@@ -40,6 +40,14 @@ export type {
    DockerAvailabilityReason,
 } from "./ipc"
 
-export { isErrorCode, isAppError, isDBType } from "./guards"
+export {
+   isErrorCode,
+   isAppError,
+   isDBType,
+   isEnvironmentStatus,
+   isImportFormat,
+   isEnvironment,
+   isDockerAvailability,
+} from "./guards"
 
 export { attempt, attemptSync } from "./attempt"

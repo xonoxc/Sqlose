@@ -1,4 +1,5 @@
 import Store from "electron-store"
+import { isEnvironment } from "@sqlose/shared"
 import type { Environment } from "@sqlose/shared"
 
 interface StoreSchema {
@@ -19,12 +20,23 @@ function getStore(): Store<StoreSchema> {
 
 export function loadEnvironments(): Environment[] {
    const data = getStore().get("environments")
-   return Object.values(data)
+   return Object.values(data).filter(env => {
+      if (!isEnvironment(env)) {
+         console.warn(`[sqlose] Skipping invalid environment record:`, env)
+         return false
+      }
+      return true
+   })
 }
 
 export function loadEnvironment(id: string): Environment | null {
    const data = getStore().get("environments")
-   return data[id] ?? null
+   const env = data[id]
+   if (env && !isEnvironment(env)) {
+      console.warn(`[sqlose] Environment ${id} failed validation, skipping`)
+      return null
+   }
+   return env ?? null
 }
 
 export function saveEnvironment(environment: Environment): void {

@@ -1,3 +1,4 @@
+import { z } from "zod"
 import { ipcMain, app } from "electron"
 import path from "path"
 import fs from "fs"
@@ -62,35 +63,65 @@ function invalidPayload(detail: string): IPCSerializedResult<never> {
    }
 }
 
-function requireString(val: unknown, field: string): string | null {
-   if (typeof val !== "string" || val.length === 0) {
-      return `${field} must be a non-empty string`
-   }
-   return null
+const envIdSchema = z.object({ environmentId: z.string().min(1) })
+const envCreateSchema = z.object({
+   dbType: z.enum(["postgres", "mysql", "sqlite"]),
+   name: z.string().min(1).optional(),
+})
+const dbTypeSchema = z.object({ dbType: z.enum(["postgres", "mysql", "sqlite"]) })
+const querySchema = z.object({ environmentId: z.string().min(1), sql: z.string().min(1) })
+const datasetImportSchema = z.object({
+   datasetId: z.string().min(1),
+   environmentId: z.string().min(1),
+})
+const importCsvSchema = z.object({
+   environmentId: z.string().min(1),
+   fileName: z.string().min(1),
+   content: z.string().min(1),
+   format: z.enum(["csv", "sql"]),
+   tableName: z.string().optional(),
+})
+const importSqlSchema = z.object({
+   fileName: z.string().min(1),
+   content: z.string().min(1),
+})
+const previewCsvSchema = z.object({ content: z.string().min(1) })
+
+function validateZod<T>(payload: unknown, schema: z.ZodType<T>): IPCSerializedResult<never> | null {
+   const result = schema.safeParse(payload)
+   if (result.success) return null
+   const issues = result.error.issues.map((i: { message: string }) => i.message).join("; ")
+   return invalidPayload(issues)
 }
 
-function validateRequest(
-   payload: unknown,
-   fields: Record<string, "string">
-): IPCSerializedResult<never> | null {
-   if (typeof payload !== "object" || payload === null) {
-      return invalidPayload("expected an object")
+async function destroyEnvironment(
+   environmentId: string
+): Promise<IPCSerializedResult<{ environmentId: string }>> {
+   const env = loadEnvironment(environmentId)
+   if (!env)
+      return serializeErr(
+         new AppError("env:not_found", `Environment ${environmentId} not found`)
+      )
+
+   await dockerDestroyContainer(env.containerId ?? "")
+
+   if (env.port > 0) releasePort(env.port)
+
+   if (env.dbType === "sqlite") {
+      attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
    }
-   for (const [field, type] of Object.entries(fields)) {
-      const val = (payload as Record<string, unknown>)[field]
-      if (type === "string") {
-         const errMsg = requireString(val, field)
-         if (errMsg) {
-            return invalidPayload(errMsg)
-         }
-      }
+
+   if (env.connectionString) {
+      attempt(destroyPool(env.connectionString))
    }
-   return null
+
+   await destroyEnvironmentRecord(environmentId)
+   return serializeOk({ environmentId })
 }
 
 export function registerAllHandlers(): void {
    ipcMain.handle("docker:start-env", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -142,7 +173,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:stop-env", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -169,7 +200,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:restart-env", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -196,7 +227,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:health", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -225,13 +256,12 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:pull-image", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const { dbType } = payload as Record<string, unknown>
-      if (typeof dbType !== "string" || !["postgres", "mysql", "sqlite"].includes(dbType)) {
-         return invalidPayload("dbType must be postgres, mysql, or sqlite")
+      const validationError = validateZod(payload, dbTypeSchema)
+      if (validationError) {
+         return validationError
       }
-      const result = await dockerPullImage(dbType as DBType, percentage => {
+      const { dbType } = payload as { dbType: DBType }
+      const result = await dockerPullImage(dbType, percentage => {
          _event.sender.send("docker:pull-progress", { dbType, percentage })
       })
       if (result.isErr()) {
@@ -241,14 +271,9 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:create", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const { dbType, name } = payload as Record<string, unknown>
-      if (typeof dbType !== "string" || !["postgres", "mysql", "sqlite"].includes(dbType)) {
-         return invalidPayload("dbType must be postgres, mysql, or sqlite")
-      }
-      if (name !== undefined && (typeof name !== "string" || name.length === 0)) {
-         return invalidPayload("name must be a non-empty string")
+      const validationError = validateZod(payload, envCreateSchema)
+      if (validationError) {
+         return validationError
       }
 
       const typedPayload = payload as IPCRequest<"env:create">
@@ -272,13 +297,12 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("docker:create-container", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const { environmentId } = payload as Record<string, unknown>
-      if (typeof environmentId !== "string" || environmentId.length === 0) {
-         return invalidPayload("environmentId must be a non-empty string")
+      const validationError = validateZod(payload, envIdSchema)
+      if (validationError) {
+         return validationError
       }
 
+      const { environmentId } = payload as IPCRequest<"docker:create-container">
       const env = loadEnvironment(environmentId)
       if (!env)
          return serializeErr(
@@ -310,32 +334,13 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:destroy", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
 
       const { environmentId } = payload as IPCRequest<"env:destroy">
-      const env = loadEnvironment(environmentId)
-      if (!env)
-         return serializeErr(
-            new AppError("env:not_found", `Environment ${environmentId} not found`)
-         )
-
-      await dockerDestroyContainer(env.containerId ?? "")
-
-      if (env.port > 0) releasePort(env.port)
-
-      if (env.dbType === "sqlite") {
-         attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
-      }
-
-      if (env.connectionString) {
-         attempt(destroyPool(env.connectionString))
-      }
-
-      await destroyEnvironmentRecord(environmentId)
-      return serializeOk({ environmentId })
+      return serializeOk(await destroyEnvironment(environmentId))
    })
 
    ipcMain.handle("env:list", async () => {
@@ -344,7 +349,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:get", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -355,7 +360,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:duplicate", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -391,7 +396,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:reset", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
@@ -412,37 +417,17 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("env:nuke", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, { environmentId: "string" })
+      const validationError = validateZod(payload, envIdSchema)
       if (validationError) {
          return validationError
       }
 
       const { environmentId } = payload as IPCRequest<"env:nuke">
-      const env = loadEnvironment(environmentId)
-      if (!env)
-         return serializeErr(
-            new AppError("env:not_found", `Environment ${environmentId} not found`)
-         )
-
-      await dockerDestroyContainer(env.containerId ?? "")
-
-      if (env.port > 0) releasePort(env.port)
-
-      if (env.dbType === "sqlite") {
-         attemptSync(() => fs.unlinkSync(getSqliteDbPath(environmentId)))
-      }
-
-      if (env.connectionString) attempt(destroyPool(env.connectionString))
-
-      await destroyEnvironmentRecord(environmentId)
-      return serializeOk({ environmentId })
+      return serializeOk(await destroyEnvironment(environmentId))
    })
 
    ipcMain.handle("query:execute", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, {
-         environmentId: "string",
-         sql: "string",
-      })
+      const validationError = validateZod(payload, querySchema)
       if (validationError) {
          return validationError
       }
@@ -453,15 +438,9 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("import:csv", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const p = payload as Record<string, unknown>
-      const envErr =
-         requireString(p.environmentId, "environmentId") ??
-         requireString(p.fileName, "fileName") ??
-         requireString(p.content, "content")
-      if (envErr) {
-         return invalidPayload(envErr)
+      const validationError = validateZod(payload, importCsvSchema)
+      if (validationError) {
+         return validationError
       }
 
       const { fileName, content, tableName } = payload as IPCRequest<"import:csv">
@@ -471,12 +450,9 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("import:sql", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const p = payload as Record<string, unknown>
-      const envErr = requireString(p.fileName, "fileName") ?? requireString(p.content, "content")
-      if (envErr) {
-         return invalidPayload(envErr)
+      const validationError = validateZod(payload, importSqlSchema)
+      if (validationError) {
+         return validationError
       }
 
       const { content } = payload as { content: string }
@@ -490,12 +466,9 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("import:preview-csv", async (_event, payload: unknown) => {
-      if (typeof payload !== "object" || payload === null)
-         return invalidPayload("expected an object")
-      const p = payload as Record<string, unknown>
-      const errMsg = requireString(p.content, "content")
-      if (errMsg) {
-         return invalidPayload(errMsg)
+      const validationError = validateZod(payload, previewCsvSchema)
+      if (validationError) {
+         return validationError
       }
 
       const { content } = payload as IPCRequest<"import:preview-csv">
@@ -509,10 +482,7 @@ export function registerAllHandlers(): void {
    })
 
    ipcMain.handle("dataset:import", async (_event, payload: unknown) => {
-      const validationError = validateRequest(payload, {
-         datasetId: "string",
-         environmentId: "string",
-      })
+      const validationError = validateZod(payload, datasetImportSchema)
       if (validationError) {
          return validationError
       }
