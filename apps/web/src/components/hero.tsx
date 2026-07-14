@@ -20,9 +20,9 @@ export function HeroSection() {
                <span className="block h-5" />
 
                <GitHub className="w-3.5 h-3.5" />
-               <span className="text-xs flex items-center gap-2 text-shadow-accent">
-                  v0.1.2 · Latest
-               </span>
+                <span className="text-xs flex items-center gap-2 text-shadow-accent">
+                   v0.2.0 · Latest
+                </span>
                <span className="block h-5 border-l border-neutral-500/40" />
 
                <div className="pr-1">

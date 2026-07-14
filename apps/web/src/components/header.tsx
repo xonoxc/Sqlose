@@ -7,9 +7,9 @@ import { Button } from "@/components/ui/button"
 import { MobileNav } from "@/components/mobile-nav"
 
 export const navLinks = [
-   { label: "Docs", href: "#docs" },
+   { label: "Docs", href: "https://github.com/xonoxc/Sqlose#readme" },
    { label: "Features", href: "#features" },
-   { label: "Releases", href: "#releases" },
+   { label: "Releases", href: "https://github.com/xonoxc/Sqlose/releases" },
 ]
 
 export function Header() {
@@ -49,12 +49,14 @@ export function Header() {
                   ))}
                </div>
                <Button size="sm" variant="outline" asChild>
-                  <a href="#">
+                  <a href="https://github.com/xonoxc/Sqlose" target="_blank" rel="noreferrer">
                      <Discord className="size-4" />
                   </a>
                </Button>
-               <Button size="sm" style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }}>
-                  Get App
+               <Button size="sm" style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }} asChild>
+                  <a href="https://github.com/xonoxc/Sqlose/releases" target="_blank" rel="noreferrer">
+                     Get App
+                  </a>
                </Button>
             </div>
             <MobileNav />
