@@ -9,6 +9,11 @@ import {
    stopEnvironment,
    restartEnvironment,
    pullImage,
+   initDocker,
+   waitForDatabaseReady,
+   stopAllContainers,
+   stopOrphanedContainers,
+   reconcileEnvironmentStatuses,
    __setDocker,
 } from "./index"
 import * as portModule from "./port"
@@ -26,6 +31,14 @@ vi.mock("../drivers/postgres", () => ({
 vi.mock("../drivers/mysql", () => ({
    testMySQLConnection: vi.fn(),
 }))
+
+vi.mock("../environment/store", () => ({
+   loadEnvironments: vi.fn().mockReturnValue([]),
+   saveEnvironment: vi.fn(),
+   loadEnvironment: vi.fn().mockReturnValue(null),
+}))
+
+import { loadEnvironments, saveEnvironment } from "../environment/store"
 
 function makeMockDocker(
    overrides: Partial<{
@@ -498,5 +511,309 @@ describe("Docker Orchestration", () => {
             expect(result.error.code).toBe("docker:cleanup_failed")
          }
       })
+   })
+
+   describe("initDocker", () => {
+      it("should succeed when Docker is reachable", async () => {
+         __setDocker(makeMockDocker() as never)
+         const result = await initDocker()
+         expect(result.isOk()).toBe(true)
+      })
+
+      it("should return error when Docker is not reachable", async () => {
+         __setDocker(null as never)
+         vi.doMock("dockerode", () => {
+            throw new Error("Module not found")
+         })
+         const result = await initDocker()
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("docker:not_available")
+         }
+         vi.doUnmock("dockerode")
+      })
+
+      it("should reuse existing Docker client when ping succeeds", async () => {
+         const mock = makeMockDocker()
+         __setDocker(mock as never)
+         const result = await initDocker()
+         expect(result.isOk()).toBe(true)
+         expect(mock.ping).toHaveBeenCalled()
+      })
+   })
+
+   describe("waitForDatabaseReady", () => {
+      it("should return immediately for sqlite", async () => {
+         const result = await waitForDatabaseReady("sqlite", "")
+         expect(result.isOk()).toBe(true)
+      })
+
+      it("should succeed when database becomes ready", async () => {
+         const { testPostgresConnection } = await import("../drivers/postgres")
+         ;(testPostgresConnection as Mock).mockReturnValue(mockOkBool(true))
+
+         const result = await waitForDatabaseReady("postgres", "postgresql://localhost:5432/test")
+         expect(result.isOk()).toBe(true)
+      })
+
+      it("should fail after max retries", async () => {
+         vi.useFakeTimers()
+         const { testPostgresConnection } = await import("../drivers/postgres")
+         ;(testPostgresConnection as Mock).mockReturnValue(mockOkBool(false))
+
+         const resultPromise = waitForDatabaseReady("postgres", "postgresql://localhost:5432/test")
+         await vi.advanceTimersByTimeAsync(30_000)
+         const result = await resultPromise
+         vi.useRealTimers()
+
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("docker:container_failed")
+         }
+      }, 10_000)
+   })
+
+   describe("stopAllContainers", () => {
+      it("should stop running sqlose containers", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([])
+         __setDocker(
+            makeMockDocker({
+               listContainers: vi.fn().mockResolvedValue([
+                  { Id: "abc", Names: ["/sqlose-postgres-5432"], State: "running" },
+                  { Id: "def", Names: ["/other-container"], State: "running" },
+               ]),
+            }) as never
+         )
+
+         const result = await stopAllContainers()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(1)
+         }
+      })
+
+      it("should handle empty container list", async () => {
+         __setDocker(
+            makeMockDocker({
+               listContainers: vi.fn().mockResolvedValue([]),
+            }) as never
+         )
+
+         const result = await stopAllContainers()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(0)
+         }
+      })
+
+      it("should return DockerError on list failure", async () => {
+         __setDocker(
+            makeMockDocker({
+               listContainers: vi.fn().mockRejectedValue(new Error("Docker not available")),
+            }) as never
+         )
+
+         const result = await stopAllContainers()
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("docker:stop_failed")
+         }
+      })
+   })
+
+   describe("stopOrphanedContainers", () => {
+      it("should stop orphaned sqlose containers not tracked by envs", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([])
+         const mock = makeMockDocker({
+            listContainers: vi.fn().mockResolvedValue([
+               { Id: "abc", Names: ["/sqlose-postgres-5432"], State: "running" },
+               { Id: "def", Names: ["/other-container"], State: "running" },
+            ]),
+         }) as never
+         __setDocker(mock)
+
+         const result = await stopOrphanedContainers()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(1)
+         }
+      })
+
+      it("should not stop containers tracked by environments", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "1", containerId: "abc" } as never,
+         ])
+         const mock = makeMockDocker({
+            listContainers: vi.fn().mockResolvedValue([
+               { Id: "abc", Names: ["/sqlose-postgres-5432"], State: "running" },
+            ]),
+         }) as never
+         __setDocker(mock)
+
+         const result = await stopOrphanedContainers()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(0)
+         }
+      })
+
+      it("should return error on listContainers failure", async () => {
+         __setDocker(
+            makeMockDocker({
+               listContainers: vi.fn().mockRejectedValue(new Error("Docker error")),
+            }) as never
+         )
+         const result = await stopOrphanedContainers()
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("docker:cleanup_failed")
+         }
+      })
+   })
+
+   describe("reconcileEnvironmentStatuses", () => {
+      it("should mark running containers as running", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "1", containerId: "running-container", status: "stopped" } as never,
+         ])
+         const mock = makeMockDocker({
+            getContainer: vi.fn().mockReturnValue({
+               inspect: vi.fn().mockResolvedValue({
+                  State: { Running: true, StartedAt: new Date(Date.now() - 10000).toISOString() },
+               }),
+            }),
+         }) as never
+         __setDocker(mock)
+
+         const result = await reconcileEnvironmentStatuses()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(1)
+         }
+         expect(saveEnvironment).toHaveBeenCalled()
+      })
+
+      it("should mark stopped containers as stopped", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "2", containerId: "stopped-container", status: "running" } as never,
+         ])
+         const mock = makeMockDocker({
+            getContainer: vi.fn().mockReturnValue({
+               inspect: vi.fn().mockResolvedValue({
+                  State: { Running: false, StartedAt: "" },
+               }),
+            }),
+         }) as never
+         __setDocker(mock)
+
+         const result = await reconcileEnvironmentStatuses()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(1)
+         }
+      })
+
+      it("should mark missing containers (404) as error", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "3", containerId: "missing-container", status: "running" } as never,
+         ])
+         const mock = makeMockDocker({
+            getContainer: vi.fn().mockReturnValue({
+               inspect: vi.fn().mockRejectedValue({ statusCode: 404, message: "not found" }),
+            }),
+         }) as never
+         __setDocker(mock)
+
+         const result = await reconcileEnvironmentStatuses()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(1)
+         }
+      })
+
+      it("should skip environments without containerId", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "4", containerId: "", status: "running" } as never,
+         ])
+         __setDocker(makeMockDocker() as never)
+
+         const result = await reconcileEnvironmentStatuses()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(0)
+         }
+      })
+
+      it("should handle inspect failure with non-404 error", async () => {
+         vi.mocked(loadEnvironments).mockReturnValue([
+            { id: "5", containerId: "bad-container", status: "running" } as never,
+         ])
+         const mock = makeMockDocker({
+            getContainer: vi.fn().mockReturnValue({
+               inspect: vi.fn().mockRejectedValue(new Error("connection refused")),
+            }),
+         }) as never
+         __setDocker(mock)
+
+         const result = await reconcileEnvironmentStatuses()
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toBe(0)
+         }
+      })
+   })
+
+   describe("createEnvironment", () => {
+      it("should handle container start failure", async () => {
+         vi.mocked(portModule.findAvailablePort).mockResolvedValue({ isOk: () => true, isErr: () => false, value: 5555 } as never)
+         vi.mocked(portModule.reservePort).mockReturnValue(true)
+         vi.mocked(portModule.releasePort).mockReturnValue(undefined as never)
+
+         const mockContainer = {
+            id: "new-container",
+            start: vi.fn().mockRejectedValue(new Error("port already in use")),
+            stop: vi.fn().mockResolvedValue(undefined),
+            remove: vi.fn().mockResolvedValue(undefined),
+         }
+         __setDocker(
+            makeMockDocker({
+               createContainer: vi.fn().mockResolvedValue(mockContainer),
+            }) as never
+         )
+
+         const result = await createEnvironment("postgres")
+         expect(result.isErr()).toBe(true)
+         if (result.isErr()) {
+            expect(result.error.code).toBe("docker:container_failed")
+         }
+      })
+
+      it("should handle DB not ready after container start", async () => {
+         vi.mocked(portModule.findAvailablePort).mockResolvedValue({ isOk: () => true, isErr: () => false, value: 5556 } as never)
+         vi.mocked(portModule.reservePort).mockReturnValue(true)
+
+         const { testPostgresConnection } = await import("../drivers/postgres")
+         ;(testPostgresConnection as Mock).mockReturnValue(mockOkBool(false))
+
+         const mockContainer = {
+            id: "new-container",
+            start: vi.fn().mockResolvedValue(undefined),
+            stop: vi.fn().mockResolvedValue(undefined),
+            remove: vi.fn().mockResolvedValue(undefined),
+         }
+         __setDocker(
+            makeMockDocker({
+               createContainer: vi.fn().mockResolvedValue(mockContainer),
+            }) as never
+         )
+
+         const resultPromise = createEnvironment("postgres")
+         vi.useFakeTimers()
+         await vi.advanceTimersByTimeAsync(35_000)
+         vi.useRealTimers()
+         const result = await resultPromise
+
+         expect(result.isErr()).toBe(true)
+      }, 45_000)
    })
 })

@@ -69,6 +69,35 @@ describe("CSV Import", () => {
             expect(result.value.rows).toHaveLength(2)
          }
       })
+
+      it("should handle quoted fields with embedded newlines", async () => {
+         const csv = 'name,description\nAlice,"line1\nline2"\nBob,simple'
+         const result = await parseCSV(csv)
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value.rows[0].description).toBe("line1\nline2")
+            expect(result.value.rows[1].description).toBe("simple")
+         }
+      })
+
+      it("should handle quoted fields with escaped double-quotes and newlines", async () => {
+         const csv = 'name,desc\nAlice,"say ""hello""\nworld"'
+         const result = await parseCSV(csv)
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value.rows[0].desc).toBe('say "hello"\nworld')
+         }
+      })
+
+      it("should handle \\r\\n line endings", async () => {
+         const csv = "a,b\r\n1,2\r\n3,4"
+         const result = await parseCSV(csv)
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value.rows).toHaveLength(2)
+            expect(result.value.rows[0]).toEqual({ a: "1", b: "2" })
+         }
+      })
    })
 
    describe("inferSchema", () => {
@@ -232,6 +261,25 @@ INSERT INTO users (id, name) VALUES (1, 'Alice');`
             { type: "insert" as const, sql: "INSERT INTO t VALUES (1);" },
          ])
          expect(tables).toEqual([])
+      })
+
+      it("should handle SQL-standard '' escape in strings", async () => {
+         const sql = "INSERT INTO t VALUES ('O''Brien');"
+         const result = await parseSQLDump(sql)
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toHaveLength(1)
+            expect(result.value[0].sql).toContain("'O''Brien'")
+         }
+      })
+
+      it("should handle multiple statements with mixed quote styles", async () => {
+         const sql = `INSERT INTO t1 VALUES ('hello'); INSERT INTO t2 VALUES ("world");`
+         const result = await parseSQLDump(sql)
+         expect(result.isOk()).toBe(true)
+         if (result.isOk()) {
+            expect(result.value).toHaveLength(2)
+         }
       })
    })
 })

@@ -92,6 +92,39 @@ describe("Query Execution", () => {
          expect(result.error.code).toBe("query:invalid_syntax")
       }
    })
+
+   it("should truncate results exceeding MAX_ROWS", async () => {
+      const mockEnv = {
+         id: "env-1",
+         dbType: "postgres",
+         status: "running",
+         connectionString: "postgresql://localhost:5432/test",
+      }
+      ;(store.loadEnvironment as Mock).mockReturnValue(mockEnv)
+
+      const bigRows = Array.from({ length: 11_000 }, (_, i) => ({ id: i }))
+      const mockResult = {
+         columns: ["id"],
+         rows: bigRows,
+         rowCount: 11_000,
+         executionTimeMs: 100,
+      }
+      ;(drivers.executeQueryForDB as Mock).mockResolvedValue({
+         isOk: () => true,
+         isErr: () => false,
+         value: mockResult,
+      })
+
+      const result = await executeQuery("env-1", "SELECT * FROM big_table")
+
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+         expect(result.value.rows.length).toBe(10_000)
+         expect(result.value.rowCount).toBe(10_000)
+         expect(result.value.truncated).toBe(true)
+         expect(result.value.totalRowCount).toBe(11_000)
+      }
+   })
 })
 
 describe("buildQueryHistory", () => {

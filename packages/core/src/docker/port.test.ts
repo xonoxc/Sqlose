@@ -1,5 +1,24 @@
 import { describe, it, expect } from "vitest"
-import { reservePort, releasePort } from "./port"
+import { reservePort, releasePort, findAvailablePort } from "./port"
+
+describe("findAvailablePort", () => {
+   it("should find an available port", async () => {
+      const result = await findAvailablePort(15000, 15100)
+      expect(result.isOk()).toBe(true)
+      if (result.isOk()) {
+         expect(result.value).toBeGreaterThanOrEqual(15000)
+         expect(result.value).toBeLessThanOrEqual(15100)
+      }
+   })
+
+   it("should return error when no ports available", async () => {
+      const result = await findAvailablePort(1, 1)
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+         expect(result.error.code).toBe("docker:port_conflict")
+      }
+   })
+})
 
 describe("port management", () => {
    it("reservePort should return true for available port", () => {

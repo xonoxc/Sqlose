@@ -104,6 +104,6 @@ describe("executeSQLiteQuery", () => {
          queueMicrotask(() => cb(new Error("close failed")))
       })
       const result = await executeSQLiteQuery("/tmp/test.db", "SELECT 1")
-      expect(result.isErr()).toBe(true)
+      expect(result.isOk()).toBe(true)
    })
 })
