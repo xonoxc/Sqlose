@@ -90,6 +90,8 @@ beforeEach(() => {
    registerAllHandlers()
 })
 
+const mockEvent = { sender: { send: vi.fn() } }
+
 describe("registerAllHandlers", () => {
    it("should register handlers for all IPC channels", () => {
       const channels = Object.keys(handlers)
@@ -127,7 +129,7 @@ describe("payload validation", () => {
 
    for (const channel of channelsRequiringEnvId) {
       it(`${channel} should reject missing environmentId`, async () => {
-         const result = (await handlers[channel](null, {})) as IPCSerializedResult<unknown>
+         const result = (await handlers[channel](mockEvent, {})) as IPCSerializedResult<unknown>
          expect(result.success).toBe(false)
          if (!result.success) {
             expect(result.error.code).toBe("ipc:invalid_payload")
@@ -135,7 +137,7 @@ describe("payload validation", () => {
       })
 
       it(`${channel} should reject null payload`, async () => {
-         const result = (await handlers[channel](null, null)) as IPCSerializedResult<unknown>
+         const result = (await handlers[channel](mockEvent, null)) as IPCSerializedResult<unknown>
          expect(result.success).toBe(false)
          if (!result.success) {
             expect(result.error.code).toBe("ipc:invalid_payload")
@@ -144,7 +146,7 @@ describe("payload validation", () => {
    }
 
    it("query:execute should reject missing sql", async () => {
-      const result = (await handlers["query:execute"](null, {
+      const result = (await handlers["query:execute"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
@@ -154,7 +156,7 @@ describe("payload validation", () => {
    })
 
    it("env:create should reject invalid dbType", async () => {
-      const result = (await handlers["env:create"](null, {
+      const result = (await handlers["env:create"](mockEvent, {
          dbType: "mongodb",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
@@ -167,7 +169,7 @@ describe("payload validation", () => {
 describe("docker:start-env", () => {
    it("should return error if environment not found", async () => {
       mockCore.loadEnvironment.mockReturnValue(null)
-      const result = (await handlers["docker:start-env"](null, {
+      const result = (await handlers["docker:start-env"](mockEvent, {
          environmentId: "nonexistent",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
@@ -181,7 +183,7 @@ describe("docker:start-env", () => {
       mockCore.healthCheck.mockReturnValue(mockOk({ healthy: true, uptime: 200 }))
       mockCore.updateEnvironment.mockReturnValue(mockOk(env))
 
-      const result = (await handlers["docker:start-env"](null, {
+      const result = (await handlers["docker:start-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<{ environmentId: string; port: number; connectionString: string }>
 
@@ -197,7 +199,7 @@ describe("docker:start-env", () => {
       mockCore.loadEnvironment.mockReturnValue(env)
       mockCore.updateEnvironment.mockReturnValue(mockOk(env))
 
-      const result = (await handlers["docker:start-env"](null, {
+      const result = (await handlers["docker:start-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -208,7 +210,7 @@ describe("docker:start-env", () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv())
       mockCore.startEnvironment.mockReturnValue(mockErr("docker:container_failed"))
 
-      const result = (await handlers["docker:start-env"](null, {
+      const result = (await handlers["docker:start-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
@@ -222,7 +224,7 @@ describe("docker:stop-env", () => {
       mockCore.stopEnvironment.mockReturnValue(mockOk(undefined))
       mockCore.updateEnvironment.mockReturnValue(mockOk(makeEnv({ status: "stopped" })))
 
-      const result = (await handlers["docker:stop-env"](null, {
+      const result = (await handlers["docker:stop-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -233,7 +235,7 @@ describe("docker:stop-env", () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv({ dbType: "sqlite", containerId: "" }))
       mockCore.updateEnvironment.mockReturnValue(mockOk(makeEnv({ status: "stopped" })))
 
-      const result = (await handlers["docker:stop-env"](null, {
+      const result = (await handlers["docker:stop-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -247,7 +249,7 @@ describe("docker:restart-env", () => {
       mockCore.restartEnvironment.mockReturnValue(mockOk(undefined))
       mockCore.updateEnvironment.mockReturnValue(mockOk(makeEnv()))
 
-      const result = (await handlers["docker:restart-env"](null, {
+      const result = (await handlers["docker:restart-env"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -260,7 +262,7 @@ describe("docker:health", () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv())
       mockCore.healthCheck.mockReturnValue(mockOk({ healthy: true, uptime: 300 }))
 
-      const result = (await handlers["docker:health"](null, {
+      const result = (await handlers["docker:health"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<{ healthy: boolean; uptime: number }>
       expect(result.success).toBe(true)
@@ -272,7 +274,7 @@ describe("docker:health", () => {
 
    it("should return healthy for sqlite", async () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv({ dbType: "sqlite", containerId: "" }))
-      const result = (await handlers["docker:health"](null, {
+      const result = (await handlers["docker:health"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<{ healthy: boolean; uptime: number }>
       expect(result.success).toBe(true)
@@ -286,7 +288,7 @@ describe("docker:cleanup", () => {
    it("should return cleaned count", async () => {
       mockCore.cleanupOrphans.mockReturnValue(mockOk(3))
 
-      const result = (await handlers["docker:cleanup"](null, {})) as IPCSerializedResult<{
+      const result = (await handlers["docker:cleanup"](mockEvent, {})) as IPCSerializedResult<{
          cleaned: number
       }>
       expect(result.success).toBe(true)
@@ -295,7 +297,7 @@ describe("docker:cleanup", () => {
 
    it("should forward errors", async () => {
       mockCore.cleanupOrphans.mockReturnValue(mockErr("docker:cleanup_failed"))
-      const result = (await handlers["docker:cleanup"](null, {})) as IPCSerializedResult<unknown>
+      const result = (await handlers["docker:cleanup"](mockEvent, {})) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
       if (!result.success) expect(result.error.code).toBe("docker:cleanup_failed")
    })
@@ -306,7 +308,7 @@ describe("env:create", () => {
       const env = makeEnv({ status: "creating", port: 0, containerId: null, connectionString: "" })
       mockCore.createEnvironmentRecord.mockReturnValue(mockOk(env))
 
-      const result = (await handlers["env:create"](null, {
+      const result = (await handlers["env:create"](mockEvent, {
          dbType: "postgres" as DBType,
       })) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
@@ -332,7 +334,7 @@ describe("docker:create-container", () => {
       mockCore.healthCheck.mockReturnValue(mockOk({ healthy: true, uptime: 0 }))
       mockCore.updateEnvironment.mockReturnValue(mockOk(updatedEnv))
 
-      const result = (await handlers["docker:create-container"](null, {
+      const result = (await handlers["docker:create-container"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
@@ -342,15 +344,16 @@ describe("docker:create-container", () => {
       expect(mockCore.createEnvironment).toHaveBeenCalledWith("postgres")
    })
 
-   it("should destroy record if Docker creation fails", async () => {
+   it("should set error status if Docker creation fails", async () => {
       const env = makeEnv({ id: "env-1", status: "creating" })
       mockCore.loadEnvironment.mockReturnValue(env)
       mockCore.createEnvironment.mockReturnValue(
          mockErr("docker:container_failed", "port conflict")
       )
+      mockCore.updateEnvironment.mockReturnValue(mockOk(env))
 
-      await handlers["docker:create-container"](null, { environmentId: "env-1" })
-      expect(mockCore.destroyEnvironmentRecord).toHaveBeenCalledWith("env-1")
+      await handlers["docker:create-container"](mockEvent, { environmentId: "env-1" })
+      expect(mockCore.updateEnvironment).toHaveBeenCalledWith("env-1", { status: "error" })
    })
 })
 
@@ -359,7 +362,7 @@ describe("env:destroy", () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv())
       mockCore.destroyContainer.mockReturnValue(mockOk(undefined))
 
-      const result = (await handlers["env:destroy"](null, {
+      const result = (await handlers["env:destroy"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -371,7 +374,7 @@ describe("env:destroy", () => {
       mockCore.loadEnvironment.mockReturnValue(makeEnv({ port: 5432 }))
       mockCore.destroyContainer.mockReturnValue(mockOk(undefined))
 
-      await handlers["env:destroy"](null, { environmentId: "env-1" })
+      await handlers["env:destroy"](mockEvent, { environmentId: "env-1" })
       expect(mockCore.releasePort).toHaveBeenCalledWith(5432)
    })
 })
@@ -381,7 +384,7 @@ describe("env:list", () => {
       const envs = [makeEnv()]
       mockCore.listEnvironments.mockReturnValue(mockOk(envs))
 
-      const result = (await handlers["env:list"](null, {})) as IPCSerializedResult<Environment[]>
+      const result = (await handlers["env:list"](mockEvent, {})) as IPCSerializedResult<Environment[]>
       expect(result.success).toBe(true)
       if (result.success) expect(result.data).toEqual(envs)
    })
@@ -392,7 +395,7 @@ describe("env:get", () => {
       const env = makeEnv()
       mockCore.getEnvironment.mockReturnValue(mockOk(env))
 
-      const result = (await handlers["env:get"](null, {
+      const result = (await handlers["env:get"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
@@ -405,7 +408,7 @@ describe("env:duplicate", () => {
       const dupe = makeEnv({ id: "env-2", name: "test-env (copy)" })
       mockCore.duplicateEnvironmentRecord.mockReturnValue(mockOk(dupe))
 
-      const result = (await handlers["env:duplicate"](null, {
+      const result = (await handlers["env:duplicate"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
@@ -418,7 +421,7 @@ describe("env:reset", () => {
       const reset = makeEnv({ status: "creating", port: 0, containerId: null })
       mockCore.resetEnvironmentRecord.mockReturnValue(mockOk(reset))
 
-      const result = (await handlers["env:reset"](null, {
+      const result = (await handlers["env:reset"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<Environment>
       expect(result.success).toBe(true)
@@ -436,7 +439,7 @@ describe("query:execute", () => {
       }
       mockCore.executeQuery.mockReturnValue(mockOk(queryResult))
 
-      const result = (await handlers["query:execute"](null, {
+      const result = (await handlers["query:execute"](mockEvent, {
          environmentId: "env-1",
          sql: "SELECT * FROM test",
       })) as IPCSerializedResult<unknown>
@@ -446,7 +449,7 @@ describe("query:execute", () => {
 
    it("should forward query errors", async () => {
       mockCore.executeQuery.mockReturnValue(mockErr("query:execution_failed", "syntax error"))
-      const result = (await handlers["query:execute"](null, {
+      const result = (await handlers["query:execute"](mockEvent, {
          environmentId: "env-1",
          sql: "BAD SQL",
       })) as IPCSerializedResult<unknown>
@@ -460,7 +463,7 @@ describe("import:csv", () => {
       const importResult = { tableName: "my_table", rowCount: 3, columns: ["id", "name"] }
       mockCore.importCSV.mockReturnValue(mockOk(importResult))
 
-      const result = (await handlers["import:csv"](null, {
+      const result = (await handlers["import:csv"](mockEvent, {
          environmentId: "env-1",
          fileName: "data.csv",
          content: "id,name\n1,foo",
@@ -472,7 +475,7 @@ describe("import:csv", () => {
    })
 
    it("should reject missing fields", async () => {
-      const result = (await handlers["import:csv"](null, {
+      const result = (await handlers["import:csv"](mockEvent, {
          environmentId: "env-1",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
@@ -486,7 +489,7 @@ describe("import:sql", () => {
       )
       mockCore.extractTableNames.mockReturnValue(["t"])
 
-      const result = (await handlers["import:sql"](null, {
+      const result = (await handlers["import:sql"](mockEvent, {
          environmentId: "env-1",
          fileName: "dump.sql",
          content: "CREATE TABLE t (id INT);",
@@ -503,7 +506,7 @@ describe("import:preview-csv", () => {
       const preview = { columns: ["id", "name"], preview: [{ id: "1", name: "foo" }] }
       mockCore.previewCSV.mockReturnValue(mockOk(preview))
 
-      const result = (await handlers["import:preview-csv"](null, {
+      const result = (await handlers["import:preview-csv"](mockEvent, {
          content: "id,name\n1,foo",
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
@@ -524,7 +527,7 @@ describe("dataset:list", () => {
       ]
       mockCore.listDatasets.mockReturnValue(mockOk(datasets))
 
-      const result = (await handlers["dataset:list"](null, {})) as IPCSerializedResult<unknown>
+      const result = (await handlers["dataset:list"](mockEvent, {})) as IPCSerializedResult<unknown>
       expect(result.success).toBe(true)
       if (result.success) expect(result.data).toEqual(datasets)
    })
@@ -546,7 +549,7 @@ describe("dataset:import", () => {
          mockOk({ columns: [], rows: [], rowCount: 0, executionTimeMs: 1 })
       )
 
-      const result = (await handlers["dataset:import"](null, {
+      const result = (await handlers["dataset:import"](mockEvent, {
          datasetId: "ds-1",
          environmentId: "env-1",
       })) as IPCSerializedResult<{ tablesCreated: string[] }>
@@ -559,7 +562,7 @@ describe("dataset:import", () => {
       mockCore.getDatasetSQL.mockReturnValue(mockOk("SELECT 1"))
       mockCore.loadEnvironment.mockReturnValue(null)
 
-      const result = (await handlers["dataset:import"](null, {
+      const result = (await handlers["dataset:import"](mockEvent, {
          datasetId: "ds-1",
          environmentId: "env-nonexistent",
       })) as IPCSerializedResult<unknown>
