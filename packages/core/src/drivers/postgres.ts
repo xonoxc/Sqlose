@@ -19,7 +19,11 @@ export async function executePostgresQuery(
    const client = clientResult.value
    const start = performance.now()
 
+   await attempt(client.query("SET statement_timeout = '30s'"))
+
    const queryResult = await attempt<pg.QueryResult>(client.query(sql))
+
+   await attempt(client.query("SET statement_timeout = 0"))
    client.release()
 
    return queryResult.match(
@@ -34,6 +38,9 @@ export async function executePostgresQuery(
       },
       e => {
          const message = e.message ?? ""
+         if (message.includes("timed out") || message.includes("canceling")) {
+            return err(new QueryError("query:timeout", message))
+         }
          if (message.toLowerCase().includes("syntax")) {
             return err(new QueryError("query:invalid_syntax", message))
          }

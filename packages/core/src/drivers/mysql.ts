@@ -19,7 +19,9 @@ export async function executeMySQLQuery(
    const conn = connResult.value
    const start = performance.now()
 
-   const queryResult = await attempt<[mysql.QueryResult, mysql.FieldPacket[]]>(conn.query(sql))
+   const queryResult = await attempt<[mysql.QueryResult, mysql.FieldPacket[]]>(
+      conn.query({ sql, timeout: 30000 })
+   )
    conn.release()
 
    return queryResult.match(
@@ -27,15 +29,22 @@ export async function executeMySQLQuery(
          const executionTimeMs = Math.round(performance.now() - start)
          const fieldDescriptors = fields as mysql.FieldPacket[]
          const columns = fieldDescriptors?.map((f: mysql.FieldPacket) => f.name) ?? []
+         const isResultSet = Array.isArray(rows)
+         const rowCount = isResultSet
+            ? rows.length
+            : (rows as mysql.ResultSetHeader).affectedRows ?? 0
          return ok({
             columns,
             rows: (rows as Record<string, unknown>[]) ?? [],
-            rowCount: Array.isArray(rows) ? rows.length : 0,
+            rowCount,
             executionTimeMs,
          })
       },
       e => {
          const message = e.message ?? ""
+         if (message.includes("timed out") || message.includes("ETIMEOUT")) {
+            return err(new QueryError("query:timeout", message))
+         }
          if (message.toLowerCase().includes("syntax")) {
             return err(new QueryError("query:invalid_syntax", message))
          }
