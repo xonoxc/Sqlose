@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useRef, useEffect, useMemo } from "react"
 import {
    useReactTable,
@@ -294,13 +296,15 @@ export function ResultsTable<T extends Record<string, unknown>>({
 
       const handleMouseMove = (moveE: MouseEvent) => {
          if (!resizeRef.current) {
-            return 
-         }         const container = parentRef.current
+            return
+         }
+         const container = parentRef.current
          if (!container) {
-            return 
-         }         const containerWidth = container.clientWidth
+            return
+         }
+         const containerWidth = container.clientWidth
          if (containerWidth <= 0) {
-            return 
+            return
          }
          const { colId, startX, startPct } = resizeRef.current
          const delta = moveE.clientX - startX
@@ -319,7 +323,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
          })
 
          if (otherTotal <= 0) {
-            return 
+            return
          }
          const oldColPct = startPct
          const deltaTotal = newPct - oldColPct
@@ -450,7 +454,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
                                  className={cn(
                                     "group transition-colors duration-100",
                                     isRowSelected ? "bg-accent/[0.07]" : "hover:bg-white/[0.015]",
-                                    alternatingRows && virtualRow.index % 2 === 1 && "bg-white/[0.03]"
+                                    alternatingRows &&
+                                       virtualRow.index % 2 === 1 &&
+                                       "bg-white/[0.03]"
                                  )}
                                  style={{ height: rowHeight }}
                                  onContextMenu={e => handleContextMenu(e, row)}
@@ -475,7 +481,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                                           style={{ width }}
                                           onClick={e => {
                                              e.stopPropagation()
-                                             setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                             setSelectedCell({
+                                                rowId: row.id,
+                                                colId: cell.column.id,
+                                             })
                                              setSelectedRow(row.id)
                                           }}
                                           onDoubleClick={() => {
@@ -485,7 +494,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                                           onContextMenu={e => {
                                              e.stopPropagation()
                                              const val = cell.getValue()
-                                             setSelectedCell({ rowId: row.id, colId: cell.column.id })
+                                             setSelectedCell({
+                                                rowId: row.id,
+                                                colId: cell.column.id,
+                                             })
                                              setSelectedRow(row.id)
                                              setCtxMenu({
                                                 visible: true,
@@ -500,7 +512,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                                           }}
                                           title="Double click to copy"
                                        >
-                                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                          {flexRender(
+                                             cell.column.columnDef.cell,
+                                             cell.getContext()
+                                          )}
                                        </TableCell>
                                     )
                                  })}
@@ -512,7 +527,10 @@ export function ResultsTable<T extends Record<string, unknown>>({
                               <TableCell
                                  colSpan={columns.length}
                                  style={{
-                                    height: Math.max(0, totalSize - virtualRows[virtualRows.length - 1].end),
+                                    height: Math.max(
+                                       0,
+                                       totalSize - virtualRows[virtualRows.length - 1].end
+                                    ),
                                     padding: 0,
                                     border: "none",
                                  }}
@@ -601,7 +619,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
                <button
                   className="flex items-center gap-2 w-full px-3 py-1.5 text-[13px] text-text-primary hover:bg-bg-quaternary transition-colors text-left"
                   onClick={() => {
-                     copyToClipboard(formatAllRows(displayData as Record<string, unknown>[], columnNames))
+                     copyToClipboard(
+                        formatAllRows(displayData as Record<string, unknown>[], columnNames)
+                     )
                      closeCtxMenu()
                   }}
                >
@@ -614,7 +634,9 @@ export function ResultsTable<T extends Record<string, unknown>>({
                      const header = columnNames.join("\t")
                      const full = [
                         header,
-                        ...displayData.map(r => formatRow(r as Record<string, unknown>, columnNames)),
+                        ...displayData.map(r =>
+                           formatRow(r as Record<string, unknown>, columnNames)
+                        ),
                      ].join("\n")
                      copyToClipboard(full)
                      closeCtxMenu()
