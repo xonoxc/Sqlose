@@ -17,23 +17,20 @@ export async function parseCSV(content: string): AsyncAppResult<CSVParsed> {
       return err(new ImportError("import:parse_failed", "CSV has no content"))
    }
 
-   const lines = content
-      .trim()
-      .split("\n")
-      .filter(l => l.trim().length > 0)
+   const allRows = parseCSVRows(content.trim())
 
-   if (lines.length < 1) {
+   if (allRows.length === 0) {
       return err(new ImportError("import:parse_failed", "CSV has no content"))
    }
 
-   const columns = parseCSVLine(lines[0])
+   const columns = allRows[0]
    if (columns.length === 0) {
       return err(new ImportError("import:parse_failed", "CSV has no columns"))
    }
 
    const rows: Record<string, string>[] = []
-   for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i])
+   for (let i = 1; i < allRows.length; i++) {
+      const values = allRows[i]
       if (values.length === 0) continue
       if (values.length !== columns.length) {
          return err(
@@ -53,30 +50,61 @@ export async function parseCSV(content: string): AsyncAppResult<CSVParsed> {
    return ok({ columns, rows })
 }
 
-function parseCSVLine(line: string): string[] {
-   const result: string[] = []
-   let current = ""
+function parseCSVRows(content: string): string[][] {
+   const rows: string[][] = []
+   let currentRow: string[] = []
+   let currentField = ""
    let inQuotes = false
+   let i = 0
 
-   for (let i = 0; i < line.length; i++) {
-      const char = line[i]
-      if (char === '"') {
-         if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
-            current += '"'
+   while (i < content.length) {
+      const char = content[i]
+
+      if (inQuotes) {
+         if (char === '"') {
+            if (i + 1 < content.length && content[i + 1] === '"') {
+               currentField += '"'
+               i += 2
+            } else {
+               inQuotes = false
+               i++
+            }
+         } else {
+            currentField += char
+            i++
+         }
+      } else {
+         if (char === '"') {
+            inQuotes = true
+            i++
+         } else if (char === ",") {
+            currentRow.push(currentField)
+            currentField = ""
+            i++
+         } else if (char === "\n" || char === "\r") {
+            if (char === "\r" && i + 1 < content.length && content[i + 1] === "\n") {
+               i++
+            }
+            currentRow.push(currentField)
+            currentField = ""
+            if (currentRow.some(f => f.trim().length > 0)) {
+               rows.push(currentRow)
+            }
+            currentRow = []
             i++
          } else {
-            inQuotes = !inQuotes
+            currentField += char
+            i++
          }
-      } else if (char === "," && !inQuotes) {
-         result.push(current)
-         current = ""
-      } else {
-         current += char
       }
    }
-   result.push(current)
 
-   return result
+   currentRow.push(currentField)
+   if (currentRow.some(f => f.trim().length > 0)) {
+      rows.push(currentRow)
+   }
+
+   return rows
 }
 
 export function inferSchema(

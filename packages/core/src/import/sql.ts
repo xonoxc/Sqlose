@@ -37,8 +37,13 @@ function splitSQL(content: string): string[] {
       const char = content[i]
       if (inString) {
          current += char
-         if (char === stringChar && content[i - 1] !== "\\") {
-            inString = false
+         if (char === stringChar) {
+            if (i + 1 < content.length && content[i + 1] === stringChar) {
+               current += stringChar
+               i++
+            } else {
+               inString = false
+            }
          }
       } else if (char === "'" || char === '"') {
          current += char
