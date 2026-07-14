@@ -44,6 +44,8 @@ export interface QueryResult {
    rows: Record<string, unknown>[]
    rowCount: number
    executionTimeMs: number
+   truncated?: boolean
+   totalRowCount?: number
 }
 
 export interface QueryHistory {
