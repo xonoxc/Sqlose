@@ -300,6 +300,7 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
          docker.createContainer({
             Image: config.image,
             Env: config.env,
+            name: `sqlose-${dbType}-${port}`,
             ExposedPorts: { [`${config.internalPort}/tcp`]: {} },
             HostConfig: {
                PortBindings: {
