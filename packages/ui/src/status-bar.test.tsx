@@ -5,7 +5,7 @@ import { StatusBar } from "./status-bar"
 describe("StatusBar", () => {
    it("renders vim indicator when vimMode is provided", () => {
       render(<StatusBar vimMode="normal" />)
-      expect(screen.getByText("-- NORMAL --")).toBeInTheDocument()
+      expect(screen.getByText("NORMAL")).toBeInTheDocument()
    })
 
    it("renders db type label when provided", () => {
