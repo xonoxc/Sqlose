@@ -21,7 +21,7 @@ export function HeroSection() {
 
                <GitHub className="w-3.5 h-3.5" />
                 <span className="text-xs flex items-center gap-2 text-shadow-accent">
-                   v0.2.0 · Latest
+                   v0.3.0 · Latest
                 </span>
                <span className="block h-5 border-l border-neutral-500/40" />
 
@@ -60,8 +60,10 @@ export function HeroSection() {
                      GitHub
                   </a>
                </Button>
-               <Button style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }}>
-                  Get app <ArrowRightIcon data-icon="inline-end" />
+               <Button style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }} asChild>
+                  <a href="https://github.com/xonoxc/Sqlose/releases/tag/v0.3.0" target="_blank" rel="noreferrer">
+                     Get app <ArrowRightIcon data-icon="inline-end" />
+                  </a>
                </Button>
             </div>
 

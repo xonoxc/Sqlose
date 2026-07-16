@@ -228,7 +228,7 @@ export default function Peoplesay() {
                      </a>
                   </div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
-                     Release: v0.2.0
+                     Release: v0.3.0
                   </p>
                </div>
             </div>
