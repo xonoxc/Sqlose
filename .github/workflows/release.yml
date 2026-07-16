@@ -36,8 +36,8 @@ jobs:
          - name: Typecheck
            run: bun typecheck
 
-      - name: Test
-        run: bun run test
+         - name: Test
+           run: bun run test
 
          - name: Build and publish
            env:
