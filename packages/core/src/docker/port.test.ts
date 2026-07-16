@@ -8,10 +8,10 @@ vi.mock("net", () => ({
          on: vi.fn(),
          listen: vi.fn((_port: number, cb: () => void) => {
             if (shouldFailListen) {
-               const errorHandler = server.on.mock.calls.find(
-                  ([event]: [string]) => event === "error"
-               )
-               if (errorHandler) errorHandler[1](new Error("EADDRINUSE"))
+         const errorHandler = server.on.mock.calls.find(
+            (call: unknown[]) => call[0] === "error"
+         )
+         if (errorHandler) errorHandler[1](new Error("EADDRINUSE"))
             } else {
                cb()
             }
