@@ -1,4 +1,9 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi } from "vitest"
+
+vi.mock("sqlite3", () => ({
+   default: { Database: vi.fn(), OPEN_READWRITE: 2 },
+}))
+
 import {
    createEnvironment,
    healthCheck,

@@ -1,3 +1,4 @@
+"use client"
 import { useState, type ReactNode } from "react"
 import { cn } from "./cn"
 import { Badge } from "./badge"
