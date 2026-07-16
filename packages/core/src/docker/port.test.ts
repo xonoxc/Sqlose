@@ -1,5 +1,32 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi, afterEach } from "vitest"
+
+let shouldFailListen = false
+
+vi.mock("net", () => ({
+   createServer: () => {
+      const server = {
+         on: vi.fn(),
+         listen: vi.fn((_port: number, cb: () => void) => {
+            if (shouldFailListen) {
+               const errorHandler = server.on.mock.calls.find(
+                  ([event]: [string]) => event === "error"
+               )
+               if (errorHandler) errorHandler[1](new Error("EADDRINUSE"))
+            } else {
+               cb()
+            }
+         }),
+         close: vi.fn((cb: () => void) => cb()),
+      }
+      return server
+   },
+}))
+
 import { reservePort, releasePort, findAvailablePort } from "./port"
+
+afterEach(() => {
+   shouldFailListen = false
+})
 
 describe("findAvailablePort", () => {
    it("should find an available port", async () => {
@@ -12,7 +39,8 @@ describe("findAvailablePort", () => {
    })
 
    it("should return error when no ports available", async () => {
-      const result = await findAvailablePort(1, 1)
+      shouldFailListen = true
+      const result = await findAvailablePort(15200, 15200)
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
          expect(result.error.code).toBe("docker:port_conflict")
