@@ -123,13 +123,9 @@ export function AppSidebar({
                      <SelectValue placeholder="Select Database" />
                   </div>
                </SelectTrigger>
-               <SelectContent className="border-border/10 bg-bg-tertiary min-w-[200px] shadow-2xl">
-                  {environments.map((env: Environment) => (
-                     <SelectItem
-                        key={env.id}
-                        value={env.id}
-                        className="text-[13px] hover:bg-bg-quaternary"
-                     >
+                <SelectContent className="min-w-[200px] shadow-2xl !border-0 bg-bg-tertiary">
+                   {environments.map((env: Environment) => (
+                      <SelectItem key={env.id} value={env.id} className="text-[13px]">
                         {env.name || `${env.dbType} ${env.port}`}
                      </SelectItem>
                   ))}
@@ -202,15 +198,15 @@ export function AppSidebar({
                   {tableTreeExpanded && (
                      <div className="flex items-center gap-0.5">
                         <button
-                            onClick={handleRefresh}
-                            disabled={schemaLoading}
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
-                            aria-label="Refresh tables"
-                         >
-                            <IconRefresh
-                               className={cn("h-4 w-4", schemaLoading && "animate-spin")}
-                            />
-                         </button>
+                           onClick={handleRefresh}
+                           disabled={schemaLoading}
+                           className="h-8 w-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
+                           aria-label="Refresh tables"
+                        >
+                           <IconRefresh
+                              className={cn("h-4 w-4", schemaLoading && "animate-spin")}
+                           />
+                        </button>
                      </div>
                   )}
                </div>
