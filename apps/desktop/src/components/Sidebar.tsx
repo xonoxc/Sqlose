@@ -111,7 +111,7 @@ export function AppSidebar({
    }
 
    return (
-      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full">
+      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full p-3">
          {/* Header: DB Selector + Actions */}
          <div className="flex items-center justify-between w-full gap-1 px-3 h-12 shrink-0">
             <Select value={selectedEnvironmentId ?? ""} onValueChange={handleSelect}>

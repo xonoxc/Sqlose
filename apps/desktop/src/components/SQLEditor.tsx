@@ -43,10 +43,10 @@ export function SQLEditor({
                   onClick={onExecute}
                   disabled={isExecuting || !selectedEnvironmentId || !value.trim()}
                   className={cn(
-                     "flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-semibold transition-all outline-none",
+                     "flex items-center gap-1.5 h-7 px-3 rounded-md text-[13px] font-semibold transition-all outline-none hover:bg-transparent hover:shadow-sm focus-visible:shadow-sm focus-visible:ring-1 focus-visible:ring-accent/50 bg-accent text-white shadow-sm",
                      isExecuting || !selectedEnvironmentId || !value.trim()
                         ? "bg-accent/20 text-white/50 cursor-not-allowed"
-                        : "bg-accent hover:bg-accent-light text-white shadow-sm"
+                        : "bg-accent text-white shadow-sm"
                   )}
                >
                   {isExecuting ? (
