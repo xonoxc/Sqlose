@@ -17,6 +17,8 @@ export function useSettingsPanelState() {
    const setTableColumnPreview = useSettingsStore(s => s.setTableColumnPreview)
    const editorFontSize = useSettingsStore(s => s.editorFontSize)
    const setEditorFontSize = useSettingsStore(s => s.setEditorFontSize)
+   const editorFontFamily = useSettingsStore(s => s.editorFontFamily)
+   const setEditorFontFamily = useSettingsStore(s => s.setEditorFontFamily)
    const tableFontSize = useSettingsStore(s => s.tableFontSize)
    const setTableFontSize = useSettingsStore(s => s.setTableFontSize)
    const uiScale = useSettingsStore(s => s.uiScale)
@@ -39,6 +41,10 @@ export function useSettingsPanelState() {
    const handleFontSizeChange = (delta: number) => {
       const next = Math.min(32, Math.max(8, editorFontSize + delta))
       setEditorFontSize(next)
+   }
+
+   const handleFontFamilyChange = (family: string) => {
+      setEditorFontFamily(family)
    }
 
    const handleTableFontSizeChange = (delta: number) => {
@@ -67,6 +73,8 @@ export function useSettingsPanelState() {
       setTableColumnPreview,
       editorFontSize,
       handleFontSizeChange,
+      editorFontFamily,
+      handleFontFamilyChange,
       tableFontSize,
       handleTableFontSizeChange,
       uiScale,

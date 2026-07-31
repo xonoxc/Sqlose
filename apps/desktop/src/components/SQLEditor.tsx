@@ -31,6 +31,7 @@ export function SQLEditor({
 }: SQLEditorProps) {
    const themeId = useThemeStore(s => s.themeId)
    const editorFontSize = useSettingsStore(s => s.editorFontSize)
+   const editorFontFamily = useSettingsStore(s => s.editorFontFamily)
 
    const { vimStatusRef, vimEnabled, selectedEnvironmentId, handleEditorMount, handleChange } =
       useSQLEditorLogic(onChange, onCommandMode)
@@ -116,7 +117,7 @@ export function SQLEditor({
                   options={{
                      minimap: { enabled: false },
                      fontSize: editorFontSize,
-                     fontFamily: "'Geist Mono', ui-monospace, monospace",
+                     fontFamily: `'${editorFontFamily.replace(/'/g, "")}', ui-monospace, monospace`,
                      lineHeight: 20,
                      lineNumbersMinChars: 2,
                      lineNumbers: "on",

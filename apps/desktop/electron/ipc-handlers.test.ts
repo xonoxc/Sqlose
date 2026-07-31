@@ -44,6 +44,10 @@ vi.mock("@sqlose/core", () => {
    }
 })
 
+vi.mock("font-list", () => ({
+   getFonts: vi.fn(),
+}))
+
 beforeEach(async () => {
    const electron = await import("electron")
    mockHandle = (electron as unknown as { ipcMain: { handle: ReturnType<typeof vi.fn> } }).ipcMain
@@ -112,6 +116,7 @@ describe("registerAllHandlers", () => {
       expect(channels).toContain("import:preview-csv")
       expect(channels).toContain("dataset:list")
       expect(channels).toContain("dataset:import")
+      expect(channels).toContain("fonts:list")
    })
 })
 
@@ -568,5 +573,29 @@ describe("dataset:import", () => {
       })) as IPCSerializedResult<unknown>
       expect(result.success).toBe(false)
       if (!result.success) expect(result.error.code).toBe("env:not_found")
+   })
+})
+
+describe("fonts:list", () => {
+   it("should return system font family names", async () => {
+      const { getFonts } = await import("font-list")
+      ;(getFonts as ReturnType<typeof vi.fn>).mockResolvedValue(["JetBrains Mono", "Geist Mono"])
+
+      const result = (await handlers["fonts:list"](mockEvent, {})) as IPCSerializedResult<
+         string[]
+      >
+      expect(result.success).toBe(true)
+      if (result.success) expect(result.data).toEqual(["JetBrains Mono", "Geist Mono"])
+   })
+
+   it("should return an error when font enumeration fails", async () => {
+      const { getFonts } = await import("font-list")
+      ;(getFonts as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("fc-list not found"))
+
+      const result = (await handlers["fonts:list"](mockEvent, {})) as IPCSerializedResult<
+         unknown
+      >
+      expect(result.success).toBe(false)
+      if (!result.success) expect(result.error.code).toBe("font:list_failed")
    })
 })

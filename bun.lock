@@ -47,7 +47,7 @@
     },
     "apps/desktop": {
       "name": "desktop",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@monaco-editor/react": "^4.7.0",
         "@tabler/icons-react": "^3.31.0",
@@ -58,6 +58,7 @@
         "electron-store": "^11.0.2",
         "electron-updater": "^6.8.9",
         "elkjs": "^0.11.1",
+        "font-list": "^2.1.0",
         "monaco-editor": "^0.55.1",
         "monaco-vim": "0.4.4",
         "mysql2": "^3.14.5",
@@ -87,7 +88,7 @@
     },
     "apps/web": {
       "name": "web",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@radix-ui/react-slot": "^1.2.4",
         "@sqlose/shared": "workspace:*",
@@ -114,7 +115,7 @@
     },
     "packages/core": {
       "name": "@sqlose/core",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@sqlose/shared": "workspace:*",
         "dockerode": "^3.3.5",
@@ -133,14 +134,14 @@
     },
     "packages/shared": {
       "name": "@sqlose/shared",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "zod": "^3.24.0",
       },
     },
     "packages/ui": {
       "name": "@sqlose/ui",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@radix-ui/react-dialog": "^1.1.7",
         "@radix-ui/react-select": "^2.1.8",
@@ -1340,6 +1341,8 @@
     "flat-cache": ["flat-cache@4.0.1", "", { "dependencies": { "flatted": "^3.2.9", "keyv": "^4.5.4" } }, "sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw=="],
 
     "flatted": ["flatted@3.4.2", "", {}, "sha512-PjDse7RzhcPkIJwy5t7KPWQSZ9cAbzQXcafsetQoD7sOJRQlGikNbx7yZp2OotDnJyrDcbyRq3Ttb18iYOqkxA=="],
+
+    "font-list": ["font-list@2.1.0", "", {}, "sha512-GMDcD8Wymmhz7pxOzu+Gm/bbVzxvUHJJSiLPCF/rt02g2W7P08Nhz6XiaYjXo8xklXWhLoCiyi1cBPwwASC2fQ=="],
 
     "for-each": ["for-each@0.3.5", "", { "dependencies": { "is-callable": "^1.2.7" } }, "sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg=="],
 

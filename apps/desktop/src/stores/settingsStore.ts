@@ -20,6 +20,7 @@ interface SettingsStore {
    alternatingRowColors: boolean
    tableColumnPreview: boolean
    editorFontSize: number
+   editorFontFamily: string
    tableFontSize: number
    uiScale: number
    executionMode: ExecutionMode
@@ -33,6 +34,7 @@ interface SettingsStore {
    setAlternatingRowColors: (enabled: boolean) => Result<boolean, AppError>
    setTableColumnPreview: (enabled: boolean) => Result<boolean, AppError>
    setEditorFontSize: (size: number) => Result<number, AppError>
+   setEditorFontFamily: (family: string) => Result<string, AppError>
    setTableFontSize: (size: number) => Result<number, AppError>
    setUiScale: (scale: number) => Result<number, AppError>
    setExecutionMode: (mode: ExecutionMode) => Result<ExecutionMode, AppError>
@@ -54,6 +56,7 @@ export const useSettingsStore = create<SettingsStore>()(
          alternatingRowColors: false,
          tableColumnPreview: true,
          editorFontSize: 14,
+         editorFontFamily: "Geist Mono",
          tableFontSize: 13,
          uiScale: 1,
          executionMode: "direct",
@@ -109,6 +112,15 @@ export const useSettingsStore = create<SettingsStore>()(
             }
             set({ editorFontSize: size })
             return ok(size)
+         },
+
+         setEditorFontFamily: (family: string) => {
+            const trimmed = family.trim()
+            if (!trimmed) {
+               return err(new AppError("ipc:invalid_payload", "Invalid font family"))
+            }
+            set({ editorFontFamily: trimmed })
+            return ok(trimmed)
          },
 
          setTableFontSize: (size: number) => {

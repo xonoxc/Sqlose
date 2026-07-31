@@ -77,6 +77,9 @@ const api = {
       list: createInvoke("dataset:list"),
       import: createInvoke("dataset:import"),
    },
+   fonts: {
+      list: createInvoke("fonts:list"),
+   },
    db: {
       get: (key: string) => dbInvoke<string | null>("db:get", key),
       set: (key: string, value: string) => dbInvoke<void>("db:set", key, value),

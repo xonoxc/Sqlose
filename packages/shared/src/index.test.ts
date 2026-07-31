@@ -46,7 +46,7 @@ describe("Error Hierarchy", () => {
    })
 
    it("ERROR_CATEGORIES should contain all categories", () => {
-      expect(ERROR_CATEGORIES).toEqual(["docker", "env", "query", "import", "ipc", "db", "vim"])
+      expect(ERROR_CATEGORIES).toEqual(["docker", "env", "query", "import", "ipc", "db", "vim", "font"])
    })
 
    it("should instantiate AppError with code and default message", () => {

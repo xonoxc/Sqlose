@@ -15,6 +15,7 @@ const NATIVE_EXTERNALS = [
    "dockerode",
    "electron-store",
    "sql.js",
+   "font-list",
 ]
 
 export default defineConfig({

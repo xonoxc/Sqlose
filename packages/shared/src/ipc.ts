@@ -31,6 +31,7 @@ export const IPC_CHANNELS = [
    "import:preview-csv",
    "dataset:list",
    "dataset:import",
+   "fonts:list",
 ] as const
 
 export type IPCChannel = (typeof IPC_CHANNELS)[number]
@@ -57,6 +58,7 @@ export interface IPCRequestMap {
    "import:preview-csv": { content: string }
    "dataset:list": Record<string, never>
    "dataset:import": { datasetId: string; environmentId: string }
+   "fonts:list": Record<string, never>
 }
 
 export interface IPCResponseMap {
@@ -81,6 +83,7 @@ export interface IPCResponseMap {
    "import:preview-csv": { columns: string[]; preview: Record<string, string>[] }
    "dataset:list": Dataset[]
    "dataset:import": { tablesCreated: string[] }
+   "fonts:list": string[]
 }
 
 export type DockerAvailabilityReason = "available" | "not-running" | "not-installed"
@@ -105,7 +108,7 @@ export type IPCHandler<C extends IPCChannel> = (
    request: IPCRequest<C>
 ) => Promise<Result<IPCResponse<C>, AppError>>
 
-export type IPCChannelGroup = "docker" | "env" | "query" | "import" | "dataset"
+export type IPCChannelGroup = "docker" | "env" | "query" | "import" | "dataset" | "fonts"
 
 export const IPC_CHANNEL_GROUPS: Record<IPCChannel, IPCChannelGroup> = {
    "docker:start-env": "docker",
@@ -129,4 +132,5 @@ export const IPC_CHANNEL_GROUPS: Record<IPCChannel, IPCChannelGroup> = {
    "import:preview-csv": "import",
    "dataset:list": "dataset",
    "dataset:import": "dataset",
+   "fonts:list": "fonts",
 }

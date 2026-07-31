@@ -45,6 +45,25 @@ describe("settingsStore", () => {
       expect(useSettingsStore.getState().autoSave).toBe(false)
    })
 
+   it("setEditorFontFamily should set the font family", () => {
+      const result = useSettingsStore.getState().setEditorFontFamily("JetBrains Mono")
+      expect(result.isOk()).toBe(true)
+      expect(useSettingsStore.getState().editorFontFamily).toBe("JetBrains Mono")
+   })
+
+   it("setEditorFontFamily should trim whitespace", () => {
+      const result = useSettingsStore.getState().setEditorFontFamily("  Fira Code  ")
+      expect(result.isOk()).toBe(true)
+      expect(useSettingsStore.getState().editorFontFamily).toBe("Fira Code")
+   })
+
+   it("setEditorFontFamily should reject empty values", () => {
+      useSettingsStore.setState({ editorFontFamily: "Geist Mono" })
+      const result = useSettingsStore.getState().setEditorFontFamily("   ")
+      expect(result.isErr()).toBe(true)
+      expect(useSettingsStore.getState().editorFontFamily).toBe("Geist Mono")
+   })
+
    describe("keybindings", () => {
       it("addKeybinding should add a keybinding", () => {
          const binding = {

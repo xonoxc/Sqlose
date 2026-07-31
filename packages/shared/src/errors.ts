@@ -31,6 +31,7 @@ export const ERROR_CODES = [
    "db:error",
    "vim:mode_error",
    "vim:command_error",
+   "font:list_failed",
 ] as const
 
 export type ErrorCode = (typeof ERROR_CODES)[number]
@@ -42,7 +43,7 @@ type ImportErrorCode = Extract<ErrorCode, `import:${string}`>
 type IPCErrorCode = Extract<ErrorCode, `ipc:${string}`>
 type VimErrorCode = Extract<ErrorCode, `vim:${string}`>
 
-export const ERROR_CATEGORIES = ["docker", "env", "query", "import", "ipc", "db", "vim"] as const
+export const ERROR_CATEGORIES = ["docker", "env", "query", "import", "ipc", "db", "vim", "font"] as const
 
 export type ErrorCategory = (typeof ERROR_CATEGORIES)[number]
 

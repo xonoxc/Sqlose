@@ -45,6 +45,25 @@ describe("SettingsPanel", () => {
       expect(useSettingsStore.getState().keybindings.length).toBeGreaterThan(0)
    })
 
+   it("shows editor font controls", () => {
+      render(<SettingsPanel isOpen={true} onClose={() => {}} />)
+      expect(screen.getByText("Editor Font")).toBeInTheDocument()
+      expect(screen.getByText("Custom Font")).toBeInTheDocument()
+      expect(screen.getByText("Geist Mono")).toBeInTheDocument()
+   })
+
+   it("applies a custom font on enter", async () => {
+      const user = userEvent.setup()
+      useSettingsStore.setState({ editorFontFamily: "Geist Mono" })
+
+      render(<SettingsPanel isOpen={true} onClose={() => {}} />)
+      const input = screen.getByPlaceholderText("e.g. JetBrains Mono")
+      await user.clear(input)
+      await user.type(input, "Fira Code{Enter}")
+
+      expect(useSettingsStore.getState().editorFontFamily).toBe("Fira Code")
+   })
+
    it("calls onClose when done clicked", async () => {
       const user = userEvent.setup()
       const onClose = vi.fn()

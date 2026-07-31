@@ -85,6 +85,9 @@ interface SqloseAPI {
          environmentId: string
       }) => Promise<IPCSerializedResult<{ tablesCreated: string[] }>>
    }
+   fonts: {
+      list: (request: Record<string, never>) => Promise<IPCSerializedResult<string[]>>
+   }
    update: {
       onUpdateAvailable: (
          callback: (info: { version: string; isPackageManaged: boolean }) => void

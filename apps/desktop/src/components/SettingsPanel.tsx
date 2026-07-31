@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
    Button,
@@ -7,6 +8,7 @@ import {
    SelectValue,
    SelectContent,
    SelectItem,
+   Input,
    cn,
 } from "@sqlose/ui"
 import {
@@ -22,9 +24,14 @@ import {
    IconPlus,
 } from "@tabler/icons-react"
 import { useSettingsPanelState } from "~/hooks/useSettingsPanelState"
+import { useSystemFonts } from "~/hooks/useSystemFonts"
 import { useThemeStore } from "~/stores/theme-store"
 import { themes } from "~/themes"
 import { isMac, formatShortcut } from "~/lib/types"
+
+function fontStack(family: string): string {
+   return `'${family.replace(/'/g, "")}', ui-monospace, monospace`
+}
 
 interface SettingsPanelProps {
    isOpen: boolean
@@ -53,6 +60,8 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       setTableColumnPreview,
       editorFontSize,
       handleFontSizeChange,
+      editorFontFamily,
+      handleFontFamilyChange,
       tableFontSize,
       handleTableFontSizeChange,
       uiScale,
@@ -63,6 +72,30 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
    const themeId = useThemeStore(s => s.themeId)
    const setTheme = useThemeStore(s => s.setTheme)
+
+   const { fonts, loading, available, refresh } = useSystemFonts()
+   const [fontInput, setFontInput] = useState(editorFontFamily)
+
+   useEffect(() => {
+      setFontInput(editorFontFamily)
+   }, [editorFontFamily])
+
+   useEffect(() => {
+      if (isOpen) {
+         refresh()
+      }
+   }, [isOpen, refresh])
+
+   const fontOptions = Array.from(new Set(["Geist Mono", ...fonts, editorFontFamily]))
+
+   const commitCustomFont = () => {
+      const trimmed = fontInput.trim()
+      if (trimmed && trimmed !== editorFontFamily) {
+         handleFontFamilyChange(trimmed)
+      } else {
+         setFontInput(editorFontFamily)
+      }
+   }
 
    const actionLabels: Record<string, string> = {
       "query.execute": "Execute Query",
@@ -89,11 +122,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
    return (
       <AnimatePresence>
          {isOpen && (
-            <motion.div
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               transition={{ duration: 0.1 }}
+            <div
                className="fixed inset-0 z-50 flex items-start justify-center pt-[8vh] bg-black/40 backdrop-blur-[2px]"
                onClick={onClose}
                onKeyDown={e => e.key === "Escape" && onClose()}
@@ -103,7 +132,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97, y: -10 }}
                   transition={{ duration: 0.1 }}
-                  className="w-full max-w-xl bg-bg-primary/95 backdrop-blur-xl rounded-xl border border-border shadow-2xl overflow-hidden"
+                  className="w-full max-w-6xl bg-bg-primary backdrop-blur-xl rounded-lg border border-border shadow-2xl overflow-hidden"
                   onClick={e => e.stopPropagation()}
                >
                   {/* Header */}
@@ -126,7 +155,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   </div>
 
                   {/* Body */}
-                  <div className="max-h-[65vh] overflow-y-auto custom-scrollbar px-5 py-5 space-y-6">
+                  <div className="max-h-[65vh] overflow-y-auto scrollbar-none px-5 py-5 space-y-6">
                      {/* Appearance */}
                      <section>
                         <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
@@ -140,19 +169,24 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               const Icon = opt.icon
                               const isActive = appearanceMode === opt.value
                               return (
-                                 <button
+                                 <Button
                                     key={opt.value}
                                     onClick={() => setAppearanceMode(opt.value)}
                                     className={cn(
-                                       "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all border",
+                                       "flex flex-1 items-center justify-center gap-2 rounded-md px-2 py-3 text-[13px] font-medium transition-all border",
                                        isActive
-                                          ? "bg-accent/15 text-accent border-accent/40 shadow-sm"
+                                          ? "bg-accent/15 text-accent border-accent/40 shadow-sm text-foreground"
                                           : "bg-bg-tertiary text-text-secondary border-border/50 hover:bg-bg-quaternary hover:text-text-primary"
                                     )}
                                  >
-                                    <Icon className={cn("h-4 w-4", isActive && "text-accent")} />
+                                    <Icon
+                                       className={cn(
+                                          "h-4 w-4",
+                                          isActive && "text-accent text-foreground"
+                                       )}
+                                    />
                                     {opt.label}
-                                 </button>
+                                 </Button>
                               )
                            })}
                         </div>
@@ -164,7 +198,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               </p>
                            </div>
                            <Select value={themeId} onValueChange={setTheme}>
-                              <SelectTrigger className="w-[180px]">
+                              <SelectTrigger className="w-1/4 px-3 border-border/50 bg-bg-tertiary rounded-lg">
                                  <div className="flex items-center gap-2">
                                     <div
                                        className="h-3.5 w-3.5 rounded-full border border-border/60 shrink-0"
@@ -177,7 +211,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                     <SelectValue />
                                  </div>
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
                                  {themes.map(t => (
                                     <SelectItem key={t.id} value={t.id}>
                                        <div className="flex items-center gap-2">
@@ -211,18 +245,18 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                               </div>
                               <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
                                  {[0.9, 1, 1.1, 1.2].map(s => (
-                                    <button
+                                    <Button
                                        key={s}
                                        onClick={() => handleUiScaleChange(s)}
                                        className={cn(
-                                          "px-2 py-0.5 rounded text-xs font-medium transition-all",
+                                          "px-2 py-0.5 rounded text-xs font-medium transition-all bg-transparent px-3",
                                           uiScale === s
-                                             ? "bg-accent/15 text-accent"
+                                             ? "bg-accent text-foreground"
                                              : "text-text-muted hover:text-text-primary"
                                        )}
                                     >
                                        {Math.round(s * 100)}%
-                                    </button>
+                                    </Button>
                                  ))}
                               </div>
                            </div>
@@ -248,10 +282,12 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                                  value={rowSpacing}
                                  onValueChange={v => setRowSpacing(v as "comfortable" | "compact")}
                               >
-                                 <SelectTrigger className="w-[150px]">
-                                    <SelectValue />
+                                 <SelectTrigger className="w-[150px] px-3 border-border/50 bg-bg-tertiary rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                       <SelectValue />
+                                    </div>
                                  </SelectTrigger>
-                                 <SelectContent>
+                                 <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
                                     <SelectItem value="comfortable">Comfortable</SelectItem>
                                     <SelectItem value="compact">Compact</SelectItem>
                                  </SelectContent>
@@ -334,6 +370,69 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                            Editor
                         </h3>
                         <div className="space-y-4">
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Editor Font</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Font family used in the SQL editor.
+                                 </p>
+                              </div>
+                              <Select
+                                 value={editorFontFamily}
+                                 onValueChange={handleFontFamilyChange}
+                              >
+                                 <SelectTrigger className="px-3 border-border/50 bg-bg-tertiary rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                       <span
+                                          className="max-w-[140px] truncate text-[13px]"
+                                          style={{ fontFamily: fontStack(editorFontFamily) }}
+                                       >
+                                          {editorFontFamily}
+                                       </span>
+                                    </div>
+                                 </SelectTrigger>
+                                 <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
+                                    {loading ? (
+                                       <div className="px-2 py-1.5 text-sm text-text-muted">
+                                          Loading fonts...
+                                       </div>
+                                    ) : (
+                                       fontOptions.map(font => (
+                                          <SelectItem key={font} value={font}>
+                                             <span
+                                                className="inline-block max-w-[200px] truncate"
+                                                style={{ fontFamily: fontStack(font) }}
+                                             >
+                                                {font}
+                                             </span>
+                                          </SelectItem>
+                                       ))
+                                    )}
+                                 </SelectContent>
+                              </Select>
+                           </div>
+                           {!available && (
+                              <p className="text-[11px] text-text-muted -mt-1">
+                                 Local font detection is unavailable — showing common monospace
+                                 fonts.
+                              </p>
+                           )}
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <p className="text-sm text-text-primary">Custom Font</p>
+                                 <p className="text-xs text-text-muted mt-0.5">
+                                    Type any installed font family name.
+                                 </p>
+                              </div>
+                              <Input
+                                 value={fontInput}
+                                 onChange={e => setFontInput(e.target.value)}
+                                 onKeyDown={e => e.key === "Enter" && commitCustomFont()}
+                                 onBlur={commitCustomFont}
+                                 placeholder="e.g. JetBrains Mono"
+                                 className="w-[200px] h-8"
+                              />
+                           </div>
                            <div className="flex items-center justify-between">
                               <div>
                                  <p className="text-sm text-text-primary">Editor Font Size</p>
@@ -474,7 +573,7 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                      </Button>
                   </div>
                </motion.div>
-            </motion.div>
+            </div>
          )}
       </AnimatePresence>
    )

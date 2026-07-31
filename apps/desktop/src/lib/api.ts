@@ -174,6 +174,14 @@ export const api = {
          return deserializeResult(result)
       },
    },
+
+   fonts: {
+      async list() {
+         const api = getSqloseAPI()
+         const result = await api.fonts.list({})
+         return deserializeResult(result)
+      },
+   },
 }
 
 export type Api = typeof api

@@ -30,6 +30,7 @@ import { releasePort, destroyPool } from "@sqlose/core"
 import { executeQuery } from "@sqlose/core"
 import { importCSV, previewCSV, parseSQLDump, extractTableNames } from "@sqlose/core"
 import { listDatasets, getDatasetSQL } from "@sqlose/core"
+import { getFonts } from "font-list"
 
 function getSqliteDbPath(envId: string): string {
    const dbDir = path.join(app.getPath("userData"), "data")
@@ -515,5 +516,10 @@ export function registerAllHandlers(): void {
       }
 
       return serializeOk({ tablesCreated: tables })
+   })
+
+   ipcMain.handle("fonts:list", async () => {
+      const result = await attempt(getFonts({ disableQuoting: true }))
+      return serializeResult(result.mapErr(err => new AppError("font:list_failed", err.message)))
    })
 }
