@@ -74,11 +74,11 @@ export function HistoryView() {
             ) : (
                <div className="p-4 space-y-1">
                   {entries.map(entry => (
-                      <div
-                         key={entry.id}
-                         className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
-                         onClick={() => handleOpen(entry.sql, entry.result)}
-                      >
+                     <div
+                        key={entry.id}
+                        className="group flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-bg-tertiary/50 transition-colors cursor-pointer"
+                        onClick={() => handleOpen(entry.sql, entry.result)}
+                     >
                         <div
                            className={cn(
                               "h-2 w-2 rounded-full shrink-0",
@@ -91,15 +91,19 @@ export function HistoryView() {
                            </div>
                            <div className="flex items-center gap-3 mt-0.5">
                               <span className="text-[11px] text-text-muted/60">{entry.dbType}</span>
-                              <span className="text-[11px] text-text-muted/60">{entry.duration}ms</span>
-                              <span className="text-[11px] text-text-muted/60">{formatTime(entry.executedAt)}</span>
+                              <span className="text-[11px] text-text-muted/60">
+                                 {entry.duration}ms
+                              </span>
+                              <span className="text-[11px] text-text-muted/60">
+                                 {formatTime(entry.executedAt)}
+                              </span>
                            </div>
                         </div>
-                         <button
-                            onClick={e => {
-                               e.stopPropagation()
-                               handleOpen(entry.sql, entry.result)
-                            }}
+                        <button
+                           onClick={e => {
+                              e.stopPropagation()
+                              handleOpen(entry.sql, entry.result)
+                           }}
                            className="h-7 w-7 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors shrink-0 opacity-0 group-hover:opacity-100"
                            title="Open in new tab"
                         >

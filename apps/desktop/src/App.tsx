@@ -200,7 +200,7 @@ function AppContent() {
                               })
                            }}
                         />
-                        <div className="flex items-center border-b border-border/20 bg-bg-tab px-2 shrink-0 w-full z-10 relative">
+                        <div className="flex items-center border-border/20 px-2 shrink-0 w-full z-10 relative">
                            <TabBar />
                         </div>
                         <div className="flex-1 min-h-0 overflow-hidden">

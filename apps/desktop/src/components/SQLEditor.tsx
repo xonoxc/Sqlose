@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react"
-import { cn } from "@sqlose/ui"
+import { Button, cn } from "@sqlose/ui"
 import { IconPlayerPlay, IconSettings, IconDeviceFloppy } from "@tabler/icons-react"
 import { isMac } from "~/lib/types"
 import { useSQLEditorLogic, defineMonacoTheme } from "~/hooks/useSQLEditorLogic"
@@ -32,19 +32,14 @@ export function SQLEditor({
    const themeId = useThemeStore(s => s.themeId)
    const editorFontSize = useSettingsStore(s => s.editorFontSize)
 
-   const {
-      vimStatusRef,
-      vimEnabled,
-      selectedEnvironmentId,
-      handleEditorMount,
-      handleChange,
-   } = useSQLEditorLogic(onChange, onCommandMode)
+   const { vimStatusRef, vimEnabled, selectedEnvironmentId, handleEditorMount, handleChange } =
+      useSQLEditorLogic(onChange, onCommandMode)
 
    return (
       <div className="flex flex-col h-full bg-bg-primary w-full">
-         <div className="flex items-center justify-between h-9 px-4 border-b border-border/20 bg-bg-secondary shrink-0 select-none">
+         <div className="flex items-center justify-between h-12 px-4 border-b border-border/20 bg-bg-secondary shrink-0 select-none">
             <div className="flex items-center gap-3">
-               <button
+               <Button
                   onClick={onExecute}
                   disabled={isExecuting || !selectedEnvironmentId || !value.trim()}
                   className={cn(
@@ -74,7 +69,7 @@ export function SQLEditor({
                         </div>
                      </>
                   )}
-               </button>
+               </Button>
 
                {executionTimeMs !== null && !isExecuting && (
                   <span className="text-[11px] text-text-muted font-mono">{executionTimeMs}ms</span>

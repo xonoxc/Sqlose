@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from "motion/react"
 import { Button, cn } from "@sqlose/ui"
 import { IconX, IconPlus, IconLoader2, IconTable } from "@tabler/icons-react"
 import type { Tab } from "~/lib/types"
@@ -38,7 +37,7 @@ export function TabBar() {
             <Button
                onClick={() => handleOpenTab()}
                aria-label="New tab"
-               className="flex items-center justify-center p-1 rounded-md opacity-50 hover:opacity-100 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none hover:bg-white/10 text-white/40 hover:text-white/80"
+               className="flex items-center justify-center p-1 px-3 border-2 border-border/20 rounded-md opacity-50 hover:opacity-100 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none hover:bg-white/10 text-white/40 hover:text-white/80"
             >
                <IconPlus className="h-4 w-4 stoke-3" />
             </Button>
@@ -65,8 +64,7 @@ function TabItem({
    onDragEnd: () => void
 }) {
    return (
-      <motion.div
-         layout
+      <div
          draggable
          onDragStart={onDragStart}
          onDragOver={onDragOver}
@@ -118,6 +116,6 @@ function TabItem({
          >
             <IconX className="h-3.5 w-3.5" strokeWidth={2} />
          </button>
-      </motion.div>
+      </div>
    )
 }
