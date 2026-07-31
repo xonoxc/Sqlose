@@ -8,7 +8,7 @@
 
 <br />
 
-![SQLose Preview](apps/desktop/public/ss.png)
+![SQLose Preview](apps/desktop/public/ss_v0.3.0.png)
 
 <br />
 
