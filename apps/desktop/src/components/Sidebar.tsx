@@ -111,9 +111,9 @@ export function AppSidebar({
    }
 
    return (
-      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full border-r border-border/10">
+      <div className="flex h-full flex-col bg-bg-secondary text-text-secondary w-full">
          {/* Header: DB Selector + Actions */}
-         <div className="flex items-center justify-between w-full gap-1 px-3 pt-3 pb-2 shrink-0">
+         <div className="flex items-center justify-between w-full gap-1 px-3 h-12 shrink-0">
             <Select value={selectedEnvironmentId ?? ""} onValueChange={handleSelect}>
                <SelectTrigger className="w-full bg-transparent border-transparent shadow-none hover:bg-bg-quaternary/30 focus:ring-0 px-2 h-9 transition-colors truncate">
                   <div className="flex items-center gap-2 truncate">
@@ -123,9 +123,9 @@ export function AppSidebar({
                      <SelectValue placeholder="Select Database" />
                   </div>
                </SelectTrigger>
-                <SelectContent className="min-w-[200px] shadow-2xl !border-0 bg-bg-tertiary">
-                   {environments.map((env: Environment) => (
-                      <SelectItem key={env.id} value={env.id} className="text-[13px]">
+               <SelectContent className="min-w-[200px] shadow-2xl !border-0 bg-bg-tertiary">
+                  {environments.map((env: Environment) => (
+                     <SelectItem key={env.id} value={env.id} className="text-[13px]">
                         {env.name || `${env.dbType} ${env.port}`}
                      </SelectItem>
                   ))}
@@ -153,7 +153,7 @@ export function AppSidebar({
             {/* WORKSPACE Section */}
             <div className="px-3 pt-1 pb-0.5">
                <div className="flex items-center gap-1.5 px-2 py-1.5 mb-0.5">
-                  <span className="text-[11px] font-semibold tracking-widest uppercase text-text-muted/60">
+                  <span className="text-[12px] font-semibold tracking-widest uppercase text-text-muted/60">
                      Workspace
                   </span>
                </div>
@@ -191,7 +191,7 @@ export function AppSidebar({
                            tableTreeExpanded && "rotate-90"
                         )}
                      />
-                     <span className="text-[11px] font-semibold tracking-widest uppercase text-text-muted/60">
+                     <span className="text-[12px] font-semibold tracking-widest uppercase text-text-muted/60">
                         Tables
                      </span>
                   </button>
@@ -230,7 +230,7 @@ export function AppSidebar({
                      {/* Table List */}
                      <div
                         ref={tableListRef}
-                        className="flex-1 overflow-y-auto custom-scrollbar pb-2"
+                        className="flex-1 overflow-y-auto custom-scrollbar pb-2 outline-none border-none"
                         onKeyDown={handleKeyDown}
                         tabIndex={0}
                         role="listbox"
@@ -239,7 +239,7 @@ export function AppSidebar({
                         {schemaLoading && tables.length === 0 && (
                            <div className="flex items-center justify-center py-6">
                               <div className="flex flex-col items-center gap-2">
-                                 <div className="h-3 w-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+                                 <div className="h-3 w-3 rounded-full border-t-transparent animate-spin" />
                                  <span className="text-[11px] text-text-muted">
                                     Loading tables...
                                  </span>
@@ -291,9 +291,9 @@ export function AppSidebar({
                                     role="option"
                                     aria-selected={isActive}
                                     className={cn(
-                                       "flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
+                                       "flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
                                        isActive
-                                          ? "bg-white/10 text-white border-l-[2.5px] border-white/50"
+                                          ? "bg-white/10 text-white border-l-[2.5px]"
                                           : "text-white/65 hover:text-white hover:bg-bg-quaternary/30 border-l-[2.5px] border-transparent",
                                        isFocused && "ring-1 ring-accent/40"
                                     )}
@@ -369,7 +369,7 @@ export function AppSidebar({
                                                    ) : (
                                                       <IconCircleDot className="h-2 w-2 shrink-0 text-text-muted/30" />
                                                    )}
-                                                   <span className="text-[11px] font-mono text-text-primary truncate">
+                                                   <span className="text-[12px] font-mono text-text-primary truncate">
                                                       {col.name}
                                                    </span>
                                                    <span className="text-[9px] font-mono text-text-muted/50 truncate ml-auto">

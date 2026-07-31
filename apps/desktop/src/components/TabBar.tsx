@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react"
-import { cn } from "@sqlose/ui"
+import { Button, cn } from "@sqlose/ui"
 import { IconX, IconPlus, IconLoader2, IconTable } from "@tabler/icons-react"
 import type { Tab } from "~/lib/types"
 import { useTabBarLogic } from "~/hooks/useTabBarLogic"
@@ -17,49 +17,32 @@ export function TabBar() {
    } = useTabBarLogic()
 
    return (
-      <div className="flex h-full w-full items-end gap-2 overflow-hidden">
-         <div className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-custom-subtle px-1 min-h-[44px]">
-            <style>{`
-               .scrollbar-custom-subtle::-webkit-scrollbar {
-                  height: 2px;
-               }
-               .scrollbar-custom-subtle::-webkit-scrollbar-track {
-                  background: transparent;
-               }
-               .scrollbar-custom-subtle::-webkit-scrollbar-thumb {
-                  background: transparent;
-                  border-radius: 10px;
-               }
-               .scrollbar-custom-subtle:hover::-webkit-scrollbar-thumb {
-                  background: var(--color-border);
-               }
-            `}</style>
-            <AnimatePresence mode="popLayout">
-               {tabs.map((tab, index) => (
-                  <TabItem
-                     key={tab.id}
-                     tab={tab}
-                     isActive={tab.id === activeTabId}
-                     onSelect={() => handleSetActiveTab(tab.id)}
-                     onClose={e => {
-                        e.stopPropagation()
-                        handleCloseTab(tab.id)
-                     }}
-                     onDragStart={() => handleDragStart(index)}
-                     onDragOver={() => handleDragOver(index)}
-                     onDragEnd={handleDragEnd}
-                  />
-               ))}
-            </AnimatePresence>
-         </div>
+      <div className="flex h-full w-full items-end gap-10 overflow-hidden items-center">
+         <div className="flex-1 flex items-center gap-3 overflow-x-auto scrollbar-custom-subtle px-1 p-3">
+            {tabs.map((tab, index) => (
+               <TabItem
+                  key={tab.id}
+                  tab={tab}
+                  isActive={tab.id === activeTabId}
+                  onSelect={() => handleSetActiveTab(tab.id)}
+                  onClose={e => {
+                     e.stopPropagation()
+                     handleCloseTab(tab.id)
+                  }}
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={() => handleDragOver(index)}
+                  onDragEnd={handleDragEnd}
+               />
+            ))}
 
-         <button
-            onClick={() => handleOpenTab()}
-            className="flex items-center justify-center h-8 w-8 rounded-xl text-text-muted hover:text-text-primary hover:bg-bg-quaternary/50 transition-all shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent mb-[7px]"
-            aria-label="New tab"
-         >
-            <IconPlus className="h-4 w-4" />
-         </button>
+            <Button
+               onClick={() => handleOpenTab()}
+               aria-label="New tab"
+               className="flex items-center justify-center p-1 rounded-md opacity-50 hover:opacity-100 transition-opacity duration-150 focus-visible:opacity-100 focus-visible:outline-none hover:bg-white/10 text-white/40 hover:text-white/80"
+            >
+               <IconPlus className="h-4 w-4 stoke-3" />
+            </Button>
+         </div>
       </div>
    )
 }
@@ -84,10 +67,6 @@ function TabItem({
    return (
       <motion.div
          layout
-         initial={{ opacity: 0, x: -6 }}
-         animate={{ opacity: 1, x: 0 }}
-         exit={{ opacity: 0, x: 6 }}
-         transition={{ duration: 0.2, ease: [0.25, 0, 0, 1] }}
          draggable
          onDragStart={onDragStart}
          onDragOver={onDragOver}

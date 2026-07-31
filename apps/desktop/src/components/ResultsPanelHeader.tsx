@@ -42,8 +42,8 @@ export function ResultsPanelHeader({
    ]
 
    return (
-      <div className="flex items-center justify-between p-1 h-10 bg-bg-secondary/40 shrink-0 border-b border-border/20 z-30">
-         <div className="flex items-center gap-0.5 h-full py-4">
+      <div className="flex items-center justify-between px-2 h-9 bg-bg-secondary shrink-0 border-b border-border/20 z-30">
+         <div className="flex items-center gap-0.5 h-full">
             <button
                onClick={onToggleCollapse}
                className="flex items-center justify-center -ml-1 h-7 w-7 rounded-md hover:bg-white/5 text-text-muted/60 transition-colors"
@@ -102,7 +102,7 @@ export function ResultsPanelHeader({
                )}
             </div>
 
-            <div className="flex items-center gap-0.5 px-4 flex items-center justify-center gap-3">
+            <div className="flex items-center gap-1 px-2">
                {activeTab?.result && (
                   <>
                      <CopyDropdown

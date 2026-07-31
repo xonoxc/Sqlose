@@ -21,7 +21,7 @@ export function StatusBar({ vimMode, dbType, leftItems, className }: StatusBarPr
    return (
       <div
          className={cn(
-            "flex h-6 items-center justify-between border-t border-border/60 bg-bg-primary px-3 text-[13.5px] text-text-muted shadow-[0_-1px_2px_rgba(0,0,0,0.1)] z-50 shrink-0 py-3",
+            "flex h-8 items-center justify-between border-t border-border/20 bg-bg-primary px-3 text-[12px] text-text-muted z-50 shrink-0",
             className
          )}
       >

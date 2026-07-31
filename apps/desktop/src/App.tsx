@@ -44,7 +44,15 @@ function AppContent() {
    useUpdateToast()
    const ui = useAppUIState()
    const workspace = useWorkspaceActions()
-   const { stuckEnvId, stuckEnv, handleRestoreEnv, handleExitAndNuke, isRestoring, restoreProgress, restoreLabel } = useContainerHalted()
+   const {
+      stuckEnvId,
+      stuckEnv,
+      handleRestoreEnv,
+      handleExitAndNuke,
+      isRestoring,
+      restoreProgress,
+      restoreLabel,
+   } = useContainerHalted()
 
    const vimEnabled = useSettingsStore(s => s.vimModeEnabled)
    const vimMode = useEditorStore(s => s.vimMode)
@@ -161,12 +169,12 @@ function AppContent() {
                         style={{ width: ui.sidebarCollapsed ? 56 : paneSizes.sidebarWidth }}
                         className="flex flex-col h-full bg-bg-secondary border-r border-border/80 overflow-hidden shrink-0 transition-all duration-150"
                      >
-                         <AppSidebar
-                            onSettingsOpen={ui.openSettings}
-                            onOpenTable={workspace.handleOpenTable}
-                            collapsed={ui.sidebarCollapsed}
-                            onToggleCollapse={ui.toggleSidebarCollapse}
-                         />
+                        <AppSidebar
+                           onSettingsOpen={ui.openSettings}
+                           onOpenTable={workspace.handleOpenTable}
+                           collapsed={ui.sidebarCollapsed}
+                           onToggleCollapse={ui.toggleSidebarCollapse}
+                        />
                      </div>
                   )}
                   {ui.sidebarOpen && !ui.sidebarCollapsed && (
@@ -178,7 +186,7 @@ function AppContent() {
                      </div>
                   )}
                   <div className="flex-1 min-w-0 overflow-hidden">
-                     <div className="flex flex-col h-full bg-bg-primary w-full relative py-1">
+                     <div className="flex flex-col h-full bg-bg-primary w-full relative">
                         <TopBar
                            onOpenPalette={ui.openPalette}
                            onBackToDashboard={() => {
@@ -192,34 +200,34 @@ function AppContent() {
                               })
                            }}
                         />
-                        <div className="flex items-end border-b border-border/20 bg-bg-tab px-3 py-0.5 shrink-0 w-full z-10 relative min-h-[52px]">
+                        <div className="flex items-center border-b border-border/20 bg-bg-tab px-2 shrink-0 w-full z-10 relative">
                            <TabBar />
                         </div>
                         <div className="flex-1 min-h-0 overflow-hidden">
-                            <EditorWorkspace
-                               activeTabId={workspace.activeTabId}
-                               activeTab={workspace.activeTab}
-                               queryDraft={workspace.queryDraft}
-                               isExecuting={workspace.isExecuting}
-                               onQueryChange={workspace.handleQueryChange}
-                               onExecute={workspace.execute}
-                               onSettingsOpen={ui.openSettings}
-                               onPaletteOpen={ui.openPalette}
-                               onNewQuery={workspace.handleNewQuery}
-                               onClearResults={workspace.handleClearResults}
-                               onSaveQuery={ui.openSaveQuery}
-                               isResultsMaximized={ui.isResultsMaximized}
-                               resultsCollapsed={ui.resultsCollapsed}
-                               resultsActiveTab={ui.resultsActiveTab}
-                               onResultsActiveTabChange={ui.setResultsActiveTab}
-                               onToggleResultsCollapse={ui.toggleResultsCollapse}
-                               onToggleResultsMaximize={ui.toggleResultsMaximize}
-                               resultsHeight={paneSizes.resultsHeight}
-                               resultsMinHeight={RESULTS_MIN_HEIGHT}
-                               onResultsDividerMouseDown={e =>
-                                  resultsResize.handleMouseDown(e, paneSizes.resultsHeight)
-                               }
-                            />
+                           <EditorWorkspace
+                              activeTabId={workspace.activeTabId}
+                              activeTab={workspace.activeTab}
+                              queryDraft={workspace.queryDraft}
+                              isExecuting={workspace.isExecuting}
+                              onQueryChange={workspace.handleQueryChange}
+                              onExecute={workspace.execute}
+                              onSettingsOpen={ui.openSettings}
+                              onPaletteOpen={ui.openPalette}
+                              onNewQuery={workspace.handleNewQuery}
+                              onClearResults={workspace.handleClearResults}
+                              onSaveQuery={ui.openSaveQuery}
+                              isResultsMaximized={ui.isResultsMaximized}
+                              resultsCollapsed={ui.resultsCollapsed}
+                              resultsActiveTab={ui.resultsActiveTab}
+                              onResultsActiveTabChange={ui.setResultsActiveTab}
+                              onToggleResultsCollapse={ui.toggleResultsCollapse}
+                              onToggleResultsMaximize={ui.toggleResultsMaximize}
+                              resultsHeight={paneSizes.resultsHeight}
+                              resultsMinHeight={RESULTS_MIN_HEIGHT}
+                              onResultsDividerMouseDown={e =>
+                                 resultsResize.handleMouseDown(e, paneSizes.resultsHeight)
+                              }
+                           />
                         </div>
                         <StatusBar
                            vimMode={vimEnabled ? vimMode : undefined}
@@ -232,48 +240,40 @@ function AppContent() {
          ) : (
             <Dashboard />
          )}
-          <CommandPalette
-             isOpen={ui.paletteOpen}
-             onClose={ui.closePalette}
-             onExecuteQuery={workspace.execute}
-             onClearResults={workspace.handleClearResults}
-             onOpenTable={workspace.handleOpenTable}
-             onOpenQuery={workspace.handleOpenQuery}
-             onNukeConfirm={ui.openNukeConfirm}
-             onSaveQuery={ui.openSaveQuery}
-             onRenameQuery={ui.openRenameQuery}
-          />
+         <CommandPalette
+            isOpen={ui.paletteOpen}
+            onClose={ui.closePalette}
+            onExecuteQuery={workspace.execute}
+            onClearResults={workspace.handleClearResults}
+            onOpenTable={workspace.handleOpenTable}
+            onOpenQuery={workspace.handleOpenQuery}
+            onNukeConfirm={ui.openNukeConfirm}
+            onSaveQuery={ui.openSaveQuery}
+            onRenameQuery={ui.openRenameQuery}
+         />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />
-          {stuckEnvId && (
-             <ContainerHaltedDialog
-                envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
-                onRestore={handleRestoreEnv}
-                onNuke={handleExitAndNuke}
-                isRestoring={isRestoring}
-                restoreProgress={restoreProgress}
-                restoreLabel={restoreLabel}
-             />
-          )}
-           <ConfirmDialog
-              open={ui.nukeConfirmOpen}
-              onCancel={ui.closeNukeConfirm}
-              onConfirm={handleNukeConfirm}
-              isLoading={isNuking}
-              title="Nuke Environment"
-              confirmText="Nuke"
-           />
-           <SaveQueryDialog
-              open={ui.saveQueryOpen}
-              mode="save"
-              onClose={ui.closeSaveQuery}
-           />
-           <SaveQueryDialog
-              open={ui.renameQueryOpen}
-              mode="rename"
-              onClose={ui.closeRenameQuery}
-           />
-          <Toaster
+         {stuckEnvId && (
+            <ContainerHaltedDialog
+               envName={stuckEnv?.name || stuckEnv?.dbType || "Unknown"}
+               onRestore={handleRestoreEnv}
+               onNuke={handleExitAndNuke}
+               isRestoring={isRestoring}
+               restoreProgress={restoreProgress}
+               restoreLabel={restoreLabel}
+            />
+         )}
+         <ConfirmDialog
+            open={ui.nukeConfirmOpen}
+            onCancel={ui.closeNukeConfirm}
+            onConfirm={handleNukeConfirm}
+            isLoading={isNuking}
+            title="Nuke Environment"
+            confirmText="Nuke"
+         />
+         <SaveQueryDialog open={ui.saveQueryOpen} mode="save" onClose={ui.closeSaveQuery} />
+         <SaveQueryDialog open={ui.renameQueryOpen} mode="rename" onClose={ui.closeRenameQuery} />
+         <Toaster
             theme="dark"
             position="bottom-right"
             toastOptions={{

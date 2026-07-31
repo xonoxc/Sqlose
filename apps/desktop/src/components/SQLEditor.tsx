@@ -42,7 +42,7 @@ export function SQLEditor({
 
    return (
       <div className="flex flex-col h-full bg-bg-primary w-full">
-         <div className="flex items-center justify-between h-10 px-4 border-b border-border/80 bg-bg-secondary shrink-0 select-none">
+         <div className="flex items-center justify-between h-9 px-4 border-b border-border/20 bg-bg-secondary shrink-0 select-none">
             <div className="flex items-center gap-3">
                <button
                   onClick={onExecute}
