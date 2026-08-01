@@ -1,15 +1,4 @@
-import {
-   Button,
-   Modal,
-   ModalPortal,
-   ModalOverlay,
-   ModalContent,
-   ModalHeader,
-   ModalFooter,
-   ModalTitle,
-   ModalDescription,
-   Badge,
-} from "@sqlose/ui"
+import { Button, Badge } from "@sqlose/ui"
 import {
    IconPlayerPlay,
    IconPlayerStopFilled,
@@ -20,6 +9,8 @@ import {
 } from "@tabler/icons-react"
 import type { Environment } from "@sqlose/shared"
 import { useEnvironmentActionsLogic } from "~/hooks/useEnvironmentActionsLogic"
+import { DestroyConfirmDialog } from "~/components/DestroyConfirmDialog"
+import { NukeConfirmDialog } from "~/components/NukeConfirmDialog"
 
 interface EnvironmentActionsProps {
    environment: Environment | null
@@ -139,76 +130,21 @@ export function EnvironmentActions({ environment }: EnvironmentActionsProps) {
             </p>
          )}
 
-         <Modal open={showDestroyConfirm} onOpenChange={setShowDestroyConfirm}>
-            {showDestroyConfirm && (
-               <ModalPortal>
-                  <ModalOverlay />
-                  <ModalContent>
-                     <ModalHeader>
-                        <ModalTitle>Destroy Environment</ModalTitle>
-                        <ModalDescription>
-                           Are you sure you want to destroy{" "}
-                           <strong>{environment.name || environment.dbType}</strong>? This will
-                           remove the container and all data. This action cannot be undone.
-                        </ModalDescription>
-                     </ModalHeader>
-                     <ModalFooter>
-                        <Button
-                           variant="secondary"
-                           size="sm"
-                           onClick={() => setShowDestroyConfirm(false)}
-                        >
-                           Cancel
-                        </Button>
-                        <Button
-                           variant="destructive"
-                           size="sm"
-                           onClick={handleDestroy}
-                           disabled={isLoading}
-                        >
-                           {isLoading ? "Destroying..." : "Destroy"}
-                        </Button>
-                     </ModalFooter>
-                  </ModalContent>
-               </ModalPortal>
-            )}
-         </Modal>
+         <DestroyConfirmDialog
+            environment={environment}
+            open={showDestroyConfirm}
+            isLoading={isLoading}
+            onOpenChange={setShowDestroyConfirm}
+            onConfirm={handleDestroy}
+         />
 
-         <Modal open={showNukeConfirm} onOpenChange={setShowNukeConfirm}>
-            {showNukeConfirm && (
-               <ModalPortal>
-                  <ModalOverlay />
-                  <ModalContent>
-                     <ModalHeader>
-                        <ModalTitle>Nuke Environment</ModalTitle>
-                        <ModalDescription>
-                           Are you sure you want to nuke{" "}
-                           <strong>{environment.name || environment.dbType}</strong>? This will
-                           permanently delete the container and ALL data. The environment will be
-                           kept in a clean state so you can start fresh.
-                        </ModalDescription>
-                     </ModalHeader>
-                     <ModalFooter>
-                        <Button
-                           variant="secondary"
-                           size="sm"
-                           onClick={() => setShowNukeConfirm(false)}
-                        >
-                           Cancel
-                        </Button>
-                        <Button
-                           variant="destructive"
-                           size="sm"
-                           onClick={handleNuke}
-                           disabled={isLoading}
-                        >
-                           {isLoading ? "Nuking..." : "Nuke"}
-                        </Button>
-                     </ModalFooter>
-                  </ModalContent>
-               </ModalPortal>
-            )}
-         </Modal>
+         <NukeConfirmDialog
+            environment={environment}
+            open={showNukeConfirm}
+            isLoading={isLoading}
+            onOpenChange={setShowNukeConfirm}
+            onConfirm={handleNuke}
+         />
       </div>
    )
 }

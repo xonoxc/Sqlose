@@ -1,48 +1,8 @@
 import { describe, expect, it } from "vitest"
 import { calculateSpacing, calculateNodeDimensions } from "./spacing"
 import { toElkGraph, fromElkGraph } from "./graphUtils"
+import { buildForeignKeyEdge } from "./buildForeignKeyEdge"
 import type { Node, Edge } from "@xyflow/react"
-import { MarkerType } from "@xyflow/react"
-
-/**
- * Inline copy of buildForeignKeyEdge for test isolation.
- * This avoids importing index.tsx which pulls in React components
- * that don't resolve in the vitest env without full mocking.
- */
-function buildForeignKeyEdge(
-   tableName: string,
-   foreignKey: { fromCol: string; toTable: string; toCol: string },
-   accentColor: string,
-   surfaceColor: string
-): Edge {
-   return {
-      id: `e-${tableName}-${foreignKey.fromCol}->${foreignKey.toTable}-${foreignKey.toCol}`,
-      source: foreignKey.toTable,
-      sourceHandle: `source-${foreignKey.toCol}`,
-      target: tableName,
-      targetHandle: `target-${foreignKey.fromCol}`,
-      type: "step",
-      animated: false,
-      label: `FK: ${foreignKey.fromCol}`,
-      labelBgStyle: {
-         fill: surfaceColor,
-         fillOpacity: 0.95,
-      },
-      labelBgPadding: [6, 3] as [number, number],
-      labelBgBorderRadius: 6,
-      labelStyle: {
-         fill: accentColor,
-         fontSize: 11,
-         fontWeight: 600,
-      },
-      style: {
-         stroke: accentColor,
-         strokeWidth: 2,
-      },
-      markerEnd: { type: MarkerType.ArrowClosed, color: accentColor },
-      zIndex: 10,
-   }
-}
 
 describe("buildForeignKeyEdge", () => {
    it("creates an edge with parent as source and child as target", () => {
@@ -59,7 +19,7 @@ describe("buildForeignKeyEdge", () => {
          sourceHandle: "source-id",
          target: "orders",
          targetHandle: "target-customer_id",
-         type: "step",
+         type: "foreignKey",
          label: "FK: customer_id",
       })
       expect(edge.style).toMatchObject({
