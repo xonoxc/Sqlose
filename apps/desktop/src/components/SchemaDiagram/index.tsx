@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import {
    ReactFlow,
    Background,
@@ -19,7 +19,7 @@ import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useThemeStore } from "~/stores/theme-store"
 import { api } from "~/lib/api"
 import { listTables, type ColumnInfo } from "~/lib/schema"
-import type { DBType } from "@sqlose/shared"
+import { attempt, type DBType } from "@sqlose/shared"
 
 const nodeTypes = {
    tableNode: TableNode,
@@ -41,72 +41,70 @@ async function fetchForeignKeys(
    dbType: DBType
 ): Promise<ForeignKeyRelation[]> {
    const safeTableName = tableName.replace(/'/g, "''")
+
    let sql: string
 
-   if (dbType === "sqlite") {
-      sql = `PRAGMA foreign_key_list('${safeTableName}')`
-      const res = await api.query.execute(envId, sql)
-      if (res.isOk()) {
-         return res.value.rows.map((r: Record<string, unknown>) => ({
+   switch (dbType) {
+      case "sqlite":
+         sql = `PRAGMA foreign_key_list('${safeTableName}')`
+         break
+
+      case "postgres":
+         sql = `
+        SELECT
+          kcu.column_name AS from_col,
+          ccu.table_name AS to_table,
+          ccu.column_name AS to_col
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema = kcu.table_schema
+        JOIN information_schema.constraint_column_usage ccu
+          ON ccu.constraint_name = tc.constraint_name
+         AND ccu.table_schema = tc.table_schema
+        WHERE tc.constraint_type = 'FOREIGN KEY'
+          AND tc.table_name = '${safeTableName}'
+          AND tc.table_schema = 'public'
+      `
+         break
+
+      case "mysql":
+         sql = `
+        SELECT
+          COLUMN_NAME AS from_col,
+          REFERENCED_TABLE_NAME AS to_table,
+          REFERENCED_COLUMN_NAME AS to_col
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_NAME = '${safeTableName}'
+          AND TABLE_SCHEMA = DATABASE()
+          AND REFERENCED_TABLE_NAME IS NOT NULL
+      `
+         break
+
+      default:
+         return []
+   }
+
+   const res = await api.query.execute(envId, sql)
+   if (res.isErr()) {
+      return []
+   }
+
+   return res.value.rows.map(r => {
+      if (dbType === "sqlite") {
+         return {
             fromCol: String(r.from),
             toTable: String(r.table),
             toCol: String(r.to),
-         }))
+         }
       }
-      return []
-   }
 
-   if (dbType === "postgres") {
-      sql = `
-         SELECT
-            kcu.column_name       AS from_col,
-            ccu.table_name        AS to_table,
-            ccu.column_name       AS to_col
-         FROM information_schema.table_constraints AS tc
-         JOIN information_schema.key_column_usage AS kcu
-           ON tc.constraint_name = kcu.constraint_name
-          AND tc.table_schema    = kcu.table_schema
-         JOIN information_schema.constraint_column_usage AS ccu
-           ON ccu.constraint_name = tc.constraint_name
-          AND ccu.table_schema    = tc.table_schema
-         WHERE tc.constraint_type = 'FOREIGN KEY'
-           AND tc.table_name      = '${safeTableName}'
-           AND tc.table_schema    = 'public'
-      `
-      const res = await api.query.execute(envId, sql)
-      if (res.isOk()) {
-         return res.value.rows.map((r: Record<string, unknown>) => ({
-            fromCol: String(r.from_col),
-            toTable: String(r.to_table),
-            toCol:   String(r.to_col),
-         }))
+      return {
+         fromCol: String(r.from_col),
+         toTable: String(r.to_table),
+         toCol: String(r.to_col),
       }
-      return []
-   }
-
-   if (dbType === "mysql") {
-      sql = `
-         SELECT
-            COLUMN_NAME           AS from_col,
-            REFERENCED_TABLE_NAME AS to_table,
-            REFERENCED_COLUMN_NAME AS to_col
-         FROM information_schema.KEY_COLUMN_USAGE
-         WHERE TABLE_NAME = '${safeTableName}'
-           AND TABLE_SCHEMA = DATABASE()
-           AND REFERENCED_TABLE_NAME IS NOT NULL
-      `
-      const res = await api.query.execute(envId, sql)
-      if (res.isOk()) {
-         return res.value.rows.map((r: Record<string, unknown>) => ({
-            fromCol: String(r.from_col),
-            toTable: String(r.to_table),
-            toCol:   String(r.to_col),
-         }))
-      }
-      return []
-   }
-
-   return []
+   })
 }
 
 function inferForeignKeys(
@@ -146,7 +144,11 @@ function inferForeignKeys(
          const targetCols = allTableColumns[matchedTable] || []
          const pkCol = targetCols.find(tc => tc.primaryKey)
          if (pkCol) {
-            relations.push({ fromCol: col.name, toTable: matchedTable, toCol: pkCol.name })
+            relations.push({
+               fromCol: col.name,
+               toTable: matchedTable,
+               toCol: pkCol.name,
+            })
          }
       }
    }
@@ -206,8 +208,9 @@ export function SchemaDiagram() {
    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
    const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>("analyzing")
-   const [reactFlowInstance, setReactFlowInstance] =
-      useState<{ fitView: (opts?: { duration?: number; padding?: number }) => void } | null>(null)
+   const [reactFlowInstance, setReactFlowInstance] = useState<{
+      fitView: (opts?: { duration?: number; padding?: number }) => void
+   } | null>(null)
 
    const envId = useEnvironmentStore(s => s.selectedEnvironmentId)
    const dbType = useEnvironmentStore(s => s.environments.find(e => e.id === envId)?.dbType)
@@ -217,7 +220,7 @@ export function SchemaDiagram() {
    const { currentTheme } = useThemeStore()
    const tables = envId ? (tablesByEnv[envId] ?? []) : []
 
-   const initializeDiagram = useCallback(async () => {
+   const initializeDiagram = async () => {
       if (!envId || !dbType) return
 
       setLoadingPhase("analyzing")
@@ -226,10 +229,8 @@ export function SchemaDiagram() {
          await fetchTables(envId, dbType)
       }
 
-      let myTables: string[]
-      try {
-         myTables = await listTables(envId, dbType)
-      } catch {
+      const tableRes = await attempt(listTables(envId, dbType))
+      if (tableRes.isErr()) {
          setLoadingPhase("done")
          return
       }
@@ -239,10 +240,9 @@ export function SchemaDiagram() {
       const allTableNames: string[] = []
       const allTableColumns: Record<string, ColumnInfo[]> = {}
 
-      for (const tName of myTables) {
+      for (const tName of tableRes.value) {
          await fetchColumns(envId, tName, dbType)
-         const cols: ColumnInfo[] =
-            (useDatabaseStore.getState().tableColumns[envId]?.[tName]) || []
+         const cols: ColumnInfo[] = useDatabaseStore.getState().tableColumns[envId]?.[tName] ?? []
 
          allTableNames.push(tName)
          allTableColumns[tName] = cols
@@ -260,13 +260,19 @@ export function SchemaDiagram() {
          for (const fk of explicitFks) {
             newEdges.push(
                buildForeignKeyEdge(
-                  tName, fk, currentTheme.colors.accent, currentTheme.colors.surface
+                  tName,
+                  fk,
+                  currentTheme.colors.accent,
+                  currentTheme.colors.surface
                )
             )
          }
 
          const inferredFks = inferForeignKeys(
-            tName, allTableColumns[tName], allTableNames, allTableColumns
+            tName,
+            allTableColumns[tName],
+            allTableNames,
+            allTableColumns
          )
          for (const fk of inferredFks) {
             const isDuplicate = newEdges.some(
@@ -278,7 +284,10 @@ export function SchemaDiagram() {
             if (!isDuplicate) {
                newEdges.push(
                   buildForeignKeyEdge(
-                     tName, fk, currentTheme.colors.accent, currentTheme.colors.surface
+                     tName,
+                     fk,
+                     currentTheme.colors.accent,
+                     currentTheme.colors.surface
                   )
                )
             }
@@ -287,16 +296,13 @@ export function SchemaDiagram() {
 
       setLoadingPhase("cleaning")
 
-      const { nodes: layoutedNodes, edges: layoutedEdges } = await computeLayout(
-         newNodes,
-         newEdges
-      )
+      const { nodes: layoutedNodes, edges: layoutedEdges } = await computeLayout(newNodes, newEdges)
 
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
 
       setLoadingPhase("done")
-   }, [envId, dbType])
+   }
 
    useEffect(() => {
       initializeDiagram()
@@ -327,25 +333,28 @@ export function SchemaDiagram() {
       )
    }, [currentTheme, setEdges])
 
-   const handleRelayout = useCallback(async () => {
+   const handleRelayout = async () => {
       if (nodes.length === 0) return
+
       setLoadingPhase("cleaning")
       const { nodes: layoutedNodes, edges: layoutedEdges } = await computeLayout(nodes, edges)
       setNodes(layoutedNodes)
       setEdges(layoutedEdges)
+
       setTimeout(() => {
-         reactFlowInstance?.fitView({ duration: 300, padding: 0.15 })
+         reactFlowInstance?.fitView({
+            duration: 300,
+            padding: 0.15,
+         })
       }, 50)
       setLoadingPhase("done")
-   }, [nodes, edges, reactFlowInstance])
+   }
 
    if (loadingPhase !== "done") {
       return (
          <div className="flex h-full items-center justify-center bg-bg-primary">
             <div className="h-6 w-6 rounded-full border-[3px] border-accent/30 border-t-accent animate-spin" />
-            <span className="ml-3 text-text-muted">
-               {LOADING_MESSAGES[loadingPhase]}
-            </span>
+            <span className="ml-3 text-text-muted">{LOADING_MESSAGES[loadingPhase]}</span>
          </div>
       )
    }

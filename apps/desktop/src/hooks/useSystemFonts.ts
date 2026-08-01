@@ -23,6 +23,7 @@ export function useSystemFonts() {
 
    const applySystemFonts = useCallback((list: string[]) => {
       const clean = list.map(font => font.replace(/^"|"$/g, "").trim()).filter(Boolean)
+      console.log("applySystemFonts:", clean.length)
       setFonts(Array.from(new Set(clean)).sort((a, b) => a.localeCompare(b)))
       setAvailable(true)
    }, [])
@@ -35,10 +36,11 @@ export function useSystemFonts() {
    const refresh = useCallback(async () => {
       setLoading(true)
       const result = await attempt(api.fonts.list())
-      result.match(
-         inner => inner.match(applySystemFonts, applyFallback),
-         applyFallback
-      )
+      console.log("refresh result:", result.toString())
+      result.match(inner => {
+         console.log("inner:", inner.toString())
+         inner.match(applySystemFonts, applyFallback)
+      }, applyFallback)
       setLoading(false)
    }, [applySystemFonts, applyFallback])
 
