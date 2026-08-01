@@ -1,0 +1,6 @@
+export { AppearanceSection } from "~/components/settings/AppearanceSection"
+export { DisplaySection } from "~/components/settings/DisplaySection"
+export { TableSection } from "~/components/settings/TableSection"
+export { EditorSection } from "~/components/settings/EditorSection"
+export { ExecutionSection } from "~/components/settings/ExecutionSection"
+export { KeybindingsSection } from "~/components/settings/KeybindingsSection"

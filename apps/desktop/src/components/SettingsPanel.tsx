@@ -1,48 +1,21 @@
-import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "motion/react"
-import {
-   Button,
-   Separator,
-   Select,
-   SelectTrigger,
-   SelectValue,
-   SelectContent,
-   SelectItem,
-   Input,
-   cn,
-} from "@sqlose/ui"
-import {
-   IconRotate,
-   IconToggleLeft,
-   IconToggleRight,
-   IconX,
-   IconCheck,
-   IconSun,
-   IconMoon,
-   IconDeviceDesktop,
-   IconMinus,
-   IconPlus,
-} from "@tabler/icons-react"
+import { Button, Separator } from "@sqlose/ui"
+import { IconCheck, IconX } from "@tabler/icons-react"
 import { useSettingsPanelState } from "~/hooks/useSettingsPanelState"
-import { useSystemFonts } from "~/hooks/useSystemFonts"
 import { useThemeStore } from "~/stores/theme-store"
-import { themes } from "~/themes"
-import { isMac, formatShortcut } from "~/lib/types"
-
-function fontStack(family: string): string {
-   return `'${family.replace(/'/g, "")}', ui-monospace, monospace`
-}
+import {
+   AppearanceSection,
+   DisplaySection,
+   TableSection,
+   EditorSection,
+   ExecutionSection,
+   KeybindingsSection,
+} from "~/components/settings"
 
 interface SettingsPanelProps {
    isOpen: boolean
    onClose: () => void
 }
-
-const appearanceOptions = [
-   { value: "light" as const, icon: IconSun, label: "Light" },
-   { value: "dark" as const, icon: IconMoon, label: "Dark" },
-   { value: "system" as const, icon: IconDeviceDesktop, label: "System" },
-]
 
 export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
    const {
@@ -72,52 +45,6 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
    const themeId = useThemeStore(s => s.themeId)
    const setTheme = useThemeStore(s => s.setTheme)
-
-   const { fonts, loading, available, refresh } = useSystemFonts()
-   const [fontInput, setFontInput] = useState(editorFontFamily)
-
-   useEffect(() => {
-      setFontInput(editorFontFamily)
-   }, [editorFontFamily])
-
-   useEffect(() => {
-      if (isOpen) {
-         refresh()
-      }
-   }, [isOpen, refresh])
-
-   const fontOptions = Array.from(new Set(["Geist Mono", ...fonts, editorFontFamily]))
-
-   const commitCustomFont = () => {
-      const trimmed = fontInput.trim()
-      if (trimmed && trimmed !== editorFontFamily) {
-         handleFontFamilyChange(trimmed)
-      } else {
-         setFontInput(editorFontFamily)
-      }
-   }
-
-   const actionLabels: Record<string, string> = {
-      "query.execute": "Execute Query",
-      "palette.open": "Open Command Palette",
-      "tab.new": "New Tab",
-      "tab.close": "Close Tab",
-      "tab.next": "Next Tab",
-      "tab.prev": "Previous Tab",
-      "shortcuts.show": "Show Keyboard Shortcuts",
-   }
-
-   const platformKeybindings = keybindings.filter(kb => (isMac() ? kb.meta : kb.ctrl))
-   const agnostic = keybindings.filter(kb => !kb.meta && !kb.ctrl)
-   platformKeybindings.push(...agnostic)
-   const seen = new Set<string>()
-   const deduped = platformKeybindings.filter(kb => {
-      if (seen.has(kb.action)) {
-         return false
-      }
-      seen.add(kb.action)
-      return true
-   })
 
    return (
       <AnimatePresence>
@@ -156,408 +83,55 @@ export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
                   {/* Body */}
                   <div className="max-h-[65vh] overflow-y-auto scrollbar-none px-5 py-5 space-y-6">
-                     {/* Appearance */}
-                     <section>
-                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Appearance
-                        </h3>
-                        <p className="text-[13px] text-text-muted mb-3">
-                           Select how Sqlose looks on your device.
-                        </p>
-                        <div className="flex gap-1.5 mb-5">
-                           {appearanceOptions.map(opt => {
-                              const Icon = opt.icon
-                              const isActive = appearanceMode === opt.value
-                              return (
-                                 <Button
-                                    key={opt.value}
-                                    onClick={() => setAppearanceMode(opt.value)}
-                                    className={cn(
-                                       "flex flex-1 items-center justify-center gap-2 rounded-md px-2 py-3 text-[13px] font-medium transition-all border",
-                                       isActive
-                                          ? "bg-accent/15 text-accent border-accent/40 shadow-sm text-foreground"
-                                          : "bg-bg-tertiary text-text-secondary border-border/50 hover:bg-bg-quaternary hover:text-text-primary"
-                                    )}
-                                 >
-                                    <Icon
-                                       className={cn(
-                                          "h-4 w-4",
-                                          isActive && "text-accent text-foreground"
-                                       )}
-                                    />
-                                    {opt.label}
-                                 </Button>
-                              )
-                           })}
-                        </div>
-                        <div className="flex items-center justify-between">
-                           <div>
-                              <p className="text-sm text-text-primary">Theme</p>
-                              <p className="text-xs text-text-muted mt-0.5">
-                                 Color theme for the current appearance
-                              </p>
-                           </div>
-                           <Select value={themeId} onValueChange={setTheme}>
-                              <SelectTrigger className="w-1/4 px-3 border-border/50 bg-bg-tertiary rounded-lg">
-                                 <div className="flex items-center gap-2">
-                                    <div
-                                       className="h-3.5 w-3.5 rounded-full border border-border/60 shrink-0"
-                                       style={{
-                                          background:
-                                             themes.find(t => t.id === themeId)?.colors.accent ??
-                                             "#6b8bab",
-                                       }}
-                                    />
-                                    <SelectValue />
-                                 </div>
-                              </SelectTrigger>
-                              <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
-                                 {themes.map(t => (
-                                    <SelectItem key={t.id} value={t.id}>
-                                       <div className="flex items-center gap-2">
-                                          <span
-                                             className="h-3 w-3 rounded-full border border-border/60 block shrink-0"
-                                             style={{ background: t.colors.accent }}
-                                          />
-                                          <span>{t.name}</span>
-                                       </div>
-                                    </SelectItem>
-                                 ))}
-                              </SelectContent>
-                           </Select>
-                        </div>
-                     </section>
+                     <AppearanceSection
+                        appearanceMode={appearanceMode}
+                        setAppearanceMode={setAppearanceMode}
+                        themeId={themeId}
+                        setTheme={setTheme}
+                     />
 
                      <Separator />
 
-                     {/* Display */}
-                     <section>
-                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Display
-                        </h3>
-                        <div className="space-y-4">
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">UI Scale</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Adjust the overall interface size.
-                                 </p>
-                              </div>
-                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
-                                 {[0.9, 1, 1.1, 1.2].map(s => (
-                                    <Button
-                                       key={s}
-                                       onClick={() => handleUiScaleChange(s)}
-                                       className={cn(
-                                          "px-2 py-0.5 rounded text-xs font-medium transition-all bg-transparent px-3",
-                                          uiScale === s
-                                             ? "bg-accent text-foreground"
-                                             : "text-text-muted hover:text-text-primary"
-                                       )}
-                                    >
-                                       {Math.round(s * 100)}%
-                                    </Button>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-                     </section>
+                     <DisplaySection uiScale={uiScale} handleUiScaleChange={handleUiScaleChange} />
 
                      <Separator />
 
-                     {/* Table */}
-                     <section>
-                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Table
-                        </h3>
-                        <div className="space-y-4">
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Row Spacing</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Adjust the vertical spacing between rows in data tables.
-                                 </p>
-                              </div>
-                              <Select
-                                 value={rowSpacing}
-                                 onValueChange={v => setRowSpacing(v as "comfortable" | "compact")}
-                              >
-                                 <SelectTrigger className="w-[150px] px-3 border-border/50 bg-bg-tertiary rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                       <SelectValue />
-                                    </div>
-                                 </SelectTrigger>
-                                 <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
-                                    <SelectItem value="comfortable">Comfortable</SelectItem>
-                                    <SelectItem value="compact">Compact</SelectItem>
-                                 </SelectContent>
-                              </Select>
-                           </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Table Font Size</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Font size for data grid cells.
-                                 </p>
-                              </div>
-                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
-                                 <button
-                                    onClick={() => handleTableFontSizeChange(-1)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                    aria-label="Decrease table font size"
-                                 >
-                                    <IconMinus className="h-3.5 w-3.5" />
-                                 </button>
-                                 <span className="text-xs font-mono text-text-primary min-w-[36px] text-center tabular-nums">
-                                    {tableFontSize}px
-                                 </span>
-                                 <button
-                                    onClick={() => handleTableFontSizeChange(1)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                    aria-label="Increase table font size"
-                                 >
-                                    <IconPlus className="h-3.5 w-3.5" />
-                                 </button>
-                              </div>
-                           </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Alternating Row Colors</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Apply alternating background colors to rows in data tables for
-                                    easier reading.
-                                 </p>
-                              </div>
-                              <button
-                                 onClick={() => setAlternatingRowColors(!alternatingRowColors)}
-                                 className="transition-all duration-200"
-                                 aria-label="Toggle alternating row colors"
-                              >
-                                 {alternatingRowColors ? (
-                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
-                                 ) : (
-                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
-                                 )}
-                              </button>
-                           </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Table Column Preview</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Show expandable column details in the sidebar table list.
-                                 </p>
-                              </div>
-                              <button
-                                 onClick={() => setTableColumnPreview(!tableColumnPreview)}
-                                 className="transition-all duration-200"
-                                 aria-label="Toggle table column preview"
-                              >
-                                 {tableColumnPreview ? (
-                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
-                                 ) : (
-                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
-                                 )}
-                              </button>
-                           </div>
-                        </div>
-                     </section>
+                     <TableSection
+                        rowSpacing={rowSpacing}
+                        setRowSpacing={setRowSpacing}
+                        tableFontSize={tableFontSize}
+                        handleTableFontSizeChange={handleTableFontSizeChange}
+                        alternatingRowColors={alternatingRowColors}
+                        setAlternatingRowColors={setAlternatingRowColors}
+                        tableColumnPreview={tableColumnPreview}
+                        setTableColumnPreview={setTableColumnPreview}
+                     />
 
                      <Separator />
 
-                     {/* Editor */}
-                     <section>
-                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Editor
-                        </h3>
-                        <div className="space-y-4">
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Editor Font</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Font family used in the SQL editor.
-                                 </p>
-                              </div>
-                              <Select
-                                 value={editorFontFamily}
-                                 onValueChange={handleFontFamilyChange}
-                              >
-                                 <SelectTrigger className="px-3 border-border/50 bg-bg-tertiary rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                       <span
-                                          className="max-w-[140px] truncate text-[13px]"
-                                          style={{ fontFamily: fontStack(editorFontFamily) }}
-                                       >
-                                          {editorFontFamily}
-                                       </span>
-                                    </div>
-                                 </SelectTrigger>
-                                 <SelectContent className="bg-bg-primary border border-border/50 rounded-lg shadow-lg">
-                                    {loading ? (
-                                       <div className="px-2 py-1.5 text-sm text-text-muted">
-                                          Loading fonts...
-                                       </div>
-                                    ) : (
-                                       fontOptions.map(font => (
-                                          <SelectItem key={font} value={font}>
-                                             <span
-                                                className="inline-block max-w-[200px] truncate"
-                                                style={{ fontFamily: fontStack(font) }}
-                                             >
-                                                {font}
-                                             </span>
-                                          </SelectItem>
-                                       ))
-                                    )}
-                                 </SelectContent>
-                              </Select>
-                           </div>
-                           {!available && (
-                              <p className="text-[11px] text-text-muted -mt-1">
-                                 Local font detection is unavailable — showing common monospace
-                                 fonts.
-                              </p>
-                           )}
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Custom Font</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Type any installed font family name.
-                                 </p>
-                              </div>
-                              <Input
-                                 value={fontInput}
-                                 onChange={e => setFontInput(e.target.value)}
-                                 onKeyDown={e => e.key === "Enter" && commitCustomFont()}
-                                 onBlur={commitCustomFont}
-                                 placeholder="e.g. JetBrains Mono"
-                                 className="w-[200px] h-8"
-                              />
-                           </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Editor Font Size</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Adjust the font size for query editors.
-                                 </p>
-                              </div>
-                              <div className="flex items-center gap-2 bg-bg-tertiary border border-border rounded-lg px-2 py-1">
-                                 <button
-                                    onClick={() => handleFontSizeChange(-1)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                    aria-label="Decrease font size"
-                                 >
-                                    <IconMinus className="h-3.5 w-3.5" />
-                                 </button>
-                                 <span className="text-[13px] font-mono text-text-primary min-w-[36px] text-center tabular-nums">
-                                    {editorFontSize}px
-                                 </span>
-                                 <button
-                                    onClick={() => handleFontSizeChange(1)}
-                                    className="h-6 w-6 rounded flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors"
-                                    aria-label="Increase font size"
-                                 >
-                                    <IconPlus className="h-3.5 w-3.5" />
-                                 </button>
-                              </div>
-                           </div>
-                           <div className="flex items-center justify-between">
-                              <div>
-                                 <p className="text-sm text-text-primary">Vim Mode</p>
-                                 <p className="text-xs text-text-muted mt-0.5">
-                                    Enable Vim keybindings in the SQL editor
-                                 </p>
-                              </div>
-                              <button
-                                 onClick={handleToggleVim}
-                                 className="transition-all duration-200"
-                                 aria-label="Toggle Vim mode"
-                              >
-                                 {vimModeEnabled ? (
-                                    <IconToggleRight className="h-5 w-5 text-accent brightness-150" />
-                                 ) : (
-                                    <IconToggleLeft className="h-5 w-5 text-text-muted" />
-                                 )}
-                              </button>
-                           </div>
-                        </div>
-                     </section>
+                     <EditorSection
+                        isOpen={isOpen}
+                        editorFontSize={editorFontSize}
+                        handleFontSizeChange={handleFontSizeChange}
+                        editorFontFamily={editorFontFamily}
+                        handleFontFamilyChange={handleFontFamilyChange}
+                        vimModeEnabled={vimModeEnabled}
+                        handleToggleVim={handleToggleVim}
+                     />
 
                      <Separator />
 
-                     {/* Execution */}
-                     <section>
-                        <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80 mb-4">
-                           Execution
-                        </h3>
-                        <div className="flex items-center justify-between">
-                           <div>
-                              <p className="text-sm text-text-primary">Execution Mode</p>
-                              <p className="text-xs text-text-muted mt-0.5">
-                                 Review Mode queues changes for review before applying. Direct Mode
-                                 applies changes immediately.
-                              </p>
-                           </div>
-                           <div className="flex gap-1 bg-bg-tertiary border border-border rounded-lg p-0.5">
-                              <button
-                                 onClick={() => setExecutionMode("review")}
-                                 className={cn(
-                                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-all",
-                                    executionMode === "review"
-                                       ? "bg-accent/15 text-accent shadow-sm"
-                                       : "text-text-muted hover:text-text-primary"
-                                 )}
-                              >
-                                 Review Mode
-                              </button>
-                              <button
-                                 onClick={() => setExecutionMode("direct")}
-                                 className={cn(
-                                    "px-3 py-1.5 rounded-md text-[12px] font-medium transition-all",
-                                    executionMode === "direct"
-                                       ? "bg-accent/15 text-accent shadow-sm"
-                                       : "text-text-muted hover:text-text-primary"
-                                 )}
-                              >
-                                 Direct Mode
-                              </button>
-                           </div>
-                        </div>
-                     </section>
+                     <ExecutionSection
+                        executionMode={executionMode}
+                        setExecutionMode={setExecutionMode}
+                     />
 
                      <Separator />
 
-                     {/* Keybindings */}
-                     <section>
-                        <div className="flex items-center justify-between mb-3">
-                           <h3 className="text-xs font-semibold tracking-wider uppercase text-text-muted/80">
-                              Keybindings
-                           </h3>
-                           <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleResetKeybindings}
-                              className="h-6 text-xs gap-1 flex"
-                           >
-                              <IconRotate className="h-3 w-3" />
-                              Reset
-                           </Button>
-                        </div>
-                        <div className="space-y-0.5">
-                           {deduped.map((kb, index) => (
-                              <div
-                                 key={index}
-                                 className="flex items-center justify-between py-1.5 px-2.5 rounded-lg hover:bg-bg-quaternary/50 transition-colors"
-                              >
-                                 <span className="text-[13px] text-text-primary">
-                                    {actionLabels[kb.action] || kb.action}
-                                 </span>
-                                 <kbd className="text-[11px] font-mono text-text-muted bg-bg-tertiary border border-border rounded-md px-1.5 py-0.5">
-                                    {formatShortcut(kb.meta || kb.ctrl, kb.shift, kb.alt, kb.key)}
-                                 </kbd>
-                              </div>
-                           ))}
-                        </div>
-                     </section>
+                     <KeybindingsSection
+                        keybindings={keybindings}
+                        onReset={handleResetKeybindings}
+                     />
                   </div>
 
                   {/* Footer */}
