@@ -1,6 +1,13 @@
 import { IconDatabase, IconServer, IconCircleFilled, IconTrash } from "@tabler/icons-react"
 import { motion } from "motion/react"
-import type { Environment } from "@sqlose/shared"
+import type { ComponentType } from "react"
+import type { DBType, Environment } from "@sqlose/shared"
+
+const DB_TYPE_ICONS: Record<DBType, ComponentType<{ className?: string }>> = {
+   sqlite: IconDatabase,
+   postgres: IconServer,
+   mysql: IconServer,
+}
 
 interface EnvironmentCardProps {
    env: Environment
@@ -10,6 +17,8 @@ interface EnvironmentCardProps {
 }
 
 export function EnvironmentCard({ env, index, onSelect, onDestroy }: EnvironmentCardProps) {
+   const DbIcon = DB_TYPE_ICONS[env.dbType]
+
    return (
       <motion.button
          key={env.id}
@@ -21,11 +30,7 @@ export function EnvironmentCard({ env, index, onSelect, onDestroy }: Environment
       >
          <div className="flex items-center gap-4 text-left">
             <div className="h-10 w-10 rounded-xl bg-bg-tertiary border border-border flex items-center justify-center">
-               {env.dbType === "sqlite" ? (
-                  <IconDatabase className="h-5 w-5 text-text-primary" />
-               ) : (
-                  <IconServer className="h-5 w-5 text-text-primary" />
-               )}
+               <DbIcon className="h-5 w-5 text-text-primary" />
             </div>
             <div className="flex flex-col items-start translate-y-[-1px]">
                <span className="text-[14px] font-bold text-text-primary group-hover:text-white transition-colors truncate max-w-[180px]">

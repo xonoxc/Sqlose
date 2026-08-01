@@ -1,5 +1,4 @@
 import { create } from "zustand"
-import { attempt } from "@sqlose/shared"
 import { listTables, getTableColumns, type ColumnInfo } from "~/lib/schema"
 import { api } from "~/lib/api"
 import type { DBType } from "@sqlose/shared"
@@ -64,9 +63,7 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
       set({
          expandedTableIds: {
             ...state.expandedTableIds,
-            [envId]: isExpanded
-               ? current.filter(id => id !== tableId)
-               : [...current, tableId],
+            [envId]: isExpanded ? current.filter(id => id !== tableId) : [...current, tableId],
          },
       })
    },
@@ -85,10 +82,17 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
 
    fetchTables: async (envId: string, dbType: DBType) => {
       set(state => ({
-         schemaLoading: { ...state.schemaLoading, [envId]: true },
-         schemaError: { ...state.schemaError, [envId]: null },
+         schemaLoading: {
+            ...state.schemaLoading,
+            [envId]: true,
+         },
+         schemaError: {
+            ...state.schemaError,
+            [envId]: null,
+         },
       }))
-      const result = await attempt(listTables(envId, dbType))
+
+      const result = await listTables(envId, dbType)
       result.match(
          tables =>
             set(state => ({
@@ -114,7 +118,8 @@ export const useDatabaseStore = create<DatabaseStore>()((set, get) => ({
             [envId]: [...(state.loadingColumnIds[envId] ?? []), tableName],
          },
       }))
-      const result = await attempt(getTableColumns(envId, tableName, dbType))
+
+      const result = await getTableColumns(envId, tableName, dbType)
       result.match(
          columns =>
             set(state => ({

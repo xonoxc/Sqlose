@@ -1,4 +1,5 @@
 import { AnimatePresence } from "motion/react"
+import type { ComponentType } from "react"
 import { EmptyWorkspace } from "~/components/EmptyWorkspace"
 import { SchemaDiagram } from "~/components/SchemaDiagram"
 import { TableBrowser } from "~/components/TableBrowser"
@@ -32,70 +33,59 @@ interface EditorWorkspaceProps {
    onResultsDividerMouseDown: (e: React.MouseEvent) => void
 }
 
-export function EditorWorkspace({
-   activeTabId,
-   activeTab,
-   queryDraft,
-   isExecuting,
-   onQueryChange,
-   onExecute,
-   onSettingsOpen,
-   onPaletteOpen,
-   onNewQuery,
-   onClearResults,
-   onSaveQuery,
-   isResultsMaximized,
-   resultsCollapsed,
-   resultsActiveTab,
-   onResultsActiveTabChange,
-   onToggleResultsCollapse,
-   onToggleResultsMaximize,
-   resultsHeight,
-   resultsMinHeight,
-   onResultsDividerMouseDown,
-}: EditorWorkspaceProps) {
+type SimpleViewKey = "diagram" | "saved" | "history" | "table"
+
+interface SimpleViewEntry {
+   animKey: string
+   className: string
+   Component: ComponentType
+}
+
+const SIMPLE_VIEWS: Record<SimpleViewKey, SimpleViewEntry> = {
+   diagram: {
+      animKey: "schema-diagram",
+      className: "h-full z-10 relative",
+      Component: SchemaDiagram,
+   },
+   saved: {
+      animKey: "saved-queries",
+      className: "h-full",
+      Component: SavedQueriesView,
+   },
+   history: {
+      animKey: "query-history",
+      className: "h-full",
+      Component: HistoryView,
+   },
+   table: {
+      animKey: "table-browser",
+      className: "h-full",
+      Component: TableBrowser,
+   },
+}
+
+function resolveSimpleViewKey(activeTab: Tab | undefined): SimpleViewKey | null {
+   if (activeTab?.type === "diagram" || activeTab?.type === "saved" || activeTab?.type === "history") {
+      return activeTab.type
+   }
+   return activeTab?.tableName ? "table" : null
+}
+
+export function EditorWorkspace(props: EditorWorkspaceProps) {
+   const { activeTabId, activeTab } = props
+   const simpleViewKey = resolveSimpleViewKey(activeTab)
+   const simpleEntry = simpleViewKey ? SIMPLE_VIEWS[simpleViewKey] : null
+
    return (
       <AnimatePresence mode="wait">
-         {activeTab?.type === "diagram" ? (
-            <AnimatedTabContent key="schema-diagram" className="h-full z-10 relative">
-               <SchemaDiagram />
-            </AnimatedTabContent>
-         ) : activeTab?.type === "saved" ? (
-            <AnimatedTabContent key="saved-queries" className="h-full">
-               <SavedQueriesView />
-            </AnimatedTabContent>
-         ) : activeTab?.type === "history" ? (
-            <AnimatedTabContent key="query-history" className="h-full">
-               <HistoryView />
-            </AnimatedTabContent>
-         ) : activeTab?.tableName ? (
-            <AnimatedTabContent key="table-browser" className="h-full">
-               <TableBrowser />
+         {simpleEntry ? (
+            <AnimatedTabContent key={simpleEntry.animKey} className={simpleEntry.className}>
+               <simpleEntry.Component />
             </AnimatedTabContent>
          ) : activeTabId ? (
-            <QueryTabView
-               key="editor"
-               activeTab={activeTab}
-               queryDraft={queryDraft}
-               isExecuting={isExecuting}
-               onQueryChange={onQueryChange}
-               onExecute={onExecute}
-               onSettingsOpen={onSettingsOpen}
-               onPaletteOpen={onPaletteOpen}
-               onSaveQuery={onSaveQuery}
-               isResultsMaximized={isResultsMaximized}
-               resultsCollapsed={resultsCollapsed}
-               resultsActiveTab={resultsActiveTab}
-               onResultsActiveTabChange={onResultsActiveTabChange}
-               onToggleResultsCollapse={onToggleResultsCollapse}
-               onToggleResultsMaximize={onToggleResultsMaximize}
-               onClearResults={onClearResults}
-               resultsHeight={resultsHeight}
-               resultsMinHeight={resultsMinHeight}
-               onResultsDividerMouseDown={onResultsDividerMouseDown}
-            />
+            <QueryTabView key="editor" {...props} />
          ) : (
-            <EmptyWorkspace onNewQuery={onNewQuery} onOpenPalette={onPaletteOpen} />
+            <EmptyWorkspace onNewQuery={props.onNewQuery} onOpenPalette={props.onPaletteOpen} />
          )}
       </AnimatePresence>
    )

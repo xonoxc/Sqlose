@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
+import { useState, useRef, useEffect, useMemo, type ComponentType } from "react"
 import {
    useReactTable,
    getCoreRowModel,
@@ -72,43 +72,29 @@ function detectColumnType(values: unknown[]): ColumnType {
    return "text"
 }
 
-function getColumnWeight(type: ColumnType): number {
-   switch (type) {
-      case "int":
-         return 1
-      case "bool":
-         return 1
-      case "float":
-         return 1.5
-      case "date":
-         return 2
-      case "timestamp":
-         return 2.5
-      case "uuid":
-         return 3
-      case "text":
-         return 5
-   }
+const COLUMN_TYPE_WEIGHTS: Record<ColumnType, number> = {
+   int: 1,
+   bool: 1,
+   float: 1.5,
+   date: 2,
+   timestamp: 2.5,
+   uuid: 3,
+   text: 5,
+}
+
+const COLUMN_TYPE_ICONS: Record<ColumnType, ComponentType<{ className?: string }>> = {
+   int: IconHash,
+   bool: IconBinary,
+   float: IconBinary,
+   date: IconCalendar,
+   timestamp: IconClock,
+   uuid: IconTypography,
+   text: IconTypography,
 }
 
 function ColumnTypeIcon({ type }: { type: ColumnType }) {
-   const cls = "h-3 w-3 text-text-muted/50 shrink-0"
-   switch (type) {
-      case "int":
-         return <IconHash className={cls} />
-      case "float":
-         return <IconBinary className={cls} />
-      case "bool":
-         return <IconBinary className={cls} />
-      case "date":
-         return <IconCalendar className={cls} />
-      case "timestamp":
-         return <IconClock className={cls} />
-      case "uuid":
-         return <IconTypography className={cls} />
-      case "text":
-         return <IconTypography className={cls} />
-   }
+   const Icon = COLUMN_TYPE_ICONS[type]
+   return <Icon className="h-3 w-3 text-text-muted/50 shrink-0" />
 }
 
 async function copyToClipboard(text: string) {
@@ -175,7 +161,7 @@ export function ResultsTable<T extends Record<string, unknown>>({
          const values = displayData.slice(0, 15).map(r => r[key])
          const type = detectColumnType(values)
          types[key] = type
-         const w = getColumnWeight(type)
+         const w = COLUMN_TYPE_WEIGHTS[type]
          weights[key] = w
          totalWeight += w
       })

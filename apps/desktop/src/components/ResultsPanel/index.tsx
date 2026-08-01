@@ -15,38 +15,31 @@ interface ResultsPanelProps {
    activeTab: ResultsTabId
 }
 
-export function ResultsPanel({
-   result,
-   error,
-   isExecuting,
-   executionTimeMs,
-   rowCount,
-   activeTab,
-}: ResultsPanelProps) {
-   const tabContent = () => {
-      switch (activeTab) {
-         case "results":
-            return <ResultsTab result={result} error={error} isExecuting={isExecuting} />
-         case "messages":
-            return <MessagesTab result={result} error={error} isExecuting={isExecuting} />
-         case "stats":
-            return (
-               <StatsTab
-                  result={result}
-                  error={error}
-                  isExecuting={isExecuting}
-                  executionTimeMs={executionTimeMs}
-                  rowCount={rowCount}
-               />
-            )
-         case "plan":
-            return <PlanTab />
-      }
-   }
+const TAB_COMPONENTS: Record<ResultsTabId, (props: ResultsPanelProps) => React.ReactNode> = {
+   results: ({ result, error, isExecuting }) => (
+      <ResultsTab result={result} error={error} isExecuting={isExecuting} />
+   ),
+   messages: ({ result, error, isExecuting }) => (
+      <MessagesTab result={result} error={error} isExecuting={isExecuting} />
+   ),
+   stats: ({ result, error, isExecuting, executionTimeMs, rowCount }) => (
+      <StatsTab
+         result={result}
+         error={error}
+         isExecuting={isExecuting}
+         executionTimeMs={executionTimeMs}
+         rowCount={rowCount}
+      />
+   ),
+   plan: () => <PlanTab />,
+}
+
+export function ResultsPanel(props: ResultsPanelProps) {
+   const renderTab = TAB_COMPONENTS[props.activeTab]
 
    return (
       <div className="h-full bg-bg-results flex flex-col">
-         <div className="flex-1 min-h-0 overflow-hidden">{tabContent()}</div>
+         <div className="flex-1 min-h-0 overflow-hidden">{renderTab(props)}</div>
       </div>
    )
 }

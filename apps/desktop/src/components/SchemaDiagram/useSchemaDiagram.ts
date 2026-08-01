@@ -44,7 +44,7 @@ export function useSchemaDiagram() {
          await fetchTables(envId, dbType)
       }
 
-      const tableRes = await attempt(listTables(envId, dbType))
+      const tableRes = await listTables(envId, dbType)
       if (tableRes.isErr()) {
          setLoadingPhase("done")
          return

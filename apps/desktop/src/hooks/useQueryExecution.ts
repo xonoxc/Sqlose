@@ -80,54 +80,39 @@ function formatAsMarkdown(result: QueryResult): string {
    return [header, separator, ...rows].join("\n")
 }
 
-const FILE_EXT: Record<string, string> = {
-   JSON: "json",
-   CSV: "csv",
-   SQL: "sql",
-   TSV: "tsv",
-   Markdown: "md",
+export type ExportFormat = "JSON" | "CSV" | "SQL" | "TSV" | "Markdown"
+
+interface ExportFormatSpec {
+   format: (result: QueryResult) => string
+   ext: string
+   mime: string
 }
 
-const MIME_TYPES: Record<string, string> = {
-   JSON: "application/json",
-   CSV: "text/csv",
-   SQL: "text/plain",
-   TSV: "text/tab-separated-values",
-   Markdown: "text/markdown",
+const EXPORT_FORMATS: Record<ExportFormat, ExportFormatSpec> = {
+   JSON: { format: formatAsJson, ext: "json", mime: "application/json" },
+   CSV: { format: result => formatAsCsv(result, true), ext: "csv", mime: "text/csv" },
+   SQL: { format: formatAsSql, ext: "sql", mime: "text/plain" },
+   TSV: { format: result => formatAsTsv(result, true), ext: "tsv", mime: "text/tab-separated-values" },
+   Markdown: { format: formatAsMarkdown, ext: "md", mime: "text/markdown" },
 }
 
-function formatResults(result: QueryResult, format: string): string {
-   switch (format) {
-      case "JSON":
-         return formatAsJson(result)
-      case "CSV":
-         return formatAsCsv(result, true)
-      case "SQL":
-         return formatAsSql(result)
-      case "TSV":
-         return formatAsTsv(result, true)
-      case "Markdown":
-         return formatAsMarkdown(result)
-      default:
-         return formatAsTsv(result, true)
-   }
+function getExportFormat(format: string): ExportFormatSpec {
+   return EXPORT_FORMATS[format as ExportFormat] ?? EXPORT_FORMATS.TSV
 }
 
 export function exportResultsToFile(result: QueryResult, format: string): void {
-   const content = formatResults(result, format)
-   const ext = FILE_EXT[format] ?? "txt"
-   const mime = MIME_TYPES[format] ?? "text/plain"
-   const blob = new Blob([content], { type: mime })
+   const spec = getExportFormat(format)
+   const blob = new Blob([spec.format(result)], { type: spec.mime })
    const url = URL.createObjectURL(blob)
    const a = document.createElement("a")
    a.href = url
-   a.download = `results.${ext}`
+   a.download = `results.${spec.ext}`
    a.click()
    URL.revokeObjectURL(url)
 }
 
 export async function copyResultsToClipboard(result: QueryResult, format: string): Promise<void> {
-   const text = formatResults(result, format)
+   const text = getExportFormat(format).format(result)
 
    if (navigator.clipboard?.writeText) {
       const clipResult = await attempt(navigator.clipboard.writeText(text))

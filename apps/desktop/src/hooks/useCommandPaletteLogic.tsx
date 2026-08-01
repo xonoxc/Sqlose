@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useSettingsStore } from "~/stores/settingsStore"
@@ -10,6 +10,13 @@ import { buildPaletteActions } from "~/components/CommandPalette/paletteActions"
 import { groupPaletteItems, flattenGrouped } from "~/components/CommandPalette/paletteFilter"
 
 export type PaletteMode = "default" | "themes" | "databases"
+
+interface ModeAccessor {
+   visibleCount: number
+   onHover: (index: number) => void
+   onEnter: (index: number) => boolean
+   onExit: () => void
+}
 
 export function useCommandPaletteLogic(
    isOpen: boolean,
@@ -149,6 +156,63 @@ export function useCommandPaletteLogic(
    const groupedItems = groupPaletteItems(actions, query)
    const flatFiltered = flattenGrouped(groupedItems)
 
+   const modeAccessors = useMemo<Record<PaletteMode, ModeAccessor>>(
+      () => ({
+         default: {
+            visibleCount: Math.min(flatFiltered.length, 7),
+            onHover: () => {},
+            onEnter: index => {
+               const action = flatFiltered[index]
+               if (!action) return false
+               action.onSelect()
+               if (action.id !== "switch-theme" && action.id !== "switch-db") {
+                  onClose()
+               }
+               return true
+            },
+            onExit: () => onClose(),
+         },
+         themes: {
+            visibleCount: Math.min(filteredThemes.length, 10),
+            onHover: index => {
+               const theme = filteredThemes[index]
+               if (theme) handleThemeHover(theme.id)
+            },
+            onEnter: index => {
+               const theme = filteredThemes[index]
+               if (!theme) return false
+               handleThemeSelect(theme.id)
+               onClose()
+               return true
+            },
+            onExit: () => exitThemeMode(),
+         },
+         databases: {
+            visibleCount: Math.min(filteredEnvironments.length, 10),
+            onHover: () => {},
+            onEnter: index => {
+               const env = filteredEnvironments[index]
+               if (!env) return false
+               handleDatabaseSelect(env.id)
+               onClose()
+               return true
+            },
+            onExit: () => exitDatabaseMode(),
+         },
+      }),
+      [
+         flatFiltered,
+         filteredThemes,
+         filteredEnvironments,
+         handleThemeHover,
+         handleThemeSelect,
+         handleDatabaseSelect,
+         exitThemeMode,
+         exitDatabaseMode,
+         onClose,
+      ]
+   )
+
    useEffect(() => {
       if (isOpen) {
          if (mode !== "themes" && mode !== "databases") {
@@ -160,11 +224,8 @@ export function useCommandPaletteLogic(
    }, [isOpen, mode])
 
    useEffect(() => {
-      if (mode === "themes") {
-         const theme = filteredThemes[selectedIndex]
-         if (theme) handleThemeHover(theme.id)
-      }
-   }, [selectedIndex, mode, filteredThemes, handleThemeHover])
+      modeAccessors[mode].onHover(selectedIndex)
+   }, [selectedIndex, mode, modeAccessors])
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -173,83 +234,30 @@ export function useCommandPaletteLogic(
          }
          if (e.key === "Escape") {
             e.preventDefault()
-            if (mode === "themes") {
-               exitThemeMode()
-            } else if (mode === "databases") {
-               exitDatabaseMode()
-            } else {
-               onClose()
-            }
+            modeAccessors[mode].onExit()
             return
          }
-         const next = () => {
-            const visible =
-               mode === "themes"
-                  ? Math.min(filteredThemes.length, 10)
-                  : mode === "databases"
-                    ? Math.min(filteredEnvironments.length, 10)
-                    : Math.min(flatFiltered.length, 7)
-            setSelectedIndex(p => Math.min(p + 1, visible - 1))
-         }
-         const prev = () => {
-            setSelectedIndex(p => Math.max(p - 1, 0))
-         }
+         const accessor = modeAccessors[mode]
          if (e.key === "ArrowDown") {
             e.preventDefault()
-            next()
+            setSelectedIndex(p => Math.min(p + 1, accessor.visibleCount - 1))
             return
          }
          if (e.key === "ArrowUp") {
             e.preventDefault()
-            prev()
+            setSelectedIndex(p => Math.max(p - 1, 0))
             return
          }
          if (e.key === "Enter") {
-            if (mode === "themes") {
-               if (filteredThemes[selectedIndex]) {
-                  e.preventDefault()
-                  handleThemeSelect(filteredThemes[selectedIndex].id)
-                  onClose()
-                  return
-               }
-               return
-            }
-            if (mode === "databases") {
-               if (filteredEnvironments[selectedIndex]) {
-                  e.preventDefault()
-                  handleDatabaseSelect(filteredEnvironments[selectedIndex].id)
-                  onClose()
-                  return
-               }
-               return
-            }
-            if (flatFiltered[selectedIndex]) {
+            if (accessor.onEnter(selectedIndex)) {
                e.preventDefault()
-               const action = flatFiltered[selectedIndex]
-               action.onSelect()
-               if (action.id !== "switch-theme" && action.id !== "switch-db") {
-                  onClose()
-               }
-               return
             }
+            return
          }
       }
       window.addEventListener("keydown", handleKeyDown)
       return () => window.removeEventListener("keydown", handleKeyDown)
-   }, [
-      isOpen,
-      onClose,
-      selectedIndex,
-      flatFiltered,
-      mode,
-      filteredThemes,
-      filteredEnvironments,
-      exitThemeMode,
-      exitDatabaseMode,
-      handleThemeSelect,
-      handleDatabaseSelect,
-      vimModeEnabled,
-   ])
+   }, [isOpen, onClose, selectedIndex, modeAccessors, mode])
 
    return {
       query,

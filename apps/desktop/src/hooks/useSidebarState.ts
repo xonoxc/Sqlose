@@ -6,6 +6,14 @@ import { useHistoryStore } from "~/stores/historyStore"
 import { useSavedQueriesStore } from "~/stores/savedQueriesStore"
 import { useDatabaseStore } from "~/stores/databaseStore"
 
+type NavTarget = "playground" | "saved" | "history"
+
+const NAV_ACTIONS: Record<NavTarget, () => void> = {
+   playground: () => useWorkspaceStore.getState().openTab(),
+   saved: () => useWorkspaceStore.getState().openTab({ type: "saved", title: "Saved Queries" }),
+   history: () => useWorkspaceStore.getState().openTab({ type: "history", title: "History" }),
+}
+
 export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const environments = useEnvironmentStore(s => s.environments)
    const selectedEnvironmentId = useEnvironmentStore(s => s.selectedEnvironmentId)
@@ -42,13 +50,27 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const reset = useDatabaseStore(s => s.reset)
 
    const tables = selectedEnvironmentId ? (tablesByEnv[selectedEnvironmentId] ?? []) : []
-   const tableColumns = selectedEnvironmentId ? (tableColumnsByEnv[selectedEnvironmentId] ?? {}) : {}
-   const schemaLoading = selectedEnvironmentId ? (schemaLoadingByEnv[selectedEnvironmentId] ?? false) : false
-   const schemaError = selectedEnvironmentId ? (schemaErrorByEnv[selectedEnvironmentId] ?? null) : null
-   const loadingColumnIds = selectedEnvironmentId ? (loadingColumnIdsByEnv[selectedEnvironmentId] ?? []) : []
-   const expandedTableIds = selectedEnvironmentId ? (expandedTableIdsByEnv[selectedEnvironmentId] ?? []) : []
-   const activeTableId = selectedEnvironmentId ? (activeTableIdByEnv[selectedEnvironmentId] ?? null) : null
-   const keyboardFocusedIndex = selectedEnvironmentId ? (keyboardFocusedIndexByEnv[selectedEnvironmentId] ?? -1) : -1
+   const tableColumns = selectedEnvironmentId
+      ? (tableColumnsByEnv[selectedEnvironmentId] ?? {})
+      : {}
+   const schemaLoading = selectedEnvironmentId
+      ? (schemaLoadingByEnv[selectedEnvironmentId] ?? false)
+      : false
+   const schemaError = selectedEnvironmentId
+      ? (schemaErrorByEnv[selectedEnvironmentId] ?? null)
+      : null
+   const loadingColumnIds = selectedEnvironmentId
+      ? (loadingColumnIdsByEnv[selectedEnvironmentId] ?? [])
+      : []
+   const expandedTableIds = selectedEnvironmentId
+      ? (expandedTableIdsByEnv[selectedEnvironmentId] ?? [])
+      : []
+   const activeTableId = selectedEnvironmentId
+      ? (activeTableIdByEnv[selectedEnvironmentId] ?? null)
+      : null
+   const keyboardFocusedIndex = selectedEnvironmentId
+      ? (keyboardFocusedIndexByEnv[selectedEnvironmentId] ?? -1)
+      : -1
 
    const [search, setSearch] = useState("")
    const [tableTreeExpanded, setTableTreeExpanded] = useState(true)
@@ -87,6 +109,7 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       e.preventDefault()
       if (!selectedEnvironmentId || !selectedEnv) return
       setExpanded(selectedEnvironmentId, tableName)
+
       if (!tableColumns[tableName]) {
          fetchColumns(selectedEnvironmentId, tableName, selectedEnv.dbType as DBType)
       }
@@ -98,14 +121,8 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       fetchTables(selectedEnvironmentId, selectedEnv.dbType as DBType)
    }
 
-   const handleNavClick = (type: "playground" | "saved" | "history") => {
-      if (type === "playground") {
-         useWorkspaceStore.getState().openTab()
-      } else if (type === "saved") {
-         useWorkspaceStore.getState().openTab({ type: "saved", title: "Saved Queries" })
-      } else if (type === "history") {
-         useWorkspaceStore.getState().openTab({ type: "history", title: "History" })
-      }
+   const handleNavClick = (type: NavTarget) => {
+      NAV_ACTIONS[type]()
    }
 
    const filteredIndex = activeTableId ? filteredTables.indexOf(activeTableId) : -1
@@ -113,33 +130,32 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
    const handleKeyDown = (e: React.KeyboardEvent) => {
       if (filteredTables.length === 0) return
 
-      let currentIndex =
+      const currentIndex =
          keyboardFocusedIndex >= 0 ? keyboardFocusedIndex : filteredIndex >= 0 ? filteredIndex : 0
 
-      switch (e.key) {
-         case "ArrowDown":
+      const keyHandlers: Record<string, () => void> = {
+         ArrowDown: () => {
             e.preventDefault()
-            currentIndex = Math.min(currentIndex + 1, filteredTables.length - 1)
+            const next = Math.min(currentIndex + 1, filteredTables.length - 1)
             if (selectedEnvironmentId) {
-               setKeyboardFocusedIndex(selectedEnvironmentId, currentIndex)
+               setKeyboardFocusedIndex(selectedEnvironmentId, next)
             }
-            break
-         case "ArrowUp":
+         },
+         ArrowUp: () => {
             e.preventDefault()
-            currentIndex = Math.max(currentIndex - 1, 0)
+            const next = Math.max(currentIndex - 1, 0)
             if (selectedEnvironmentId) {
-               setKeyboardFocusedIndex(selectedEnvironmentId, currentIndex)
+               setKeyboardFocusedIndex(selectedEnvironmentId, next)
             }
-            break
-         case "Enter": {
+         },
+         Enter: () => {
             e.preventDefault()
             const table = filteredTables[currentIndex]
             if (table) {
                handleTableClick(table)
             }
-            break
-         }
-         case "ArrowRight": {
+         },
+         ArrowRight: () => {
             e.preventDefault()
             const table = filteredTables[currentIndex]
             if (table && selectedEnvironmentId && selectedEnv) {
@@ -150,17 +166,17 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
                   }
                }
             }
-            break
-         }
-         case "ArrowLeft": {
+         },
+         ArrowLeft: () => {
             e.preventDefault()
             const table = filteredTables[currentIndex]
             if (table && expandedTableIds.includes(table)) {
                setExpanded(selectedEnvironmentId!, table)
             }
-            break
-         }
+         },
       }
+
+      keyHandlers[e.key]?.()
    }
 
    const handleTableDoubleClick = (tableName: string) => {
@@ -198,3 +214,4 @@ export function useSidebarState(onOpenTable: (tableName: string) => void) {
       handleTableDoubleClick,
    }
 }
+

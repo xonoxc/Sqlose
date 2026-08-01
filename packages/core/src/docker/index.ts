@@ -4,6 +4,7 @@ import { AppError, DockerError, okResult, attempt } from "@sqlose/shared"
 import type { DBType, AsyncAppResult, AppResult } from "@sqlose/shared"
 import { findAvailablePort, reservePort, releasePort } from "./port"
 import { loadEnvironments, saveEnvironment } from "../environment/store"
+import { DRIVERS } from "../drivers/registry"
 
 const PING_TIMEOUT_MS = 10 * 1000
 const PULL_TIMEOUT_MS = 5 * 60 * 1000
@@ -18,40 +19,6 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
          setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
       ),
    ])
-}
-
-const DB_IMAGE_MAP: Record<DBType, { image: string; internalPort: number; env: string[] }> = {
-   postgres: {
-      image: "postgres:16-alpine",
-      internalPort: 5432,
-      env: ["POSTGRES_PASSWORD=sqlose", "POSTGRES_USER=sqlose", "POSTGRES_DB=sqlose"],
-   },
-   mysql: {
-      image: "mysql:8.0",
-      internalPort: 3306,
-      env: [
-         "MYSQL_ROOT_PASSWORD=sqlose",
-         "MYSQL_DATABASE=sqlose",
-         "MYSQL_USER=sqlose",
-         "MYSQL_PASSWORD=sqlose",
-      ],
-   },
-   sqlite: {
-      image: "nouchka/sqlite3:latest",
-      internalPort: 0,
-      env: [],
-   },
-}
-
-function buildConnectionString(dbType: DBType, port: number): string {
-   switch (dbType) {
-      case "postgres":
-         return `postgresql://sqlose:sqlose@localhost:${port}/sqlose`
-      case "mysql":
-         return `mysql://sqlose:sqlose@localhost:${port}/sqlose`
-      case "sqlite":
-         return `sqlite:///data/sqlose.db`
-   }
 }
 
 let _docker: Docker | null = null
@@ -140,7 +107,7 @@ export async function pullImage(
    dbType: DBType,
    onProgress?: (percentage: number) => void
 ): AsyncAppResult<void> {
-   const config = DB_IMAGE_MAP[dbType]
+   const config = DRIVERS[dbType]
    if (!config.image) {
       return okResult(undefined)
    }
@@ -227,7 +194,7 @@ export async function waitForDatabaseReady(
    dbType: DBType,
    connectionString: string
 ): AsyncAppResult<void> {
-   if (dbType === "sqlite") {
+   if (!DRIVERS[dbType].containerized) {
       return okResult(undefined)
    }
 
@@ -241,13 +208,7 @@ export async function waitForDatabaseReady(
          )
       }
 
-      const testFn =
-         dbType === "postgres"
-            ? () =>
-                 import("../drivers/postgres").then(m => m.testPostgresConnection(connectionString))
-            : () => import("../drivers/mysql").then(m => m.testMySQLConnection(connectionString))
-
-      const testResult = await attempt(testFn())
+      const testResult = await attempt(DRIVERS[dbType].testConnection!(connectionString))
       if (testResult.isOk() && testResult.value.isOk() && testResult.value.value) {
          return okResult(undefined)
       }
@@ -263,11 +224,11 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
    containerId: string
    connectionString: string
 }> {
-   if (dbType === "sqlite") {
+   if (!DRIVERS[dbType].containerized) {
       return ok({
          port: 0,
          containerId: "",
-         connectionString: buildConnectionString(dbType, 0),
+         connectionString: DRIVERS[dbType].connectionString(0),
       })
    }
 
@@ -287,7 +248,7 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
       ) as EnvResult
    }
 
-   const config = DB_IMAGE_MAP[dbType]
+   const config = DRIVERS[dbType]
 
    const pullResult = await pullImage(dbType)
    if (pullResult.isErr()) {
@@ -341,7 +302,7 @@ export async function createEnvironment(dbType: DBType): AsyncAppResult<{
       ) as EnvResult
    }
 
-   const connectionString = buildConnectionString(dbType, port)
+   const connectionString = DRIVERS[dbType].connectionString(port)
    const readyResult = await waitForDatabaseReady(dbType, connectionString)
 
    if (readyResult.isErr()) {

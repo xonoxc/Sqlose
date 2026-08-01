@@ -1,14 +1,7 @@
-import pg from "pg"
-import mysql from "mysql2/promise"
 import type { DBType } from "@sqlose/shared"
-
-type Pool = pg.Pool | mysql.Pool
+import { DRIVERS, type Pool } from "./registry"
 
 const pools = new Map<string, Pool>()
-
-function isPgPool(pool: Pool): pool is pg.Pool {
-   return pool instanceof pg.Pool
-}
 
 export function getPool(connectionString: string, dbType: DBType): Pool {
    const existing = pools.get(connectionString)
@@ -16,27 +9,12 @@ export function getPool(connectionString: string, dbType: DBType): Pool {
       return existing
    }
 
-   let pool: Pool
-   if (dbType === "postgres") {
-      pool = new pg.Pool({
-         connectionString,
-         max: 5,
-         idleTimeoutMillis: 30000,
-         connectionTimeoutMillis: 5000,
-      })
-      pool.on("error", err => {
-         console.error("Unexpected error on postgres pool client:", err)
-      })
-   } else if (dbType === "mysql") {
-      pool = mysql.createPool({
-         uri: connectionString,
-         connectionLimit: 5,
-         idleTimeout: 30000,
-      })
-   } else {
+   const createPool = DRIVERS[dbType].createPool
+   if (!createPool) {
       throw new Error(`Pooling not supported for dbType: ${dbType}`)
    }
 
+   const pool = createPool(connectionString)
    pools.set(connectionString, pool)
    return pool
 }
@@ -44,15 +22,11 @@ export function getPool(connectionString: string, dbType: DBType): Pool {
 export async function destroyPool(connectionString: string): Promise<void> {
    const pool = pools.get(connectionString)
    if (!pool) {
-      return 
+      return
    }
    pools.delete(connectionString)
 
-   if (isPgPool(pool)) {
-      await pool.end()
-   } else {
-      await (pool as mysql.Pool).end()
-   }
+   await pool.end()
 }
 
 export async function destroyAllPools(): Promise<void> {
