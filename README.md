@@ -215,25 +215,25 @@ sqlose/
 
 ```
 +-------------------------------------------------------+
-|                    Renderer (React)                    |
+|                    Renderer (React)                   |
 |  Monaco Editor . Zustand Stores . TanStack Query      |
 |  Components . Hooks . Themes                          |
 +-----------------------+-------------------------------+
                         | IPC (18 typed channels)
 +-----------------------v-------------------------------+
-|                 Main Process (Electron)                |
+|                 Main Process (Electron)               |
 |  IPC Handlers . Docker (dockerode) . sql.js DB        |
 |  Auto-updater . File system . Native dialogs          |
-+------+--------------+--------------+-----------------+
++------+--------------+--------------+------------------+
        |              |              |
-+------v------+ +-----v------+ +----v--------------+
++------v------+ +-----v------+ +-----v-------------+
 |  @sqlose/   | | @sqlose/   | |  @sqlose/shared   |
-|  core       | | ui         | |  Types . Errors    |
+|  core       | | ui         | |  Types . Errors   |
 |  Drivers .  | | Radix .    | |  IPC channels .   |
 |  Docker .   | | Table .    | |  Runtime guards   |
-|  Import .   | | Virtual .  | |                    |
-|  Datasets   | | Motion     | |                    |
-+-------------+ +------------+ +--------------------+
+|  Import .   | | Virtual .  | |                   |
+|  Datasets   | | Motion     | |                   |
++-------------+ +------------+ +-------------------+
 ```
 
 ### Key Design Decisions
