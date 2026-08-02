@@ -36,7 +36,7 @@ describe("types utilities", () => {
    describe("createDefaultPaneSizes", () => {
       it("should return default pane sizes", () => {
          const sizes = createDefaultPaneSizes()
-         expect(sizes.sidebarWidth).toBe(350)
+         expect(sizes.sidebarWidth).toBe(550)
          expect(sizes.editorHeight).toBe(300)
          expect(sizes.resultsHeight).toBe(550)
       })

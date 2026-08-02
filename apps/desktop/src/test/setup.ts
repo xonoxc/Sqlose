@@ -20,7 +20,10 @@ if (typeof window !== "undefined") {
          reset: vi.fn(),
       },
       query: {
-         execute: vi.fn(),
+         execute: vi.fn().mockResolvedValue({
+            success: true,
+            data: { columns: [], rows: [], rowCount: 0, executionTimeMs: 0 },
+         }),
       },
       import: {
          csv: vi.fn(),

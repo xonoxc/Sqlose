@@ -1,4 +1,5 @@
 "use client"
+
 import { cn } from "@/lib/utils"
 import { Database } from "lucide-react"
 import { Discord } from "@/components/ui/discord"
@@ -54,7 +55,11 @@ export function Header() {
                   </a>
                </Button>
                <Button size="sm" style={{ backgroundColor: "oklch(72.3% 0.219 149.579)" }} asChild>
-                  <a href="https://github.com/xonoxc/Sqlose/releases" target="_blank" rel="noreferrer">
+                  <a
+                     href="https://github.com/xonoxc/Sqlose/releases"
+                     target="_blank"
+                     rel="noreferrer"
+                  >
                      Get App
                   </a>
                </Button>
