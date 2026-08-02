@@ -92,7 +92,11 @@ const EXPORT_FORMATS: Record<ExportFormat, ExportFormatSpec> = {
    JSON: { format: formatAsJson, ext: "json", mime: "application/json" },
    CSV: { format: result => formatAsCsv(result, true), ext: "csv", mime: "text/csv" },
    SQL: { format: formatAsSql, ext: "sql", mime: "text/plain" },
-   TSV: { format: result => formatAsTsv(result, true), ext: "tsv", mime: "text/tab-separated-values" },
+   TSV: {
+      format: result => formatAsTsv(result, true),
+      ext: "tsv",
+      mime: "text/tab-separated-values",
+   },
    Markdown: { format: formatAsMarkdown, ext: "md", mime: "text/markdown" },
 }
 
@@ -131,11 +135,13 @@ export async function copyResultsToClipboard(result: QueryResult, format: string
    ta.select()
 
    const execResult = attemptSync(() =>
-      (document as HTMLDocument & { execCommand(name: string): boolean }).execCommand("copy")
+      (
+         document as HTMLDocument & {
+            execCommand(name: string): boolean
+         }
+      ).execCommand("copy")
    )
-   if (execResult.isErr()) {
-      console.error("All clipboard copy methods failed:", execResult.error)
-   }
+   if (execResult.isErr()) console.error("All clipboard copy methods failed:", execResult.error)
    document.body.removeChild(ta)
 }
 
@@ -209,7 +215,15 @@ export function useQueryExecution() {
       }
 
       return true
-   }, [selectedEnvironmentId, queryDraft, activeTabId, activeTab, environments, updateTab, addHistoryEntry])
+   }, [
+      selectedEnvironmentId,
+      queryDraft,
+      activeTabId,
+      activeTab,
+      environments,
+      updateTab,
+      addHistoryEntry,
+   ])
 
    return { execute, prevExecutionRef }
 }

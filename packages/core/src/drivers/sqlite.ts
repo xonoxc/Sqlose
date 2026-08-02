@@ -1,11 +1,22 @@
-import sqlite3 from "sqlite3"
 import { ok, err } from "neverthrow"
 import { QueryError } from "@sqlose/shared"
 import type { QueryResult, AsyncAppResult } from "@sqlose/shared"
+import type { Database as SQLiteDatabase } from "sqlite3"
 
 const QUERY_TIMEOUT_MS = 30_000
 
-function openDatabase(dbPath: string): Promise<sqlite3.Database> {
+let sqlite3Module: typeof import("sqlite3") | null = null
+
+async function getSqlite3(): Promise<typeof import("sqlite3")> {
+   if (!sqlite3Module) {
+      const mod = await import("sqlite3")
+      sqlite3Module = (mod.default ?? mod) as typeof import("sqlite3")
+   }
+   return sqlite3Module
+}
+
+async function openDatabase(dbPath: string): Promise<SQLiteDatabase> {
+   const sqlite3 = await getSqlite3()
    return new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath, error => {
          if (error) reject(error)
@@ -15,7 +26,7 @@ function openDatabase(dbPath: string): Promise<sqlite3.Database> {
 }
 
 function runQuery(
-   db: sqlite3.Database,
+   db: SQLiteDatabase,
    sql: string
 ): Promise<{ columns: string[]; rows: Record<string, unknown>[] }> {
    return new Promise((resolve, reject) => {
@@ -29,7 +40,7 @@ function runQuery(
    })
 }
 
-function closeDatabase(db: sqlite3.Database): Promise<void> {
+function closeDatabase(db: SQLiteDatabase): Promise<void> {
    return new Promise((resolve, reject) => {
       db.close(err => {
          if (err) reject(err)
@@ -42,7 +53,7 @@ export async function executeSQLiteQuery(
    dbPath: string,
    sql: string
 ): AsyncAppResult<QueryResult> {
-   let db: sqlite3.Database | null = null
+   let db: SQLiteDatabase | null = null
    try {
       db = await openDatabase(dbPath)
       const start = performance.now()
