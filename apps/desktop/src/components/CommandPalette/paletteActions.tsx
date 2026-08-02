@@ -12,8 +12,9 @@ import {
    IconToggleRight,
    IconBookmark,
    IconStar,
-   IconPalette,
-   IconPencil,
+    IconPalette,
+    IconPencil,
+    IconSettings,
 } from "@tabler/icons-react"
 import { isMac } from "~/lib/types"
 import type { Environment } from "@sqlose/shared"
@@ -42,12 +43,13 @@ interface BuildPaletteActionsParams {
    enterThemeMode: () => void
    enterDatabaseMode: () => void
    setVimModeEnabled: (enabled: boolean) => void
-   onExecuteQuery?: () => void
-   onClearResults?: () => void
-   onOpenQuery?: (sql: string, savedQueryId?: string, savedQueryName?: string) => void
-   onNukeConfirm?: () => void
-   onSaveQuery?: () => void
-   onRenameQuery?: () => void
+    onExecuteQuery?: () => void
+    onClearResults?: () => void
+    onOpenQuery?: (sql: string, savedQueryId?: string, savedQueryName?: string) => void
+    onNukeConfirm?: () => void
+    onSaveQuery?: () => void
+    onRenameQuery?: () => void
+    onOpenSettings?: () => void
 }
 
 export function buildPaletteActions({
@@ -63,12 +65,13 @@ export function buildPaletteActions({
    enterThemeMode,
    enterDatabaseMode,
    setVimModeEnabled,
-   onExecuteQuery,
-   onClearResults,
-   onOpenQuery,
-   onNukeConfirm,
-   onSaveQuery,
-   onRenameQuery,
+    onExecuteQuery,
+    onClearResults,
+    onOpenQuery,
+    onNukeConfirm,
+    onSaveQuery,
+    onRenameQuery,
+    onOpenSettings,
 }: BuildPaletteActionsParams): PaletteAction[] {
    return [
       {
@@ -168,6 +171,15 @@ export function buildPaletteActions({
          icon: <IconPalette className="h-4 w-4" />,
          category: "action",
          onSelect: () => enterThemeMode(),
+      },
+      {
+         id: "open-settings",
+         label: "Settings",
+         description: "Open the settings panel",
+         icon: <IconSettings className="h-4 w-4" />,
+         shortcut: isMac() ? "⌘," : "Ctrl+,",
+         category: "action",
+         onSelect: () => onOpenSettings?.(),
       },
       {
          id: "nuke-env",

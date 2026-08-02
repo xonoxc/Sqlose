@@ -122,6 +122,7 @@ function AppContent() {
       onPalette: ui.openPalette,
       onExecute: workspace.execute,
       onSaveQuery: ui.openSaveQuery,
+      onSettings: ui.openSettings,
    })
 
    useEffect(() => {
@@ -250,6 +251,7 @@ function AppContent() {
             onNukeConfirm={ui.openNukeConfirm}
             onSaveQuery={ui.openSaveQuery}
             onRenameQuery={ui.openRenameQuery}
+            onOpenSettings={ui.openSettings}
          />
          <SettingsPanel isOpen={ui.settingsOpen} onClose={ui.closeSettings} />
          <ShortcutsDialog isOpen={ui.shortcutsOpen} onClose={ui.closeShortcuts} />

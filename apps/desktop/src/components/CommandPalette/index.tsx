@@ -16,6 +16,7 @@ interface CommandPaletteProps {
    onNukeConfirm?: () => void
    onSaveQuery?: () => void
    onRenameQuery?: () => void
+   onOpenSettings?: () => void
 }
 
 export function CommandPalette({
@@ -27,6 +28,7 @@ export function CommandPalette({
    onNukeConfirm,
    onSaveQuery,
    onRenameQuery,
+   onOpenSettings,
 }: CommandPaletteProps) {
    const {
       query,
@@ -52,7 +54,8 @@ export function CommandPalette({
       onOpenQuery,
       onNukeConfirm,
       onSaveQuery,
-      onRenameQuery
+      onRenameQuery,
+      onOpenSettings
    )
 
    const handleQueryChange = (value: string) => {

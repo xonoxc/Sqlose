@@ -26,7 +26,8 @@ export function useCommandPaletteLogic(
    onOpenQuery?: (sql: string, savedQueryId?: string, savedQueryName?: string) => void,
    onNukeConfirm?: () => void,
    onSaveQuery?: () => void,
-   onRenameQuery?: () => void
+   onRenameQuery?: () => void,
+   onOpenSettings?: () => void
 ) {
    const [query, setQuery] = useState("")
    const [selectedIndex, setSelectedIndex] = useState(0)
@@ -151,6 +152,7 @@ export function useCommandPaletteLogic(
       onNukeConfirm,
       onSaveQuery,
       onRenameQuery,
+      onOpenSettings,
    })
 
    const groupedItems = groupPaletteItems(actions, query)

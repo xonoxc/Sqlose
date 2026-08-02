@@ -16,6 +16,7 @@ function getShortcuts(): Shortcut[] {
       { label: "Close Tab", keys: [mac ? "⌘W" : "Ctrl+W"] },
       { label: "Next Tab", keys: [mac ? "⌘⇥" : "Ctrl+Tab"] },
       { label: "Previous Tab", keys: [mac ? "⌘⇧⇥" : "Ctrl+Shift+Tab"] },
+      { label: "Open Settings", keys: [mac ? "⌘," : "Ctrl+,"] },
       { label: "Show Keyboard Shortcuts", keys: ["?"] },
    ]
 }

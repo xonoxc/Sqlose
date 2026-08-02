@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useNodesState, useEdgesState, MarkerType, type Node, type Edge } from "@xyflow/react"
-import { attempt } from "@sqlose/shared"
 import { buildForeignKeyEdge } from "./buildForeignKeyEdge"
 import { fetchForeignKeys } from "./fkQueries"
 import { inferForeignKeys } from "./inferForeignKeys"

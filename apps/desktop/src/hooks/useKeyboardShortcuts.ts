@@ -8,17 +8,26 @@ interface ShortcutActions {
    onPalette: () => void
    onExecute: () => void
    onSaveQuery?: () => void
+   onSettings?: () => void
 }
 
-export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute, onSaveQuery }: ShortcutActions) {
+export function useKeyboardShortcuts({
+   onShortcuts,
+   onPalette,
+   onExecute,
+   onSaveQuery,
+   onSettings,
+}: ShortcutActions) {
    const onShortcutsRef = useRef(onShortcuts)
    const onPaletteRef = useRef(onPalette)
    const onExecuteRef = useRef(onExecute)
    const onSaveQueryRef = useRef(onSaveQuery)
+   const onSettingsRef = useRef(onSettings)
    onShortcutsRef.current = onShortcuts
    onPaletteRef.current = onPalette
    onExecuteRef.current = onExecute
    onSaveQueryRef.current = onSaveQuery
+   onSettingsRef.current = onSettings
 
    useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,10 +43,16 @@ export function useKeyboardShortcuts({ onShortcuts, onPalette, onExecute, onSave
          const mod = isMac() ? e.metaKey : e.ctrlKey
          if (!mod) return
 
-         if (e.key === "k") {
+          if (e.key === "k") {
             if (!envId) return
             e.preventDefault()
             onPaletteRef.current()
+            return
+         }
+
+          if (e.key === ",") {
+            e.preventDefault()
+            onSettingsRef.current?.()
             return
          }
 
