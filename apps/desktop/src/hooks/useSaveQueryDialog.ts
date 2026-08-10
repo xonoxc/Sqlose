@@ -25,6 +25,7 @@ export function useSaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps
             const activeTab = useWorkspaceStore
                .getState()
                .tabs.find(t => t.id === useWorkspaceStore.getState().activeTabId)
+
             const matchId = activeTab?.savedQueryId
             const match = matchId ? queries.find(q => q.id === matchId) : null
             const initial = match ?? queries[0] ?? null
@@ -34,6 +35,7 @@ export function useSaveQueryDialog({ open, mode, onClose }: SaveQueryDialogProps
             const activeTab = useWorkspaceStore
                .getState()
                .tabs.find(t => t.id === useWorkspaceStore.getState().activeTabId)
+
             const matchId = activeTab?.savedQueryId
             const match = matchId ? queries.find(q => q.id === matchId) : null
             setName(match?.name ?? "")
