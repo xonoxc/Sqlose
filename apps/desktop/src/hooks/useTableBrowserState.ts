@@ -22,9 +22,15 @@ export function useTableBrowserState() {
    const fetchTableData = useDatabaseStore(s => s.fetchTableData)
 
    const tableData = selectedEnvironmentId ? (tableDataByEnv[selectedEnvironmentId] ?? null) : null
-   const tableDataLoading = selectedEnvironmentId ? (tableDataLoadingByEnv[selectedEnvironmentId] ?? false) : false
-   const tableDataError = selectedEnvironmentId ? (tableDataErrorByEnv[selectedEnvironmentId] ?? null) : null
-   const tableColumns = selectedEnvironmentId ? (tableColumnsByEnv[selectedEnvironmentId] ?? {}) : {}
+   const tableDataLoading = selectedEnvironmentId
+      ? (tableDataLoadingByEnv[selectedEnvironmentId] ?? false)
+      : false
+   const tableDataError = selectedEnvironmentId
+      ? (tableDataErrorByEnv[selectedEnvironmentId] ?? null)
+      : null
+   const tableColumns = selectedEnvironmentId
+      ? (tableColumnsByEnv[selectedEnvironmentId] ?? {})
+      : {}
    const selectedEnv = selectedEnvironmentId
       ? (environments.find(e => e.id === selectedEnvironmentId) ?? null)
       : null

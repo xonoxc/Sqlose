@@ -7,6 +7,12 @@ import type { DBType, Dataset } from "@sqlose/shared"
 
 type FlowStep = "select-type" | "configure" | "provisioning"
 
+const DB_CARDS = [
+   { type: "postgres" as DBType, label: "PostgreSQL" },
+   { type: "mysql" as DBType, label: "MySQL" },
+   { type: "sqlite" as DBType, label: "SQLite" },
+]
+
 interface ProvisioningStep {
    id: string
    label: string
@@ -39,12 +45,6 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
    const selectEnvironment = useEnvironmentStore(s => s.selectEnvironment)
    const resetWorkspace = useWorkspaceStore(s => s.resetWorkspace)
 
-   const DB_CARDS = [
-      { type: "postgres" as DBType, label: "PostgreSQL" },
-      { type: "mysql" as DBType, label: "MySQL" },
-      { type: "sqlite" as DBType, label: "SQLite" },
-   ]
-
    useEffect(() => {
       if (step === "configure") {
          setDatasetsLoading(true)
@@ -63,13 +63,31 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
 
    const runProvision = async () => {
       const steps: ProvisioningStep[] = []
-      steps.push({ id: "create", label: "Creating environment", status: "pending" })
+      steps.push({
+         id: "create",
+         label: "Creating environment",
+         status: "pending",
+      })
+
       if (selectedDbType === "sqlite") {
-         steps.push({ id: "init", label: "Initializing database", status: "pending" })
+         steps.push({
+            id: "init",
+            label: "Initializing database",
+            status: "pending",
+         })
       } else {
-         steps.push({ id: "pull", label: "Pulling database container", status: "pending" })
-         steps.push({ id: "start", label: "Starting database server", status: "pending" })
+         steps.push({
+            id: "pull",
+            label: "Pulling database container",
+            status: "pending",
+         })
+         steps.push({
+            id: "start",
+            label: "Starting database server",
+            status: "pending",
+         })
       }
+
       if (selectedDataset) {
          steps.push({
             id: "seed",
@@ -77,7 +95,12 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
             status: "pending",
          })
       }
-      steps.push({ id: "connect", label: "Connecting client", status: "pending" })
+      steps.push({
+         id: "connect",
+         label: "Connecting client",
+         status: "pending",
+      })
+
       setProvisioningSteps(steps)
 
       updateStepStatus("create", "in-progress")
@@ -161,10 +184,15 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
    }
 
    const handleCreate = () => {
-      const names = useEnvironmentStore.getState().environments.map(e => e.name).filter(Boolean)
+      const names = useEnvironmentStore
+         .getState()
+         .environments.map(e => e.name)
+         .filter(Boolean)
+
       if (dbName.trim() && names.includes(dbName.trim())) {
          return
       }
+
       setCreating(true)
       setStep("provisioning")
    }

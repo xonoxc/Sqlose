@@ -7,17 +7,24 @@ export function useUpdateToast() {
    useEffect(() => {
       // Check current state on mount
       window.sqlose.update.getState().then(state => {
-         if (state.state === "checking") {
-            toast.loading("Checking for updates...", { id: "update-checking" })
-         } else if (state.state === "error") {
-            toast.error("Update Check Failed", {
-               description: state.message,
-               action: {
-                  label: "Retry",
-                  onClick: () => window.sqlose.update.downloadUpdate(),
-               },
-               duration: 10_000,
-            })
+         switch (state.state) {
+            case "checking":
+               toast.loading("Checking for updates...", {
+                  id: "update-checking",
+               })
+               break
+
+            case "error":
+               toast.error("Update Check Failed", {
+                  description: state.message,
+                  action: {
+                     label: "Retry",
+                     onClick: () => {
+                        window.sqlose.update.downloadUpdate()
+                     },
+                  },
+                  duration: 10_000,
+               })
          }
       })
 
@@ -45,21 +52,23 @@ export function useUpdateToast() {
       })
 
       const unsubProgress = window.sqlose.update.onDownloadProgress(progress => {
-         if (downloadingToastRef.current != null) {
-            toast.loading("Downloading update...", {
-               id: downloadingToastRef.current,
-               description: `${Math.round(progress.percent)}%`,
-            })
-         } else {
+         if (downloadingToastRef.current === null) {
             const id = toast.loading("Downloading update...", {
                description: `${Math.round(progress.percent)}%`,
             })
             downloadingToastRef.current = id
+            return
          }
+
+         toast.loading("Downloading update...", {
+            id: downloadingToastRef.current,
+            description: `${Math.round(progress.percent)}%`,
+         })
       })
 
       const unsubDownloaded = window.sqlose.update.onUpdateDownloaded(() => {
          downloadingToastRef.current = null
+
          toast.success("Update Ready", {
             description: "Restart to install the latest version.",
             action: {
@@ -74,11 +83,14 @@ export function useUpdateToast() {
 
       const unsubError = window.sqlose.update.onUpdateError(message => {
          downloadingToastRef.current = null
+
          toast.error("Update Check Failed", {
             description: message,
             action: {
                label: "Retry",
-               onClick: () => window.sqlose.update.downloadUpdate(),
+               onClick: () => {
+                  window.sqlose.update.downloadUpdate()
+               },
             },
             duration: 10_000,
          })

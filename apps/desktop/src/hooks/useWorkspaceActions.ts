@@ -1,4 +1,3 @@
-import { useCallback } from "react"
 import { useWorkspaceStore } from "~/stores/workspaceStore"
 import { useEnvironmentStore } from "~/stores/environmentStore"
 import { useQueryExecution } from "~/hooks/useQueryExecution"
@@ -22,59 +21,60 @@ export function useWorkspaceActions() {
       ? (environments.find(e => e.id === selectedEnvironmentId) ?? null)
       : null
 
-   const handleNewQuery = useCallback(() => {
-      openTab()
-   }, [openTab])
+   const handleNewQuery = () => openTab()
 
-   const handleQueryChange = useCallback(
-      (value: string) => {
-         const tid = useWorkspaceStore.getState().activeTabId
-         if (tid) {
-            useWorkspaceStore.getState().updateTab(tid, { query: value, isDirty: true })
-         }
-      },
-      []
-   )
-
-   const setQueryDraft = useCallback((value: string) => {
+   const handleQueryChange = (value: string) => {
       const tid = useWorkspaceStore.getState().activeTabId
-      if (tid) {
-         useWorkspaceStore.getState().updateTab(tid, { query: value })
-      }
-   }, [])
+      if (!tid) return
 
-   const handleClearResults = useCallback(() => {
+      useWorkspaceStore.getState().updateTab(tid, {
+         query: value,
+         isDirty: true,
+      })
+   }
+
+   const setQueryDraft = (value: string) => {
       const tid = useWorkspaceStore.getState().activeTabId
-      if (tid) {
-         useWorkspaceStore.getState().updateTab(tid, { result: null, error: null })
-      }
-   }, [])
+      if (!tid) return
 
-   const handleOpenTable = useCallback(
-      (tableName: string) => {
-         openTab({ tableName, title: tableName })
-      },
-      [openTab]
-   )
+      useWorkspaceStore.getState().updateTab(tid, {
+         query: value,
+      })
+   }
 
-   const handleOpenQuery = useCallback(
-      (sql: string, savedQueryId?: string, savedQueryName?: string) => {
-         const result = openTab()
-         if (result.isOk()) {
-            const tab = result.value
-            const updates: Partial<Tab> = { query: sql }
-            if (savedQueryName) {
-               updates.title = savedQueryName
-            }
-            if (savedQueryId) {
-               updates.savedQueryId = savedQueryId
-            }
-            updateTab(tab.id, updates)
-            setActiveTab(tab.id)
+   const handleClearResults = () => {
+      const tid = useWorkspaceStore.getState().activeTabId
+      if (!tid) return
+
+      useWorkspaceStore.getState().updateTab(tid, {
+         result: null,
+         error: null,
+      })
+   }
+
+   const handleOpenTable = (tableName: string) => {
+      openTab({
+         tableName,
+         title: tableName,
+      })
+   }
+
+   const handleOpenQuery = (sql: string, savedQueryId?: string, savedQueryName?: string) => {
+      const result = openTab()
+      if (result.isOk()) {
+         const tab = result.value
+         const updates: Partial<Tab> = { query: sql }
+
+         if (savedQueryName) {
+            updates.title = savedQueryName
          }
-      },
-      [openTab, updateTab, setActiveTab]
-   )
+         if (savedQueryId) {
+            updates.savedQueryId = savedQueryId
+         }
+         updateTab(tab.id, updates)
+         setActiveTab(tab.id)
+      }
+   }
 
    return {
       queryDraft,

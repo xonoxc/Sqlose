@@ -34,9 +34,7 @@ export function useSettingsPanelState() {
       setAutoSaveAction(!autoSave)
    }
 
-   const handleResetKeybindings = () => {
-      resetKeybindings()
-   }
+   const handleResetKeybindings = () => resetKeybindings()
 
    const handleFontSizeChange = (delta: number) => {
       const next = Math.min(32, Math.max(8, editorFontSize + delta))

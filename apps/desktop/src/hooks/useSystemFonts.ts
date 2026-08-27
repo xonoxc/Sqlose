@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { attempt } from "@sqlose/shared"
 import { api } from "~/lib/api"
 
@@ -18,31 +18,49 @@ export const FALLBACK_MONOSPACE_FONTS: string[] = [
 
 export function useSystemFonts() {
    const [fonts, setFonts] = useState<string[]>([])
-   const [loading, setLoading] = useState(false)
-   const [available, setAvailable] = useState(true)
+   const [loading, setLoading] = useState<boolean>(false)
+   const [available, setAvailable] = useState<boolean>(true)
 
-   const applySystemFonts = useCallback((list: string[]) => {
-      const clean = list.map(font => font.replace(/^"|"$/g, "").trim()).filter(Boolean)
-      console.log("applySystemFonts:", clean.length)
-      setFonts(Array.from(new Set(clean)).sort((a, b) => a.localeCompare(b)))
+   const applySystemFonts = (list: string[]) => {
+      setFonts(
+         Array.from(
+            new Set(
+               list
+                  .map(font => {
+                     return font.replace(/^"|"$/g, "").trim()
+                  })
+                  .filter(Boolean)
+            )
+         ).sort((a, b) => a.localeCompare(b))
+      )
       setAvailable(true)
-   }, [])
+   }
 
-   const applyFallback = useCallback(() => {
+   const applyFallback = () => {
       setFonts(FALLBACK_MONOSPACE_FONTS)
       setAvailable(false)
-   }, [])
+   }
 
-   const refresh = useCallback(async () => {
+   const refresh = async () => {
       setLoading(true)
-      const result = await attempt(api.fonts.list())
-      console.log("refresh result:", result.toString())
-      result.match(inner => {
-         console.log("inner:", inner.toString())
-         inner.match(applySystemFonts, applyFallback)
-      }, applyFallback)
-      setLoading(false)
-   }, [applySystemFonts, applyFallback])
 
-   return { fonts, loading, available, refresh }
+      const result = await attempt(api.fonts.list())
+      if (result.isErr()) {
+         applyFallback()
+         return
+      }
+      const inner = result.value
+
+      console.log("inner:", inner.toString())
+      inner.match(applySystemFonts, applyFallback)
+
+      setLoading(false)
+   }
+
+   return {
+      fonts,
+      loading,
+      available,
+      refresh,
+   }
 }

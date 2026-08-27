@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react"
+import { useRef } from "react"
 import { attempt, attemptSync } from "@sqlose/shared"
 import { api } from "~/lib/api"
 import { useEnvironmentStore } from "~/stores/environmentStore"
@@ -66,9 +66,11 @@ function formatAsTsv(result: QueryResult, withHeaders: boolean): string {
    if (withHeaders) {
       lines.push(result.columns.join("\t"))
    }
+
    for (const row of result.rows) {
       lines.push(result.columns.map(c => formatCell(row[c])).join("\t"))
    }
+
    return lines.join("\n")
 }
 
@@ -115,7 +117,7 @@ export function exportResultsToFile(result: QueryResult, format: string): void {
    URL.revokeObjectURL(url)
 }
 
-export async function copyResultsToClipboard(result: QueryResult, format: string): Promise<void> {
+export async function copyResultsToClipboard(result: QueryResult, format: string) {
    const text = getExportFormat(format).format(result)
 
    if (navigator.clipboard?.writeText) {
@@ -141,7 +143,10 @@ export async function copyResultsToClipboard(result: QueryResult, format: string
          }
       ).execCommand("copy")
    )
-   if (execResult.isErr()) console.error("All clipboard copy methods failed:", execResult.error)
+
+   if (execResult.isErr()) {
+      console.error("All clipboard copy methods failed:", execResult.error)
+   }
    document.body.removeChild(ta)
 }
 
@@ -156,7 +161,7 @@ export function useQueryExecution() {
    const updateTab = useWorkspaceStore(s => s.updateTab)
    const addHistoryEntry = useHistoryStore(s => s.addEntry)
 
-   const execute = useCallback(async (): Promise<boolean> => {
+   const execute = async () => {
       if (!selectedEnvironmentId || !queryDraft.trim() || !activeTabId) {
          return false
       }
@@ -215,15 +220,7 @@ export function useQueryExecution() {
       }
 
       return true
-   }, [
-      selectedEnvironmentId,
-      queryDraft,
-      activeTabId,
-      activeTab,
-      environments,
-      updateTab,
-      addHistoryEntry,
-   ])
+   }
 
    return { execute, prevExecutionRef }
 }
