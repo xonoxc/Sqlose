@@ -1,14 +1,14 @@
-// CJS compat shims for bundled packages
 import { fileURLToPath } from "node:url"
 import path from "node:path"
+import fs from "node:fs"
 import { execFileSync } from "node:child_process"
-import { app, BrowserWindow, dialog, ipcMain } from "electron"
+import { app, BrowserWindow, dialog, ipcMain, screen, type WebContents } from "electron"
 import { autoUpdater } from "electron-updater"
 import type { DockerAvailability } from "@sqlose/shared"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-import { attemptSync } from "@sqlose/shared"
+import { attempt, attemptSync } from "@sqlose/shared"
 import {
    initDocker,
    stopOrphanedContainers,
@@ -19,16 +19,89 @@ import {
 import { registerAllHandlers } from "./ipc-handlers"
 import { initDatabase, closeDatabase } from "./db"
 import { registerDbHandlers } from "./db-handlers"
+import { registerDbClientHandlers } from "./dbclient-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
 
-// Wayland support for Linux: force native Wayland when running under a Wayland session
+// Prefer native Wayland when a Wayland session is present. Electron's "auto"
+// ozone hint falls back to X11/XWayland when DISPLAY is also exported, and
+// XWayland reports a scaled-down logical resolution for the display (e.g.
+// 1536x960 instead of 1920x1200 at Hyprland scale 1.25). Forcing the platform
+// like VS Code does keeps the real monitor geometry intact. The socket scan
+// also restores WAYLAND_DISPLAY / HYPRLAND_INSTANCE_SIGNATURE for tooling that
+// strips them (turbo drops the session vars from dev task env). XDG_SESSION_TYPE
+// must be set at spawn (Chromium reads it before this module runs), so dev heals
+// it in vite.config.ts; the assignment below is a defensive fallback only.
+//
+// Hyprland-specific case: Hyprland advertises a fractional scale (e.g. 1.25)
+// via wp_fractional_scale_manager_v1, so the display comes through as
+// scaleFactor 1.25 at 1536x960 logical DIPs. But Chromium can render window
+// buffers at the rounded-down integer surface scale (1), so the compositor
+// upscales a low-res buffer and everything looks blurry. There is no Chromium
+// flag to fix the surface scale directly (verified: force-device-scale-factor
+// is the only lever that gives fractional buffers), so sniff the real scale
+// with hyprctl and force it: buffers are then rendered at native resolution
+// and mapped 1:1.
 if (process.platform === "linux") {
-   if (process.env.WAYLAND_DISPLAY) {
+   const runtimeDir =
+      process.env.XDG_RUNTIME_DIR ?? (process.getuid ? `/run/user/${process.getuid()}` : null)
+   const socketEntry = attemptSync(() =>
+      runtimeDir
+         ? fs.readdirSync(runtimeDir).find(e => e.startsWith("wayland-") && !e.includes("."))
+         : null
+   ).unwrapOr(null)
+   const hasWaylandSession = !!process.env.WAYLAND_DISPLAY || !!socketEntry
+
+   if (hasWaylandSession) {
+      if (!process.env.WAYLAND_DISPLAY && socketEntry) {
+         process.env.WAYLAND_DISPLAY = socketEntry
+      }
+
+      if (!process.env.XDG_SESSION_TYPE) {
+         process.env.XDG_SESSION_TYPE = "wayland"
+      }
+
+      const hyprSignature = attemptSync(() => {
+         if (!runtimeDir) return null
+
+         const hyprDir = path.join(runtimeDir, "hypr")
+         const sig = fs
+            .readdirSync(hyprDir, { withFileTypes: true })
+            .find(
+               d => d.isDirectory() && fs.existsSync(path.join(hyprDir, d.name, ".socket.sock"))
+            )?.name
+         if (!sig) return null
+
+         return sig
+      }).unwrapOr(null)
+
+      if (hyprSignature) {
+         process.env.HYPRLAND_INSTANCE_SIGNATURE = hyprSignature
+      }
+
       app.commandLine.appendSwitch("ozone-platform", "wayland")
+
+      const scale = attemptSync(() => {
+         const raw = execFileSync("hyprctl", ["monitors", "-j"], {
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+            timeout: 3000,
+         })
+         const monitors: Array<{ scale?: number; focused?: boolean }> = JSON.parse(raw)
+         return (monitors.find(m => m.focused) ?? monitors[0])?.scale ?? null
+      }).unwrapOr(null)
+
+      if (scale != null && scale > 1 && !Number.isInteger(scale)) {
+         console.log(
+            "[Wayland] Hyprland fractional scale detected:",
+            scale,
+            "-> forcing device scale factor"
+         )
+         app.commandLine.appendSwitch("force-device-scale-factor", String(scale))
+      }
+   } else {
+      console.log("[Wayland] no session detected -> using X11/XWayland backend")
    }
-   app.commandLine.appendSwitch("enable-features", "WaylandWindowDecorations")
-   app.commandLine.appendSwitch("enable-wayland-ime")
 }
 
 export const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"]
@@ -173,10 +246,17 @@ async function checkDockerAvailability(): Promise<DockerAvailability> {
 }
 
 function createWindow() {
+   const { workAreaSize } = screen.getPrimaryDisplay()
+   const width = Math.min(Math.max(Math.round(workAreaSize.width * 0.8), 900), workAreaSize.width)
+   const height = Math.min(
+      Math.max(Math.round(workAreaSize.height * 0.85), 600),
+      workAreaSize.height
+   )
+
    win = new BrowserWindow({
       icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
-      width: 1100,
-      height: 750,
+      width,
+      height,
       webPreferences: {
          preload: path.join(__dirname, "preload.mjs"),
          sandbox: false,
@@ -184,6 +264,16 @@ function createWindow() {
          nodeIntegration: false,
       },
       autoHideMenuBar: true,
+   })
+
+   win.webContents.setZoomFactor(1)
+   const webContents = win.webContents as WebContents & { setZoomMode?: (mode: string) => void }
+   webContents.setZoomMode?.("default")
+
+   console.log("[DPI] zoom:", {
+      factor: win?.webContents.getZoomFactor() ?? "not found",
+      level: win?.webContents.getZoomLevel() ?? "not found",
+      pixelRatio: screen.getPrimaryDisplay().scaleFactor,
    })
 
    if (VITE_DEV_SERVER_URL) {
@@ -206,7 +296,7 @@ autoUpdater.on("update-available", info => {
       version: info.version,
       releaseNotes: Array.isArray(info.releaseNotes)
          ? info.releaseNotes.map(r => r.note).join("\n")
-         : info.releaseNotes ?? undefined,
+         : (info.releaseNotes ?? undefined),
    })
    sendUpdateToRenderer("update-available", { ...info, isPackageManaged })
    startUpdatePolling()
@@ -250,19 +340,19 @@ ipcMain.handle("update:quit-and-install", async () => {
 
    // Ask renderer for active query count
    if (win && !win.isDestroyed()) {
-      try {
-         activeQueries = await win.webContents.executeJavaScript(
-            `window.__SQLOSE_ACTIVE_QUERY_COUNT__ ?? 0`
-         )
-      } catch {
-         // Renderer not available, proceed without query check
-      }
+      const activeQueriesRes = await attempt(
+         win.webContents.executeJavaScript(`window.__SQLOSE_ACTIVE_QUERY_COUNT__ ?? 0`)
+      )
+
+      activeQueries = activeQueriesRes.unwrapOr(0)
    }
 
    if (activeQueries > 0 || runningContainers > 0) {
       const details: string[] = []
-      if (activeQueries > 0) details.push(`${activeQueries} active quer${activeQueries > 1 ? "ies" : "y"}`)
-      if (runningContainers > 0) details.push(`${runningContainers} running container${runningContainers > 1 ? "s" : ""}`)
+      if (activeQueries > 0)
+         details.push(`${activeQueries} active quer${activeQueries > 1 ? "ies" : "y"}`)
+      if (runningContainers > 0)
+         details.push(`${runningContainers} running container${runningContainers > 1 ? "s" : ""}`)
 
       const result = await dialog.showMessageBox(win!, {
          type: "warning",
@@ -278,10 +368,9 @@ ipcMain.handle("update:quit-and-install", async () => {
 
       // Gracefully stop containers before quitting
       if (runningContainers > 0) {
-         try {
-            await stopAllContainers()
-         } catch (e) {
-            console.error("Failed to stop containers:", e)
+         const containerStopRes = await attempt(stopAllContainers())
+         if (containerStopRes.isErr()) {
+            console.error("Failed to stop containers:", containerStopRes.error)
          }
       }
    }
@@ -331,6 +420,7 @@ app.whenReady().then(async () => {
 
    registerAllHandlers()
    registerDbHandlers()
+   registerDbClientHandlers()
    createWindow()
 
    if (!dockerAvailable) {
@@ -344,4 +434,13 @@ app.whenReady().then(async () => {
    }
 
    if (!VITE_DEV_SERVER_URL) checkForUpdatesWithRetry(0)
+
+   console.log(
+      "[DPI] displays:",
+      screen.getAllDisplays().map(d => ({
+         scaleFactor: d.scaleFactor,
+         size: d.size,
+         workArea: d.workArea,
+      }))
+   )
 })

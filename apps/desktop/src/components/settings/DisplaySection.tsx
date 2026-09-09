@@ -1,7 +1,7 @@
 import { Button, cn } from "@sqlose/ui"
 import { SectionHeader, SettingRow } from "~/components/settings/primitives"
 
-const uiScaleOptions = [0.9, 1, 1.1, 1.2]
+const uiScaleOptions = [0.8, 0.9, 1, 1.1, 1.2]
 
 interface DisplaySectionProps {
    uiScale: number

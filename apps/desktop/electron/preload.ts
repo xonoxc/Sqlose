@@ -154,11 +154,20 @@ const api = {
       quitAndInstall: () => ipcRenderer.invoke("update:quit-and-install"),
       getState: (): Promise<UpdateState> => ipcRenderer.invoke("update:get-state"),
       onStateChange: (callback: (state: UpdateState) => void) => {
-         const handler = (_event: Electron.IpcRendererEvent, state: UpdateState) =>
-            callback(state)
+         const handler = (_event: Electron.IpcRendererEvent, state: UpdateState) => callback(state)
          ipcRenderer.on("update-state-changed", handler)
          return () => ipcRenderer.removeListener("update-state-changed", handler)
       },
+   },
+   dbclient: {
+      list: () => ipcRenderer.invoke("dbclient:list"),
+      save: (conn: unknown) => ipcRenderer.invoke("dbclient:save", conn),
+      delete: (id: string) => ipcRenderer.invoke("dbclient:delete", id),
+      test: (payload: { dbType: string; connectionString: string }) =>
+         ipcRenderer.invoke("dbclient:test", payload),
+      execute: (payload: { connectionId: string; sql: string }) =>
+         ipcRenderer.invoke("dbclient:execute", payload),
+      schema: (payload: { connectionId: string }) => ipcRenderer.invoke("dbclient:schema", payload),
    },
 }
 

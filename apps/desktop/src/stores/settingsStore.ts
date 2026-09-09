@@ -9,8 +9,10 @@ import { sqliteStorage } from "~/lib/sqlite-storage"
 export type AppearanceMode = "light" | "dark" | "system"
 export type RowSpacing = "comfortable" | "compact"
 export type ExecutionMode = "review" | "direct"
+export type AppMode = "sandbox" | "client"
 
 interface SettingsStore {
+   appMode: AppMode
    vimModeEnabled: boolean
    keybindings: Keybinding[]
    theme: "dark"
@@ -25,6 +27,7 @@ interface SettingsStore {
    uiScale: number
    executionMode: ExecutionMode
 
+   setAppMode: (mode: AppMode) => Result<AppMode, AppError>
    toggleVimMode: () => Result<boolean, AppError>
    setVimModeEnabled: (enabled: boolean) => Result<boolean, AppError>
    setTheme: (theme: "dark") => Result<"dark", AppError>
@@ -47,6 +50,7 @@ interface SettingsStore {
 export const useSettingsStore = create<SettingsStore>()(
    persist(
       (set, get) => ({
+         appMode: "sandbox",
          vimModeEnabled: false,
          keybindings: createDefaultKeybindings(),
          theme: "dark",
@@ -60,6 +64,11 @@ export const useSettingsStore = create<SettingsStore>()(
          tableFontSize: 13,
          uiScale: 1,
          executionMode: "direct",
+
+         setAppMode: (mode: AppMode) => {
+            set({ appMode: mode })
+            return ok(mode)
+         },
 
          toggleVimMode: () => {
             const current = get().vimModeEnabled

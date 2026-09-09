@@ -105,6 +105,7 @@ export function useCreateDatabaseFlowLogic(_onClose: () => void) {
 
       updateStepStatus("create", "in-progress")
       const cardLabel = DB_CARDS.find(c => c.type === selectedDbType)?.label ?? selectedDbType
+
       const envResult = await createEnvironment(selectedDbType!, dbName || `${cardLabel} Database`)
       if (envResult.isErr()) {
          updateStepStatus("create", "error", envResult.error.message)

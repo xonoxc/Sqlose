@@ -50,4 +50,4 @@ export {
    isDockerAvailability,
 } from "./guards"
 
-export { attempt, attemptSync } from "./attempt"
+export * from "./attempt"

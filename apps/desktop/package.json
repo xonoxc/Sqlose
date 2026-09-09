@@ -10,7 +10,7 @@
    "homepage": "https://github.com/xonoxc/Sqlose",
    "type": "module",
    "scripts": {
-      "dev": "vite -- --enable-features=UseOzonePlatform --ozone-platform=wayland",
+      "dev": "node ../../scripts/sync-native.mjs && vite -- --ozone-platform=wayland --enable-features=WaylandWindowDecorations",
       "build": "tsc && vite build && electron-builder",
       "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
       "preview": "vite preview",
@@ -47,7 +47,7 @@
       "@types/react-dom": "^19",
       "@types/sql.js": "^1.4.11",
       "@vitejs/plugin-react": "^4.2.1",
-      "electron": "42",
+      "electron": "42.4.0",
       "electron-builder": "^26.15.2",
       "eslint-plugin-react-hooks": "^7.1.1",
       "eslint-plugin-react-refresh": "^0.4.5",

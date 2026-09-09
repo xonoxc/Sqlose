@@ -16,6 +16,7 @@ import {
    EditorWorkspace,
    ConfirmDialog,
    SaveQueryDialog,
+   DbClientView,
 } from "~/components"
 import { attempt } from "@sqlose/shared"
 import {
@@ -67,6 +68,7 @@ function AppContent() {
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
    const uiScale = useSettingsStore(s => s.uiScale)
    const tableFontSize = useSettingsStore(s => s.tableFontSize)
+   const appMode = useSettingsStore(s => s.appMode)
    useThemeStore()
    const [isNuking, setIsNuking] = useState(false)
 
@@ -87,11 +89,30 @@ function AppContent() {
       }
    }
 
+   const [deviceScale, setDeviceScale] = useState(window.devicePixelRatio)
+
+   useEffect(() => {
+      const onResize = () => setDeviceScale(window.devicePixelRatio)
+      window.addEventListener("resize", onResize)
+      return () => window.removeEventListener("resize", onResize)
+   }, [])
+
    useEffect(() => {
       const root = document.documentElement
-      root.style.setProperty("--app-ui-scale", String(uiScale))
+      const isLinux = navigator.platform?.toLowerCase().includes("linux")
+      const fractionalScale = isLinux && deviceScale % 1 !== 0
+      const effectiveScale = uiScale / (fractionalScale ? deviceScale : 1)
+      root.style.setProperty("--app-ui-scale", String(effectiveScale))
       root.style.setProperty("--app-table-font-size", `${tableFontSize}px`)
-   }, [uiScale, tableFontSize])
+   }, [uiScale, tableFontSize, deviceScale])
+
+   useEffect(() => {
+      console.log("[DPI]", {
+         devicePixelRatio: window.devicePixelRatio,
+         screen: [screen.width, screen.height],
+         viewport: [innerWidth, innerHeight],
+      })
+   }, [])
 
    useEffect(() => {
       const root = document.documentElement
@@ -103,6 +124,8 @@ function AppContent() {
          root.setAttribute("data-platform", "win")
       }
    }, [])
+
+   useEffect(() => {}, [uiScale, tableFontSize])
 
    const resultsResize = useResizeHandler({
       axis: "y",
@@ -162,7 +185,9 @@ function AppContent() {
 
    return (
       <div className="h-screen w-screen overflow-hidden bg-bg-primary">
-         {selectedEnvironmentId ? (
+         {appMode === "client" ? (
+            <DbClientView />
+         ) : selectedEnvironmentId ? (
             <div className="flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative">
                <div className="flex-1 min-w-0 flex">
                   {ui.sidebarOpen && (
