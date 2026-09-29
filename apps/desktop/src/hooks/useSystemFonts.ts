@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { attempt } from "@sqlose/shared"
 import { api } from "~/lib/api"
 
@@ -41,7 +41,7 @@ export function useSystemFonts() {
       setAvailable(false)
    }
 
-   const refresh = async () => {
+   const refresh = useCallback(async () => {
       setLoading(true)
 
       const result = await attempt(api.fonts.list())
@@ -55,7 +55,7 @@ export function useSystemFonts() {
       inner.match(applySystemFonts, applyFallback)
 
       setLoading(false)
-   }
+   }, [])
 
    return {
       fonts,
