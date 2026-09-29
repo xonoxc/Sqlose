@@ -10,7 +10,7 @@
    "homepage": "https://github.com/xonoxc/Sqlose",
    "type": "module",
    "scripts": {
-      "dev": "node ../../scripts/sync-native.mjs && vite -- --ozone-platform=wayland --enable-features=WaylandWindowDecorations",
+      "dev": "vite -- --ozone-platform=wayland --enable-features=WaylandWindowDecorations",
       "build": "tsc && vite build && electron-builder",
       "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
       "preview": "vite preview",
