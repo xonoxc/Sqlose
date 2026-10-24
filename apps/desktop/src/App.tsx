@@ -16,7 +16,6 @@ import {
    EditorWorkspace,
    ConfirmDialog,
    SaveQueryDialog,
-   DbClientView,
 } from "~/components"
 import { attempt } from "@sqlose/shared"
 import {
@@ -68,7 +67,6 @@ function AppContent() {
    const clearActiveTable = useDatabaseStore(s => s.setActiveTable)
    const uiScale = useSettingsStore(s => s.uiScale)
    const tableFontSize = useSettingsStore(s => s.tableFontSize)
-   const appMode = useSettingsStore(s => s.appMode)
    useThemeStore()
    const [isNuking, setIsNuking] = useState(false)
 
@@ -185,9 +183,7 @@ function AppContent() {
 
    return (
       <div className="h-screen w-screen overflow-hidden bg-bg-primary">
-         {appMode === "client" ? (
-            <DbClientView />
-         ) : selectedEnvironmentId ? (
+         {selectedEnvironmentId ? (
             <div className="flex h-full w-full bg-bg-primary text-text-primary font-sans overflow-hidden relative">
                <div className="flex-1 min-w-0 flex">
                   {ui.sidebarOpen && (

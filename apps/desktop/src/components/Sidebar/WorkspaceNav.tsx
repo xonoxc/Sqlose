@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { IconCode, IconBookmark, IconHistory } from "@tabler/icons-react"
+import { IconTerminal, IconBookmark, IconHistory } from "@tabler/icons-react"
 
 interface WorkspaceNavProps {
    savedQueriesCount: number
@@ -48,18 +48,18 @@ export function WorkspaceNav({
          </div>
          <div className="flex flex-col gap-0.5">
             <NavItem
-               icon={<IconCode className="h-3.5 w-3.5" />}
+               icon={<IconTerminal className="h-4 w-4" />}
                label="New Query"
                onClick={() => handleNavClick("playground")}
             />
             <NavItem
-               icon={<IconBookmark className="h-3.5 w-3.5" />}
+               icon={<IconBookmark className="h-4 w-4" />}
                label="Saved Queries"
                badge={savedQueriesCount > 0 ? String(savedQueriesCount) : undefined}
                onClick={() => handleNavClick("saved")}
             />
             <NavItem
-               icon={<IconHistory className="h-3.5 w-3.5" />}
+               icon={<IconHistory className="h-4 w-4" />}
                label="History"
                badge={historyCount > 0 ? String(historyCount) : undefined}
                onClick={() => handleNavClick("history")}

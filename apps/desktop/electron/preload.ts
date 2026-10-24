@@ -159,16 +159,6 @@ const api = {
          return () => ipcRenderer.removeListener("update-state-changed", handler)
       },
    },
-   dbclient: {
-      list: () => ipcRenderer.invoke("dbclient:list"),
-      save: (conn: unknown) => ipcRenderer.invoke("dbclient:save", conn),
-      delete: (id: string) => ipcRenderer.invoke("dbclient:delete", id),
-      test: (payload: { dbType: string; connectionString: string }) =>
-         ipcRenderer.invoke("dbclient:test", payload),
-      execute: (payload: { connectionId: string; sql: string }) =>
-         ipcRenderer.invoke("dbclient:execute", payload),
-      schema: (payload: { connectionId: string }) => ipcRenderer.invoke("dbclient:schema", payload),
-   },
 }
 
 contextBridge.exposeInMainWorld("sqlose", api)

@@ -19,7 +19,6 @@ import {
 import { registerAllHandlers } from "./ipc-handlers"
 import { initDatabase, closeDatabase } from "./db"
 import { registerDbHandlers } from "./db-handlers"
-import { registerDbClientHandlers } from "./dbclient-handlers"
 
 process.env.APP_ROOT = path.join(__dirname, "..")
 
@@ -420,7 +419,6 @@ app.whenReady().then(async () => {
 
    registerAllHandlers()
    registerDbHandlers()
-   registerDbClientHandlers()
    createWindow()
 
    if (!dockerAvailable) {

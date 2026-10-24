@@ -31,7 +31,7 @@ export function TopBar({ onOpenPalette, onBackToDashboard, onOpenDiagram }: TopB
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.3-4.3" />
                </svg>
-               <span className="opacity-80 font-medium">Search tables, queries, commands...</span>
+               <span className="flex-1 text-center opacity-80 font-medium">Search</span>
                <div className="ml-auto flex items-center gap-1 opacity-50">
                   {isMac() ? (
                      <>

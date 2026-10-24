@@ -1,5 +1,5 @@
 import { cn } from "@sqlose/ui"
-import { IconChevronRight, IconRefresh, IconSearch, IconTable } from "@tabler/icons-react"
+import { IconChevronRight, IconRefresh, IconSearch, IconDatabase } from "@tabler/icons-react"
 import type { ColumnInfo } from "~/lib/schema"
 import { TableRow } from "./TableRow"
 
@@ -59,7 +59,7 @@ export function TableTree({
             >
                <IconChevronRight
                   className={cn(
-                     "h-3 w-3 text-text-muted transition-transform",
+                     "h-3.5 w-3.5 text-text-muted transition-transform",
                      tableTreeExpanded && "rotate-90"
                   )}
                />
@@ -75,7 +75,7 @@ export function TableTree({
                      className="h-8 w-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-bg-quaternary transition-colors disabled:opacity-40"
                      aria-label="Refresh tables"
                   >
-                     <IconRefresh className={cn("h-4 w-4", schemaLoading && "animate-spin")} />
+                     <IconRefresh className={cn("h-4.5 w-4.5", schemaLoading && "animate-spin")} />
                   </button>
                </div>
             )}
@@ -86,7 +86,7 @@ export function TableTree({
                {/* Search */}
                <div className="pb-2 px-1">
                   <div className="flex items-center gap-2 bg-bg-tertiary rounded border border-border px-2.5 py-1.5">
-                     <IconSearch className="h-3 w-3 text-text-muted shrink-0" />
+                     <IconSearch className="h-3.5 w-3.5 text-text-muted shrink-0" />
                      <input
                         type="text"
                         value={search}
@@ -109,7 +109,7 @@ export function TableTree({
                   {schemaLoading && tables.length === 0 && (
                      <div className="flex items-center justify-center py-6">
                         <div className="flex flex-col items-center gap-2">
-                           <div className="h-3 w-3 rounded-full border-t-transparent animate-spin" />
+                           <div className="h-3.5 w-3.5 rounded-full border-t-transparent animate-spin" />
                            <span className="text-[11px] text-text-muted">Loading tables...</span>
                         </div>
                      </div>
@@ -126,7 +126,7 @@ export function TableTree({
 
                   {!schemaLoading && !schemaError && tables.length === 0 && selectedEnvironmentId && (
                      <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                        <IconTable className="h-6 w-6 text-text-muted/30 mb-1" />
+                        <IconDatabase className="h-6 w-6 text-text-muted/30 mb-1" />
                         <span className="text-[12px] text-text-muted">No tables found</span>
                      </div>
                   )}

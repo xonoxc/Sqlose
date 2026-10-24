@@ -1,5 +1,5 @@
 import { cn } from "@sqlose/ui"
-import { IconChevronRight, IconTable, IconKey, IconCircleDot } from "@tabler/icons-react"
+import { IconChevronRight, IconDatabase, IconKey, IconCircleDot } from "@tabler/icons-react"
 import type { ColumnInfo } from "~/lib/schema"
 
 interface TableRowProps {
@@ -33,7 +33,7 @@ export function TableRow({
             role="option"
             aria-selected={isActive}
             className={cn(
-               "flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
+               "flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-[13px] font-medium transition-all duration-150 outline-none cursor-pointer group",
                isActive
                   ? "bg-white/10 text-white border-l-[2.5px]"
                   : "text-white/65 hover:text-white hover:bg-bg-quaternary/30 border-l-[2.5px] border-transparent",
@@ -46,7 +46,7 @@ export function TableRow({
                <button
                   onClick={e => handleChevronClick(e, tableName)}
                   className={cn(
-                     "h-4 w-4 rounded flex items-center justify-center shrink-0 transition-colors",
+                     "h-4.5 w-4.5 rounded flex items-center justify-center shrink-0 transition-colors",
                      "hover:bg-bg-quaternary/60 hover:text-text-primary",
                      isExpanded && "text-white"
                   )}
@@ -55,15 +55,15 @@ export function TableRow({
                >
                   <IconChevronRight
                      className={cn(
-                        "h-2.5 w-2.5 transition-transform duration-160 ease-out",
+                        "h-3 w-3 transition-transform duration-160 ease-out",
                         isExpanded && "rotate-90"
                      )}
                   />
                </button>
             )}
 
-            <IconTable
-               className={cn("h-3.5 w-3.5 shrink-0 opacity-70", isActive && "opacity-100")}
+            <IconDatabase
+               className={cn("h-4 w-4 shrink-0 opacity-70", isActive && "opacity-100")}
             />
             <span className="truncate flex-1 text-left">{tableName}</span>
 
@@ -73,7 +73,7 @@ export function TableRow({
                </span>
             )}
             {isLoadingColumns && (
-               <div className="h-2.5 w-2.5 rounded-full border-[1.5px] border-accent border-t-transparent animate-spin shrink-0" />
+               <div className="h-3 w-3 rounded-full border-[1.5px] border-accent border-t-transparent animate-spin shrink-0" />
             )}
          </div>
 
@@ -81,7 +81,7 @@ export function TableRow({
             <div className="overflow-hidden transition-all duration-200 ease-out">
                {isLoadingColumns && !columns && (
                   <div className="flex items-center gap-2 pl-6 py-1.5">
-                     <div className="h-2 w-2 rounded-full border-[1.5px] border-accent border-t-transparent animate-spin" />
+                     <div className="h-2.5 w-2.5 rounded-full border-[1.5px] border-accent border-t-transparent animate-spin" />
                      <span className="text-[10px] text-text-muted">Loading...</span>
                   </div>
                )}
@@ -98,9 +98,9 @@ export function TableRow({
                            className="flex items-center gap-1.5 px-2 py-0.5 rounded hover:bg-bg-quaternary/20 transition-colors group/col"
                         >
                            {col.primaryKey ? (
-                              <IconKey className="h-2.5 w-2.5 shrink-0 text-amber-400" />
+                              <IconKey className="h-3 w-3 shrink-0 text-amber-400" />
                            ) : (
-                              <IconCircleDot className="h-2 w-2 shrink-0 text-text-muted/30" />
+                              <IconCircleDot className="h-2.5 w-2.5 shrink-0 text-text-muted/30" />
                            )}
                            <span className="text-[12px] font-mono text-text-primary truncate">
                               {col.name}

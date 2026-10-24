@@ -1,5 +1,5 @@
 import { Button, cn } from "@sqlose/ui"
-import { IconX, IconPlus, IconLoader2, IconTable } from "@tabler/icons-react"
+import { IconX, IconPlus, IconLoader2, IconTable, IconFileCode } from "@tabler/icons-react"
 import type { Tab } from "~/lib/types"
 import { useTabBarLogic } from "~/hooks/useTabBarLogic"
 
@@ -71,7 +71,7 @@ function TabItem({
          onDragEnd={onDragEnd}
          onClick={onSelect}
          className={cn(
-            "group relative flex items-center gap-2.5 px-4 py-1.5 text-[13.5px] cursor-pointer select-none shrink-0 rounded-lg transition-all duration-300 border shadow-sm",
+            "group relative flex items-center gap-2.5 px-4 py-1.5 text-[11.5px] cursor-pointer select-none shrink-0 rounded-lg transition-all duration-300 border shadow-sm",
             isActive
                ? "bg-bg-tertiary border-border text-text-primary font-bold translate-y-[-1px]"
                : "bg-transparent border-transparent text-text-muted hover:text-text-primary hover:bg-white/5"
@@ -82,28 +82,14 @@ function TabItem({
             <IconLoader2 className="h-3.5 w-3.5 animate-spin text-accent shrink-0" />
          )}
          {!tab.isExecuting && tab.isDirty && (
-            <span className="h-2 w-2 rounded-full bg-accent/60 shrink-0" />
+            <span className="h-2 w-2 rounded-full bg-white/60 shadow-sm shrink-0" />
          )}
 
          {/* Icon */}
          {tab.tableName ? (
             <IconTable className={cn("h-4 w-4 shrink-0", isActive ? "opacity-90" : "opacity-45")} />
          ) : (
-            <svg
-               xmlns="http://www.w3.org/2000/svg"
-               width="15"
-               height="15"
-               viewBox="0 0 24 24"
-               fill="none"
-               stroke="currentColor"
-               strokeWidth="2"
-               strokeLinecap="round"
-               strokeLinejoin="round"
-               className={cn("shrink-0", isActive ? "opacity-80" : "opacity-35")}
-            >
-               <polyline points="16 18 22 12 16 6" />
-               <polyline points="8 6 2 12 8 18" />
-            </svg>
+            <IconFileCode className={cn("h-4 w-4 shrink-0", isActive ? "opacity-90" : "opacity-45")} />
          )}
 
          <span className="truncate max-w-40 leading-tight">{tab.title}</span>

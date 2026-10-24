@@ -42,7 +42,7 @@ export function ResultsPanelHeader({
    ]
 
    return (
-      <div className="flex items-center justify-between px-2 h-9 bg-bg-secondary shrink-0 border-b border-border/20 z-30">
+      <div className="flex items-center justify-between px-2 h-9 py-6 bg-bg-secondary shrink-0 border-b border-border/20 z-30">
          <div className="flex items-center gap-0.5 h-full">
             <button
                onClick={onToggleCollapse}
@@ -65,7 +65,7 @@ export function ResultsPanelHeader({
                         key={tab.id}
                         onClick={() => onResultsActiveTabChange(tab.id)}
                         className={cn(
-                           "relative flex items-center h-[26px] px-3 text-[13px] font-medium transition-all duration-150 rounded-md focus:outline-none select-none",
+                           "relative flex items-center py-1.5 px-3 text-[12px] font-medium transition-all duration-150 rounded-md focus:outline-none select-none",
                            isActive
                               ? "text-white bg-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
                               : "text-text-muted/30 hover:text-text-muted/60 hover:bg-white/[0.03]"
